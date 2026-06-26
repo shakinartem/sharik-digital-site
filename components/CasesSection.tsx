@@ -1,0 +1,137 @@
+"use client";
+
+import { useEffect, useRef, useState } from "react";
+import { cases, type CaseItem } from "@/data/cases";
+import { site } from "@/data/site";
+import { ButtonLink, SectionTitle } from "./ui";
+
+export function CasesSection() {
+  const [active, setActive] = useState<CaseItem | null>(null);
+
+  return (
+    <section id="cases" className="section-pad bg-white/50">
+      <div className="container-pad">
+        <SectionTitle
+          kicker="Кейсы"
+          title="Показываем на практике, как digital влияет на заявки, доверие и запись"
+          text="9 кейсов в стоматологии, медицине и смежных нишах. Каждый кейс открывается внутри страницы без перехода."
+        />
+        <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+          {cases.map((item) => (
+            <button
+              type="button"
+              key={item.id}
+              onClick={() => setActive(item)}
+              className="card group overflow-hidden text-left transition duration-200 hover:-translate-y-1 hover:border-skyBrand/30 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-skyBrand"
+            >
+              <div className="aspect-[4/3] overflow-hidden bg-slate-100">
+                <img src={item.images[0]} alt={item.title} className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
+              </div>
+              <div className="p-6">
+                <div className="mb-3 flex flex-wrap gap-2">
+                  {item.tags.slice(0, 3).map((tag) => (
+                    <span key={tag} className="rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-skyBrand">
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+                <h3 className="text-2xl font-bold text-ink">{item.title}</h3>
+                <p className="mt-2 text-sm font-semibold text-redBrand">{item.mainResult}</p>
+                <p className="mt-4 text-sm leading-6 text-muted">{item.shortDescription}</p>
+                <span className="mt-5 inline-flex font-semibold text-skyBrand">Открыть кейс →</span>
+              </div>
+            </button>
+          ))}
+        </div>
+      </div>
+      {active && <CaseModal item={active} onClose={() => setActive(null)} />}
+    </section>
+  );
+}
+
+function CaseModal({ item, onClose }: { item: CaseItem; onClose: () => void }) {
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    closeButtonRef.current?.focus();
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        onClose();
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [onClose]);
+
+  return (
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/70 p-3 backdrop-blur sm:p-4" onClick={onClose}>
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={`case-title-${item.id}`}
+        className="mx-auto my-4 max-w-5xl overflow-hidden rounded-[24px] bg-white shadow-2xl sm:my-8 sm:rounded-[32px]"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex flex-col gap-5 border-b border-slate-100 p-5 sm:flex-row sm:items-start sm:justify-between md:p-8">
+          <div>
+            <div className="text-sm font-bold uppercase tracking-[0.18em] text-skyBrand">{item.niche}{item.city ? ` · ${item.city}` : ""}</div>
+            <h3 id={`case-title-${item.id}`} className="mt-2 text-3xl font-bold text-ink md:text-4xl">{item.title}</h3>
+            <p className="mt-3 text-lg font-semibold text-redBrand">{item.mainResult}</p>
+          </div>
+          <button
+            ref={closeButtonRef}
+            type="button"
+            onClick={onClose}
+            className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold transition hover:border-skyBrand/40 hover:bg-blue-50/60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-skyBrand"
+          >
+            Закрыть
+          </button>
+        </div>
+        <div className="grid gap-8 p-5 md:p-8 lg:grid-cols-[1.05fr_0.95fr]">
+          <div>
+            <div className="space-y-6">
+              <InfoBlock title="Задача" text={item.task} />
+              <div>
+                <h4 className="font-bold text-ink">Что сделали</h4>
+                <ul className="mt-3 space-y-2 text-muted">
+                  {item.whatWasDone.map((x) => <li key={x}>• {x}</li>)}
+                </ul>
+              </div>
+              <div>
+                <h4 className="font-bold text-ink">Результат</h4>
+                <ul className="mt-3 grid gap-2 sm:grid-cols-2">
+                  {item.results.map((x) => <li key={x} className="rounded-2xl bg-blue-50 p-3 text-sm font-semibold text-ink">{x}</li>)}
+                </ul>
+              </div>
+              <InfoBlock title="Вывод" text={item.conclusion} />
+              <div>
+                <ButtonLink href={site.botUrl}>Хочу похожий результат</ButtonLink>
+              </div>
+            </div>
+          </div>
+          <div className="space-y-4">
+            {item.images.map((image, i) => (
+              <img key={image} src={image} alt={`${item.title}, слайд ${i + 1}`} className="w-full rounded-3xl border border-slate-100 shadow-soft" />
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function InfoBlock({ title, text }: { title: string; text: string }) {
+  return (
+    <div>
+      <h4 className="font-bold text-ink">{title}</h4>
+      <p className="mt-3 leading-7 text-muted">{text}</p>
+    </div>
+  );
+}

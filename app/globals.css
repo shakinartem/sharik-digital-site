@@ -1,0 +1,42 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+  --bg: #f6f9fc;
+  --ink: #111827;
+  --muted: #64748b;
+  --blue: #1684ff;
+  --red: #e53935;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: radial-gradient(circle at 20% 0%, rgba(22, 132, 255, 0.12), transparent 28%),
+    radial-gradient(circle at 90% 10%, rgba(229, 57, 53, 0.08), transparent 24%), var(--bg);
+  color: var(--ink);
+}
+
+::selection {
+  background: rgba(22, 132, 255, 0.18);
+}
+
+.container-pad {
+  @apply mx-auto w-full max-w-7xl px-5 sm:px-6 lg:px-8;
+}
+
+.section-pad {
+  @apply py-16 sm:py-20 lg:py-24;
+}
+
+.card {
+  @apply rounded-[28px] border border-white/70 bg-white/80 shadow-soft backdrop-blur;
+}
+
+.pill {
+  @apply inline-flex items-center rounded-full border border-slate-200 bg-white/80 px-4 py-2 text-sm font-medium text-slate-700 shadow-sm;
+}

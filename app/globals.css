@@ -4,11 +4,19 @@
 
 :root {
   color-scheme: light;
-  --bg: #f6f9fc;
-  --ink: #111827;
-  --muted: #64748b;
-  --blue: #1684ff;
-  --red: #e53935;
+  --bg: #e7e7e7;
+  --surface: rgba(255, 255, 255, 0.8);
+  --surface-strong: rgba(255, 255, 255, 0.96);
+  --ink: #061f3f;
+  --muted: #2a132d;
+  --blue: #061c41;
+  --red: #9b002f;
+  --line: rgba(155, 0, 47, 0.26);
+  --blue-soft: rgba(6, 28, 65, 0.05);
+  --blue-glass: rgba(6, 28, 65, 0.12);
+  --red-glass: rgba(155, 0, 47, 0.12);
+  --modal-overlay: rgba(6, 31, 63, 0.72);
+  --node-shadow: 0 10px 24px rgba(6, 28, 65, 0.14);
 }
 
 html {
@@ -16,13 +24,16 @@ html {
 }
 
 body {
-  background: radial-gradient(circle at 20% 0%, rgba(22, 132, 255, 0.12), transparent 28%),
-    radial-gradient(circle at 90% 10%, rgba(229, 57, 53, 0.08), transparent 24%), var(--bg);
+  background:
+    radial-gradient(circle at 18% 8%, rgba(6, 28, 65, 0.08), transparent 26%),
+    radial-gradient(circle at 82% 12%, rgba(155, 0, 47, 0.08), transparent 24%),
+    linear-gradient(180deg, #f7f7f7 0%, var(--bg) 100%);
   color: var(--ink);
+  font-family: var(--font-body), sans-serif;
 }
 
 ::selection {
-  background: rgba(22, 132, 255, 0.18);
+  background: rgba(155, 0, 47, 0.18);
 }
 
 .container-pad {
@@ -34,9 +45,31 @@ body {
 }
 
 .card {
-  @apply rounded-[28px] border border-white/70 bg-white/80 shadow-soft backdrop-blur;
+  @apply rounded-[20px] border border-white/80 bg-white/90 backdrop-blur;
 }
 
 .pill {
-  @apply inline-flex items-center rounded-full border border-slate-200 bg-white/80 px-4 py-2 text-sm font-medium text-slate-700 shadow-sm;
+  @apply inline-flex items-center rounded-full border border-[color:var(--line)] bg-white/85 px-4 py-2 text-sm font-medium text-[color:var(--ink)] shadow-sm;
+}
+
+.section-divider {
+  @apply mx-auto h-px w-full max-w-7xl;
+  background: linear-gradient(90deg, transparent, var(--line), transparent);
+}
+
+.brand-title {
+  font-family: var(--font-display), sans-serif;
+}
+
+.hero-wash {
+  background: linear-gradient(
+    115deg,
+    rgba(255, 255, 255, 0.9),
+    rgba(231, 231, 231, 0.72) 48%,
+    rgba(255, 255, 255, 0.92)
+  );
+}
+
+.brand-glass {
+  background: linear-gradient(135deg, var(--blue-glass), var(--red-glass));
 }

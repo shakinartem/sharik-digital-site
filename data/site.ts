@@ -5,6 +5,10 @@ export const site = {
   phone: "+7 987 357-60-71",
   whatsappUrl: "https://wa.me/79873576071",
   telegramDirect: "https://t.me/sharik_digital_bot",
+  directorName: "Шакин Артём",
+  directorRole: "Директор и основатель",
+  directorSummary:
+    "Собираю digital-системы для стоматологий: от упаковки и карты потерь до заявок, CRM и автоматизации.",
 };
 
 export const problems = [

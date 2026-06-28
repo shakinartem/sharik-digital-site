@@ -1,5 +1,16 @@
 import type { Metadata } from "next";
+import { Manrope, Montserrat } from "next/font/google";
 import "./globals.css";
+
+const displayFont = Montserrat({
+  subsets: ["latin", "cyrillic"],
+  variable: "--font-display",
+});
+
+const bodyFont = Manrope({
+  subsets: ["latin", "cyrillic"],
+  variable: "--font-body",
+});
 
 export const metadata: Metadata = {
   title: "ШАРиК-digital — digital-система для стоматологий",
@@ -19,7 +30,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="ru">
+    <html lang="ru" className={`${displayFont.variable} ${bodyFont.variable}`}>
       <body>{children}</body>
     </html>
   );

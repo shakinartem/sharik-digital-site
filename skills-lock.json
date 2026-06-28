@@ -1,0 +1,263 @@
+{
+  "version": 1,
+  "skills": {
+    "aspnet-core": {
+      "source": "openai/skills",
+      "sourceType": "github",
+      "skillPath": "skills/.curated/aspnet-core/SKILL.md",
+      "computedHash": "192537b889ef60aba67db5f3c1f694e460fde9b6a45fb4c35ecab8e7710bfa67"
+    },
+    "chatgpt-apps": {
+      "source": "openai/skills",
+      "sourceType": "github",
+      "skillPath": "skills/.curated/chatgpt-apps/SKILL.md",
+      "computedHash": "7c9deab8ef5dd5dd3a4d99cb93dbdddd3e413cc12d9b196922ac4a9d3a62ce4b"
+    },
+    "cli-creator": {
+      "source": "openai/skills",
+      "sourceType": "github",
+      "skillPath": "skills/.curated/cli-creator/SKILL.md",
+      "computedHash": "6ece3fe7f3bcae2662deeaa19d1fa40bf9d1bd57cbfcb318e96618ae31ce0f23"
+    },
+    "cloudflare-deploy": {
+      "source": "openai/skills",
+      "sourceType": "github",
+      "skillPath": "skills/.curated/cloudflare-deploy/SKILL.md",
+      "computedHash": "6fee45f564189edfb4d0ee4a94a3b2b2caf9825fdac5b69f466f4ea05029ddf9"
+    },
+    "define-goal": {
+      "source": "openai/skills",
+      "sourceType": "github",
+      "skillPath": "skills/.curated/define-goal/SKILL.md",
+      "computedHash": "0fab24178b759e1ebedc894f524d32fd3e580b55455cfeb459ea39a9cf4927c2"
+    },
+    "figma": {
+      "source": "openai/skills",
+      "sourceType": "github",
+      "skillPath": "skills/.curated/figma/SKILL.md",
+      "computedHash": "0139fbd3f7afd9d81dbf128e3ad912daf21047bcd7f2be0f6997f718b48c0643"
+    },
+    "figma-code-connect-components": {
+      "source": "openai/skills",
+      "sourceType": "github",
+      "skillPath": "skills/.curated/figma-code-connect-components/SKILL.md",
+      "computedHash": "7af50c1c8848ba0fcfe9fb45bbe0dd7bf9a1acdf3121e2bde239c4865bb12ace"
+    },
+    "figma-create-design-system-rules": {
+      "source": "openai/skills",
+      "sourceType": "github",
+      "skillPath": "skills/.curated/figma-create-design-system-rules/SKILL.md",
+      "computedHash": "a2ba7ea022677bdd366cd6cfd8e5326f3b3051b92a06ec3e215e0ad484956a87"
+    },
+    "figma-create-new-file": {
+      "source": "openai/skills",
+      "sourceType": "github",
+      "skillPath": "skills/.curated/figma-create-new-file/SKILL.md",
+      "computedHash": "7a70a1e2996bfab15aafec6837d2f45a0e1a8e095fef77b5c4d8b63083325737"
+    },
+    "figma-generate-design": {
+      "source": "openai/skills",
+      "sourceType": "github",
+      "skillPath": "skills/.curated/figma-generate-design/SKILL.md",
+      "computedHash": "61fde9e23b4377e9c0058590e90f3758abddf3ac1b3eaf740d239376a2787663"
+    },
+    "figma-generate-library": {
+      "source": "openai/skills",
+      "sourceType": "github",
+      "skillPath": "skills/.curated/figma-generate-library/SKILL.md",
+      "computedHash": "67e96c3d5a55afc7c76430918340e6c94b7c7d1770ecb6a5ed963f98366c2752"
+    },
+    "figma-implement-design": {
+      "source": "openai/skills",
+      "sourceType": "github",
+      "skillPath": "skills/.curated/figma-implement-design/SKILL.md",
+      "computedHash": "f86f7eb84aeda74334e1eb33faf08dc67e19d88ef5f2cc84eee559333e88e001"
+    },
+    "figma-use": {
+      "source": "openai/skills",
+      "sourceType": "github",
+      "skillPath": "skills/.curated/figma-use/SKILL.md",
+      "computedHash": "d067eb72def273b5d6117c27dd9e8af08fbb957068b8faf6a214aa0d71d520db"
+    },
+    "gh-address-comments": {
+      "source": "openai/skills",
+      "sourceType": "github",
+      "skillPath": "skills/.curated/gh-address-comments/SKILL.md",
+      "computedHash": "d37268fc7264390862129b554b13f3d35e1b7b9c16ea8d748261a480ace75300"
+    },
+    "gh-fix-ci": {
+      "source": "openai/skills",
+      "sourceType": "github",
+      "skillPath": "skills/.curated/gh-fix-ci/SKILL.md",
+      "computedHash": "62b4c9b9aeb0e52925882185019e65c7785da8e7fa16ddb95dd3aaa00883961a"
+    },
+    "hatch-pet": {
+      "source": "openai/skills",
+      "sourceType": "github",
+      "skillPath": "skills/.curated/hatch-pet/SKILL.md",
+      "computedHash": "d6799a5929bec4aab1f3aae347faec9f614cc9d0af69fda5c5191c557986f5c4"
+    },
+    "imagegen": {
+      "source": "openai/skills",
+      "sourceType": "github",
+      "skillPath": "skills/.system/imagegen/SKILL.md",
+      "computedHash": "e5ad287e1419f8ed2adf74769fecbfc03b89e611121d59c228a2950c0567c7b6"
+    },
+    "jupyter-notebook": {
+      "source": "openai/skills",
+      "sourceType": "github",
+      "skillPath": "skills/.curated/jupyter-notebook/SKILL.md",
+      "computedHash": "ed6cf5b159eeb076eaa43007920ae5aca10336ad1e6cec7baf973f3f83a9eb7f"
+    },
+    "linear": {
+      "source": "openai/skills",
+      "sourceType": "github",
+      "skillPath": "skills/.curated/linear/SKILL.md",
+      "computedHash": "d798e8a2da07a2a228a46c506fcc547693bedfb935e561e582ce9a706f380f67"
+    },
+    "migrate-to-codex": {
+      "source": "openai/skills",
+      "sourceType": "github",
+      "skillPath": "skills/.curated/migrate-to-codex/SKILL.md",
+      "computedHash": "cfcc22ebf0f69bb9cc3f38e180c35e60905f6bbbd93c0049290a217877243e23"
+    },
+    "netlify-deploy": {
+      "source": "openai/skills",
+      "sourceType": "github",
+      "skillPath": "skills/.curated/netlify-deploy/SKILL.md",
+      "computedHash": "d92c426e39620e737f9415bb7b059e46abc57fb39217692aff878e4085e00206"
+    },
+    "notion-knowledge-capture": {
+      "source": "openai/skills",
+      "sourceType": "github",
+      "skillPath": "skills/.curated/notion-knowledge-capture/SKILL.md",
+      "computedHash": "6195e4ae1b5d418ee7ea88b862e35985e75a24f3d790906174f75fc9ee186e9c"
+    },
+    "notion-meeting-intelligence": {
+      "source": "openai/skills",
+      "sourceType": "github",
+      "skillPath": "skills/.curated/notion-meeting-intelligence/SKILL.md",
+      "computedHash": "cdfdf62a53f09090274178466d058b48952defca718e6cb6f49596517c2f8ee0"
+    },
+    "notion-research-documentation": {
+      "source": "openai/skills",
+      "sourceType": "github",
+      "skillPath": "skills/.curated/notion-research-documentation/SKILL.md",
+      "computedHash": "58f6d7ee593087d2a8c4dc85f282b09240e43eb63683b2b55e13084b3e035429"
+    },
+    "notion-spec-to-implementation": {
+      "source": "openai/skills",
+      "sourceType": "github",
+      "skillPath": "skills/.curated/notion-spec-to-implementation/SKILL.md",
+      "computedHash": "af316e2d0689762d9837178b899d35648ca05c999780da49723fe75e71d15579"
+    },
+    "openai-docs": {
+      "source": "openai/skills",
+      "sourceType": "github",
+      "skillPath": "skills/.curated/openai-docs/SKILL.md",
+      "computedHash": "80d1836b9c7cdee24521c47e33a77cbf02b34783267f5a7e32c41557170fa6dd"
+    },
+    "pdf": {
+      "source": "openai/skills",
+      "sourceType": "github",
+      "skillPath": "skills/.curated/pdf/SKILL.md",
+      "computedHash": "af1e0791f5356b6de053e6b97d7703fe0d7ea1997371b9023afd4720bebcf93f"
+    },
+    "playwright": {
+      "source": "openai/skills",
+      "sourceType": "github",
+      "skillPath": "skills/.curated/playwright/SKILL.md",
+      "computedHash": "844a180ab348b8d13044a320b8306e6263e1cda75e158e479a463225e43a5eb1"
+    },
+    "playwright-interactive": {
+      "source": "openai/skills",
+      "sourceType": "github",
+      "skillPath": "skills/.curated/playwright-interactive/SKILL.md",
+      "computedHash": "3e9e650b0fe2fe0659fd5b4054fafa62fd07b7153210a41c4a812b05b4f52b69"
+    },
+    "plugin-creator": {
+      "source": "openai/skills",
+      "sourceType": "github",
+      "skillPath": "skills/.system/plugin-creator/SKILL.md",
+      "computedHash": "2816bb5c02cae45510dd5592af59f8334cf17228218244b77489384f3255dee5"
+    },
+    "render-deploy": {
+      "source": "openai/skills",
+      "sourceType": "github",
+      "skillPath": "skills/.curated/render-deploy/SKILL.md",
+      "computedHash": "5ccf3f9d94511258cc568484b8ebee170e8dbec4a74428acae948fe6021ff8d8"
+    },
+    "screenshot": {
+      "source": "openai/skills",
+      "sourceType": "github",
+      "skillPath": "skills/.curated/screenshot/SKILL.md",
+      "computedHash": "08ad9780b78f73c1a9abdcedd443108019ba2264a56b7f287006cbe99c3ed0c1"
+    },
+    "security-best-practices": {
+      "source": "openai/skills",
+      "sourceType": "github",
+      "skillPath": "skills/.curated/security-best-practices/SKILL.md",
+      "computedHash": "0c42fff660b6f7e85add36437edc36976466bb254b7cd9eb38ec67b2ad64a9bf"
+    },
+    "security-ownership-map": {
+      "source": "openai/skills",
+      "sourceType": "github",
+      "skillPath": "skills/.curated/security-ownership-map/SKILL.md",
+      "computedHash": "b905fd278fe5385cfd1e0dea318777fa9f14de1e3490016773b2542be472428b"
+    },
+    "security-threat-model": {
+      "source": "openai/skills",
+      "sourceType": "github",
+      "skillPath": "skills/.curated/security-threat-model/SKILL.md",
+      "computedHash": "76fad9d4726561fce7442e965bfaf318e8db1b369a7aa95e6a2be241d11a1a9f"
+    },
+    "sentry": {
+      "source": "openai/skills",
+      "sourceType": "github",
+      "skillPath": "skills/.curated/sentry/SKILL.md",
+      "computedHash": "7f2811d9ff70b0aaf4d12b68ce2879e91a170197fbf192dc1011d40fe1c838bb"
+    },
+    "skill-creator": {
+      "source": "openai/skills",
+      "sourceType": "github",
+      "skillPath": "skills/.system/skill-creator/SKILL.md",
+      "computedHash": "4f29d93bdb1cfacbcd993a8c2a924cb0a12842267bb46f1317c224614b5400b9"
+    },
+    "skill-installer": {
+      "source": "openai/skills",
+      "sourceType": "github",
+      "skillPath": "skills/.system/skill-installer/SKILL.md",
+      "computedHash": "2bb153f40f6cd98b88eacc9d19c6565caedee6de561438dcd406c6a0c82bf965"
+    },
+    "speech": {
+      "source": "openai/skills",
+      "sourceType": "github",
+      "skillPath": "skills/.curated/speech/SKILL.md",
+      "computedHash": "099160d19d78785e38b411131f960f4a9c8f1745fba4d3419a8469db69a757cc"
+    },
+    "transcribe": {
+      "source": "openai/skills",
+      "sourceType": "github",
+      "skillPath": "skills/.curated/transcribe/SKILL.md",
+      "computedHash": "a6319cde4e4ee267534117d15b462ea9bb972499bfeefaf6e1ce19eca27bbdad"
+    },
+    "vercel-deploy": {
+      "source": "openai/skills",
+      "sourceType": "github",
+      "skillPath": "skills/.curated/vercel-deploy/SKILL.md",
+      "computedHash": "18c91dc583a912f6b4715819234a923e95d99c39f40b9fd3ac5b330e7555dedb"
+    },
+    "winui-app": {
+      "source": "openai/skills",
+      "sourceType": "github",
+      "skillPath": "skills/.curated/winui-app/SKILL.md",
+      "computedHash": "d4d9408ca78c5f574af0699ad6749ba840505ba18d0913f470af32d5ffab7c64"
+    },
+    "yeet": {
+      "source": "openai/skills",
+      "sourceType": "github",
+      "skillPath": "skills/.curated/yeet/SKILL.md",
+      "computedHash": "34420aa2df73715c710c2e660ab212fbb7fd3c89b6e047e3763eb5540787fd22"
+    }
+  }
+}

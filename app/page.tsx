@@ -88,7 +88,7 @@ function Hero() {
 
         <div className="relative min-h-[500px] lg:min-h-[590px]">
           <div className="absolute left-1/2 top-8 z-10 -translate-x-1/2 lg:top-16">
-            <img src="/brand/favicon.svg" alt="Фирменный воздушный шар ШАРиК-digital" className="h-40 w-40 drop-shadow-2xl sm:h-56 sm:w-56 lg:h-72 lg:w-72" />
+            <img src="/brand/mascot-balloon.png" alt="Фирменный воздушный шар ШАРиК-digital" className="h-44 w-44 object-contain drop-shadow-2xl sm:h-60 sm:w-60 lg:h-80 lg:w-80" />
           </div>
           <div className="absolute left-1/2 top-24 hidden h-px w-[72%] -translate-x-1/2 border-t-2 border-dotted border-[color:var(--red)]/70 lg:block" />
           <div className="grid grid-cols-2 gap-4 pt-56 sm:grid-cols-5 lg:absolute lg:inset-x-0 lg:top-0 lg:grid-cols-5 lg:pt-0">
@@ -200,7 +200,7 @@ function LeadMagnet() {
             </div>
           </div>
           <div className="relative min-h-72 overflow-hidden rounded-[24px] bg-[color:var(--blue-soft)] p-6">
-            <img src="/brand/favicon.svg" alt="" className="absolute -right-8 -top-8 h-52 w-52 opacity-10" />
+            <img src="/brand/mascot-balloon.png" alt="" className="absolute -right-8 -top-8 h-52 w-52 object-contain opacity-10" />
             <div className="relative space-y-4">
               {["Карты и локальная видимость", "Сайт и посадочные страницы", "Отзывы и доверие", "Заявки, CRM и скорость ответа"].map((item, index) => (
                 <div key={item} className="flex items-center gap-4 border-b border-dotted border-[color:var(--red)]/40 pb-4">
@@ -282,10 +282,10 @@ function Founder() {
     <section id="founder" className="section-pad bg-white/65">
       <div className="container-pad grid gap-8 lg:grid-cols-[0.85fr_1.15fr] lg:items-center">
         <div className="rounded-[28px] border border-white/80 bg-white/90 p-8 text-center">
-          <div className="brand-glass mx-auto flex aspect-square w-full max-w-sm items-center justify-center overflow-hidden rounded-[28px]">
-            <img src="/brand/favicon.svg" alt="Шакин Артём, основатель ШАРиК-digital" className="h-40 w-40 opacity-90" />
+          <div className="brand-glass mx-auto aspect-square w-full max-w-sm overflow-hidden rounded-[28px]">
+            <img src="/brand/founder-artem.png" alt="Шакин Артём, основатель ШАРиК-digital" className="h-full w-full object-cover object-center" />
           </div>
-          <p className="mt-5 text-sm text-[color:var(--muted)]">Добавьте фото в public/brand/founder-artem.jpg, чтобы заменить эту брендовую заглушку.</p>
+          <p className="mt-5 text-sm text-[color:var(--muted)]">Основатель ШАРиК-digital</p>
         </div>
         <div>
           <div className="pill mb-5">Основатель</div>
@@ -373,7 +373,7 @@ function RepeatChecklistCta() {
       <div className="container-pad">
         <div className="section-divider mb-6" />
         <div className="relative overflow-hidden rounded-[28px] border border-white/80 bg-white/90 p-6 md:p-8">
-          <img src="/brand/favicon.svg" alt="" className="pointer-events-none absolute -right-10 -top-10 h-48 w-48 opacity-10" />
+          <img src="/brand/mascot-balloon.png" alt="" className="pointer-events-none absolute -right-10 -top-10 h-48 w-48 object-contain opacity-10" />
           <div className="relative flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
             <div>
               <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[color:var(--red)]">Повторный CTA</p>

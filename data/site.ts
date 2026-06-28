@@ -2,13 +2,20 @@ export const site = {
   name: "ШАРиК-digital",
   botUrl: "https://t.me/sharik_digital_bot",
   botUsername: "@sharik_digital_bot",
+  links: {
+    checklist: "https://t.me/sharik_digital_bot?start=checklist",
+    audit: "https://t.me/sharik_digital_bot?start=audit",
+    consultation: "https://t.me/sharik_digital_bot?start=consultation",
+    question: "https://t.me/sharik_digital_bot?start=question",
+    cases: "https://t.me/sharik_digital_bot?start=cases",
+  },
   phone: "+7 987 357-60-71",
   whatsappUrl: "https://wa.me/79873576071",
   telegramDirect: "https://t.me/sharik_digital_bot",
   directorName: "Шакин Артём",
-  directorRole: "Директор и основатель",
+  directorRole: "Основатель",
   directorSummary:
-    "Собираю digital-системы для стоматологий: от упаковки и карты потерь до заявок, CRM и автоматизации.",
+    "Собираю digital-системы для стоматологий: сайты, Telegram-боты, CRM, автоматизации, AI-инструменты, контент и продвижение. В медицинских проектах важно не просто “быть в интернете”, а не терять пациента на пути к записи. Поэтому мы смотрим на весь маршрут: от первого касания до заявки, обработки и повторного обращения.",
 };
 
 export const problems = [

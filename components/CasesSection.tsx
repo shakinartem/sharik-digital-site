@@ -2,11 +2,34 @@
 
 import { useEffect, useRef, useState } from "react";
 import { cases, type CaseItem } from "@/data/cases";
-import { site } from "@/data/site";
 import { ButtonLink, SectionTitle } from "./ui";
+
+const filters = [
+  ["all", "Все"],
+  ["dentistry", "Стоматологии"],
+  ["medical", "Смежная медицина"],
+] as const;
+
+type CaseFilter = (typeof filters)[number][0];
+
+const dentistryIds = new Set(["eurodent", "biomed", "interdent", "dental-pro", "ibradent"]);
+
+function getCaseFilter(item: CaseItem): Exclude<CaseFilter, "all"> {
+  return dentistryIds.has(item.id) ? "dentistry" : "medical";
+}
+
+function getCaseOrder(item: CaseItem) {
+  const order = ["eurodent", "biomed", "interdent", "dental-pro", "ibradent", "divina-podology", "kerala", "arximed-security", "po-pyatam"];
+  return order.indexOf(item.id);
+}
 
 export function CasesSection() {
   const [active, setActive] = useState<CaseItem | null>(null);
+  const [filter, setFilter] = useState<CaseFilter>("all");
+  const visibleCases = cases
+    .slice()
+    .sort((a, b) => getCaseOrder(a) - getCaseOrder(b))
+    .filter((item) => filter === "all" || getCaseFilter(item) === filter);
 
   return (
     <section id="cases" className="section-pad bg-white/65">
@@ -14,10 +37,26 @@ export function CasesSection() {
         <SectionTitle
           kicker="Кейсы"
           title="Показываем на практике, как digital влияет на заявки, доверие и запись"
-          text="9 кейсов в стоматологии, медицине и смежных нишах. Каждый кейс открывается внутри страницы без перехода."
+          text="Сначала стоматологии, затем смежные медицинские проекты. Каждый кейс открывается внутри страницы без перехода."
         />
+        <div className="mb-7 flex flex-wrap justify-center gap-3">
+          {filters.map(([value, label]) => (
+            <button
+              key={value}
+              type="button"
+              onClick={() => setFilter(value)}
+              className={`rounded-full border px-5 py-2 text-sm font-semibold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--red)] ${
+                filter === value
+                  ? "border-[color:var(--red)] bg-[color:var(--red)] text-white"
+                  : "border-[color:var(--line)] bg-white/80 text-[color:var(--ink)] hover:border-[color:var(--red)]/40"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
         <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-          {cases.map((item) => (
+          {visibleCases.map((item) => (
             <button
               type="button"
               key={item.id}
@@ -29,7 +68,10 @@ export function CasesSection() {
               </div>
               <div className="p-6">
                 <div className="mb-3 flex flex-wrap gap-2">
-                  {item.tags.slice(0, 3).map((tag) => (
+                  <span className="rounded-full bg-[color:var(--blue)] px-3 py-1 text-xs font-semibold text-white">
+                    {getCaseFilter(item) === "dentistry" ? "Стоматология" : "Смежная медицина"}
+                  </span>
+                  {item.tags.filter((tag) => tag !== "Стоматология").slice(0, 3).map((tag) => (
                     <span key={tag} className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-[color:var(--red)] ring-1 ring-[color:var(--line)]">
                       {tag}
                     </span>
@@ -112,7 +154,7 @@ function CaseModal({ item, onClose }: { item: CaseItem; onClose: () => void }) {
               </div>
               <InfoBlock title="Вывод" text={item.conclusion} />
               <div>
-                <ButtonLink href={site.botUrl}>Хочу похожий результат</ButtonLink>
+                <ButtonLink href={`https://t.me/sharik_digital_bot?start=case_${item.id}`}>Хочу похожий результат</ButtonLink>
               </div>
             </div>
           </div>

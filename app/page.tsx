@@ -1,26 +1,42 @@
 import { Header } from "@/components/Header";
 import { CasesSection } from "@/components/CasesSection";
-import { ContactForm } from "@/components/ContactForm";
 import { ButtonLink, NumberBadge, SectionTitle } from "@/components/ui";
-import { packages, services, site } from "@/data/site";
+import { packages, problems, services, site, systemItems } from "@/data/site";
 
 const keyMetrics = [
-  ["+450 лидов", "Максимум в кейсах при правильной воронке и контенте."],
-  ["9 кейсов", "Стоматология, медицина и смежные ниши."],
-  ["1 digital-система", "Сайт, карты, соцсети, CRM и бот должны работать вместе."],
+  ["25 точек", "Чек-лист помогает быстро увидеть слабые места digital-маршрута."],
+  ["5 минут", "Мини-диагностика в Telegram без обязательного телефона."],
+  ["1 маршрут", "Карты, сайт, отзывы, заявки, CRM и бот связываются в одну систему."],
 ] as const;
 
+const patientPath = ["Увидел клинику", "Проверил доверие", "Сравнил", "Написал", "Записался"] as const;
+
 const lossChain = [
-  ["Увидел клинику", "Пациент нашёл вас в картах, рекламе, соцсетях или по рекомендации."],
-  ["Начал проверять", "Он смотрит отзывы, фото, врачей, сайт, цены и общее впечатление."],
-  ["Сравнил варианты", "Если у конкурента понятнее упаковка и маршрут до записи — пациент уйдёт туда."],
-  ["Не получил ответа", "Если ответили поздно или без понятного сценария, интерес остывает."],
+  ["Не заметил", "Клиника плохо видна в картах, поиске, соцсетях или рекомендациях."],
+  ["Не нашёл ответы", "На сайте и в карточках не хватает понятных услуг, врачей, ценности и сценария записи."],
+  ["Не доверился", "Отзывы, фото, контент и упаковка не снимают тревогу перед обращением."],
+  ["Не оставил заявку", "Кнопки, мессенджеры, лид-магнит и путь до контакта не собраны в простой маршрут."],
+  ["Не дошёл до записи", "Заявка обработана поздно, нет статуса, CRM, уведомлений или понятного следующего шага."],
+] as const;
+
+const diagnosticResults = [
+  ["3–5 точек потерь", "Покажем, где клиника может терять пациентов: в картах, сайте, соцсетях, заявках или обработке."],
+  ["Приоритеты на запуск", "Поможем понять, что чинить первым: упаковку, карты, сайт, Telegram-бота, CRM или контент."],
+  ["Карту быстрых улучшений", "Сформируем список действий, которые можно внедрить без долгой перестройки."],
+  ["Понимание системы", "Покажем, как связать digital-каналы, заявки и обработку в один маршрут пациента."],
+] as const;
+
+const founderPoints = [
+  "Карты, репутация и отзывы",
+  "Сайты, CRM и Telegram-боты",
+  "SMM, контент и упаковка врачей",
+  "AI-инструменты и автоматизация",
 ] as const;
 
 const faq = [
-  ["Вы работаете только со стоматологиями?", "Основной фокус — стоматологии и медицинские проекты."],
-  ["Можно начать с одной услуги?", "Да. Но лучший результат даёт связка из нескольких точек."],
-  ["Зачем нужен Telegram-бот?", "Он выдаёт чек-лист, собирает ответы и помогает довести владельца клиники до разбора."],
+  ["Почему CTA ведёт в Telegram?", "Так владелец клиники быстро получает чек-лист, проходит мини-диагностику и не заполняет длинную форму с обязательным телефоном."],
+  ["Телефон обязателен?", "Нет. Бот сохранит Telegram-профиль и задаст несколько вопросов. Телефон можно дать позже, если удобно."],
+  ["Можно начать только с чек-листа?", "Да. Чек-лист показывает первые точки потерь, а диагностика помогает понять приоритеты для разбора."],
 ] as const;
 
 export default function Home() {
@@ -29,15 +45,20 @@ export default function Home() {
       <Header />
       <Hero />
       <ValueBand />
-      <WhyUs />
+      <LossMap />
+      <LossChain />
+      <LeadMagnet />
+      <MiniDiagnostic />
+      <DiagnosticOutcome />
       <CasesSection />
-      <Director />
+      <SystemApproach />
+      <Founder />
       <Process />
       <Services />
-      <ServicesCta />
       <Packages />
-      <Contact />
+      <RepeatChecklistCta />
       <FAQ />
+      <Contact />
       <Footer />
     </main>
   );
@@ -47,34 +68,33 @@ function Hero() {
   return (
     <section id="hero" className="relative min-h-[calc(100svh-96px)] overflow-hidden pb-12 pt-8">
       <div className="hero-wash pointer-events-none absolute inset-0" />
-      <div className="pointer-events-none absolute bottom-10 right-8 hidden opacity-[0.07] lg:block">
-        <img src="/brand/favicon.svg" alt="" className="h-[32rem] w-[32rem]" />
-      </div>
       <div className="container-pad relative grid min-h-[calc(100svh-180px)] gap-10 lg:grid-cols-[0.95fr_1.05fr] lg:items-center">
         <div className="max-w-3xl">
-          <p className="mb-5 text-sm font-bold uppercase tracking-[0.24em] text-[color:var(--red)]">Маркетинг для стоматологий</p>
+          <p className="mb-5 text-sm font-bold uppercase tracking-[0.24em] text-[color:var(--red)]">Telegram-воронка для стоматологий</p>
           <h1 className="brand-title text-4xl font-semibold leading-[0.95] tracking-tight text-[color:var(--ink)] sm:text-6xl lg:text-7xl">
-            ШАРиК Digital строит систему, которая <span className="text-[color:var(--red)]">приводит пациентов</span>
+            Находим, где стоматология <span className="text-[color:var(--red)]">теряет пациентов</span>
           </h1>
-          <p className="mt-6 max-w-xl text-lg leading-8 text-[color:var(--muted)]">
-            Сайт, карты, репутация, контент, CRM и аналитика работают как один маршрут: от первого касания до записи в клинику.
+          <p className="mt-6 max-w-2xl text-lg leading-8 text-[color:var(--muted)]">
+            Собираем digital-систему, которая доводит человека от первого касания до заявки и записи: сайт, карты, отзывы, Telegram-бот, CRM, контент и аналитика.
           </p>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-            <ButtonLink href="#contact">Оставить заявку на консультацию</ButtonLink>
-            <ButtonLink href="#services" variant="ghost">Посмотреть решения</ButtonLink>
+            <ButtonLink href={site.links.checklist}>Забрать чек-лист в Telegram</ButtonLink>
+            <ButtonLink href={site.links.audit} variant="ghost">Понять, где теряются пациенты</ButtonLink>
           </div>
+          <p className="mt-4 text-sm leading-6 text-[color:var(--muted)]">
+            Бот выдаст чек-лист, задаст несколько вопросов и подведёт к разбору клиники. Телефон не обязателен.
+          </p>
         </div>
 
-        <div className="relative min-h-[470px] lg:min-h-[560px]">
-          <div className="absolute left-1/2 top-10 hidden h-px w-[72%] -translate-x-1/2 border-t-2 border-dotted border-[color:var(--red)]/70 lg:block" />
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-5 lg:absolute lg:inset-x-0 lg:top-0 lg:grid-cols-5">
-            {["Увидел клинику", "Изучил услуги", "Поверил отзывам", "Оставил заявку", "Записался"].map((item) => (
+        <div className="relative min-h-[500px] lg:min-h-[590px]">
+          <div className="absolute left-1/2 top-8 z-10 -translate-x-1/2 lg:top-16">
+            <img src="/brand/favicon.svg" alt="Фирменный воздушный шар ШАРиК-digital" className="h-40 w-40 drop-shadow-2xl sm:h-56 sm:w-56 lg:h-72 lg:w-72" />
+          </div>
+          <div className="absolute left-1/2 top-24 hidden h-px w-[72%] -translate-x-1/2 border-t-2 border-dotted border-[color:var(--red)]/70 lg:block" />
+          <div className="grid grid-cols-2 gap-4 pt-56 sm:grid-cols-5 lg:absolute lg:inset-x-0 lg:top-0 lg:grid-cols-5 lg:pt-0">
+            {patientPath.map((item) => (
               <DiagramNode key={item} label={item} />
             ))}
-          </div>
-
-          <div className="absolute left-1/2 top-[42%] hidden -translate-x-1/2 lg:block">
-            <img src="/brand/favicon.svg" alt="" className="h-28 w-28" />
           </div>
 
           <div className="mt-8 grid gap-4 sm:grid-cols-3 lg:absolute lg:bottom-4 lg:left-0 lg:right-0">
@@ -108,11 +128,7 @@ function ValueBand() {
       <div className="container-pad">
         <div className="section-divider mb-6" />
         <div className="grid gap-4 md:grid-cols-3">
-          {[
-            "Повышаем доверие до обращения",
-            "Упрощаем путь до записи",
-            "Усиливаем видимость и аналитику",
-          ].map((item) => (
+          {["Сайт ведёт в Telegram-бота", "Чек-лист показывает точки потерь", "Диагностика готовит разбор клиники"].map((item) => (
             <div key={item} className="flex items-center gap-4 rounded-[20px] border border-white/80 bg-white/90 p-5">
               <NumberBadge>✓</NumberBadge>
               <p className="font-semibold text-[color:var(--ink)]">{item}</p>
@@ -124,15 +140,37 @@ function ValueBand() {
   );
 }
 
-function WhyUs() {
+function LossMap() {
   return (
-    <section id="why-us" className="section-pad">
+    <section id="loss-map" className="section-pad">
       <div className="container-pad">
-        <SectionTitle kicker="Почему мы" title="Смотрим на путь пациента целиком" text="Не отдельная реклама, не просто сайт и не изолированные соцсети. Система должна доводить человека до заявки." />
-        <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-4">
-          {lossChain.map(([title, text], i) => (
+        <SectionTitle
+          kicker="Где теряются пациенты"
+          title="Проблема редко в одной рекламе"
+          text="Пациент может потеряться на сайте, в картах, отзывах, переписке, звонке или CRM. Поэтому мы смотрим на весь маршрут до записи."
+        />
+        <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+          {problems.map(([title, text]) => (
             <div key={title} className="rounded-[20px] border border-white/80 bg-white/90 p-6">
-              <div className="text-3xl font-black text-[color:var(--red)]">0{i + 1}</div>
+              <h3 className="text-xl font-semibold text-[color:var(--ink)]">{title}</h3>
+              <p className="mt-3 text-sm leading-7 text-[color:var(--muted)]">{text}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function LossChain() {
+  return (
+    <section id="loss-chain" className="section-pad bg-white/65">
+      <div className="container-pad">
+        <SectionTitle kicker="Цепочка потерь" title="Пять мест, где путь ломается" text="Если хотя бы одно звено провисает, пациент может не дойти до записи даже при хорошем трафике." />
+        <div className="grid gap-5 md:grid-cols-5">
+          {lossChain.map(([title, text], index) => (
+            <div key={title} className="rounded-[20px] border border-white/80 bg-white/90 p-6">
+              <div className="text-3xl font-black text-[color:var(--red)]">0{index + 1}</div>
               <h3 className="mt-4 text-xl font-semibold text-[color:var(--ink)]">{title}</h3>
               <p className="mt-3 text-sm leading-6 text-[color:var(--muted)]">{text}</p>
             </div>
@@ -143,24 +181,127 @@ function WhyUs() {
   );
 }
 
-function Director() {
+function LeadMagnet() {
   return (
-    <section className="section-pad bg-white/65">
+    <section id="checklist" className="section-pad">
+      <div className="container-pad">
+        <div className="grid gap-8 rounded-[28px] border border-white/80 bg-white/90 p-6 md:p-8 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
+          <div>
+            <div className="pill mb-5">Чек-лист: 25 точек, из-за которых стоматология теряет пациентов</div>
+            <h2 className="brand-title text-4xl font-semibold tracking-tight text-[color:var(--ink)] sm:text-5xl">
+              Проверьте, где ваша стоматология теряет пациентов в digital
+            </h2>
+            <p className="mt-5 max-w-2xl text-lg leading-8 text-[color:var(--muted)]">
+              Чек-лист помогает быстро пройтись по картам, сайту, соцсетям, отзывам, заявкам, обработке и аналитике. В конце станет видно, что требует внимания первым.
+            </p>
+            <div className="mt-7 flex flex-col gap-3 sm:flex-row">
+              <ButtonLink href={site.links.checklist}>Забрать чек-лист в Telegram</ButtonLink>
+              <ButtonLink href={site.links.audit} variant="ghost">Понять, где теряются пациенты</ButtonLink>
+            </div>
+          </div>
+          <div className="relative min-h-72 overflow-hidden rounded-[24px] bg-[color:var(--blue-soft)] p-6">
+            <img src="/brand/favicon.svg" alt="" className="absolute -right-8 -top-8 h-52 w-52 opacity-10" />
+            <div className="relative space-y-4">
+              {["Карты и локальная видимость", "Сайт и посадочные страницы", "Отзывы и доверие", "Заявки, CRM и скорость ответа"].map((item, index) => (
+                <div key={item} className="flex items-center gap-4 border-b border-dotted border-[color:var(--red)]/40 pb-4">
+                  <NumberBadge>{index + 1}</NumberBadge>
+                  <p className="font-semibold text-[color:var(--ink)]">{item}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function MiniDiagnostic() {
+  return (
+    <section id="diagnostic" className="section-pad bg-white/65">
+      <div className="container-pad grid gap-8 lg:grid-cols-[0.85fr_1.15fr] lg:items-center">
+        <div>
+          <div className="pill mb-5">Мини-диагностика в Telegram</div>
+          <h2 className="brand-title text-4xl font-semibold tracking-tight text-[color:var(--ink)] sm:text-5xl">Бот задаст вопросы и покажет слабые места</h2>
+        </div>
+        <div className="rounded-[28px] border border-white/80 bg-white/90 p-6 md:p-8">
+          <p className="text-lg leading-8 text-[color:var(--muted)]">
+            Бот задаст несколько вопросов про карты, сайт, соцсети, отзывы, заявки и скорость обработки. По ответам станет понятно, где клиника теряет пациентов сейчас.
+          </p>
+          <div className="mt-7">
+            <ButtonLink href={site.links.audit}>Пройти диагностику в Telegram</ButtonLink>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function DiagnosticOutcome() {
+  return (
+    <section className="section-pad">
+      <div className="container-pad">
+        <SectionTitle kicker="После диагностики" title="Что вы получите после диагностики" />
+        <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-4">
+          {diagnosticResults.map(([title, text], index) => (
+            <div key={title} className="rounded-[20px] border border-white/80 bg-white/90 p-6">
+              <NumberBadge>{index + 1}</NumberBadge>
+              <h3 className="mt-5 text-xl font-semibold text-[color:var(--ink)]">{title}</h3>
+              <p className="mt-3 text-sm leading-7 text-[color:var(--muted)]">{text}</p>
+            </div>
+          ))}
+        </div>
+        <div className="mt-8 text-center">
+          <ButtonLink href={site.links.audit}>Понять, где теряются пациенты</ButtonLink>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function SystemApproach() {
+  return (
+    <section id="system" className="section-pad">
+      <div className="container-pad">
+        <SectionTitle kicker="Системный подход" title="Собираем маршрут пациента целиком" text="Не продаём отдельный инструмент ради инструмента. Связываем каналы, заявки и обработку в понятный маршрут." />
+        <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+          {systemItems.map(([title, text]) => (
+            <div key={title} className="rounded-[20px] border border-white/80 bg-white/90 p-6">
+              <h3 className="text-xl font-semibold text-[color:var(--ink)]">{title}</h3>
+              <p className="mt-3 text-sm leading-7 text-[color:var(--muted)]">{text}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function Founder() {
+  return (
+    <section id="founder" className="section-pad bg-white/65">
       <div className="container-pad grid gap-8 lg:grid-cols-[0.85fr_1.15fr] lg:items-center">
         <div className="rounded-[28px] border border-white/80 bg-white/90 p-8 text-center">
-          <div className="brand-glass mx-auto flex h-44 w-44 items-center justify-center rounded-full text-5xl font-black text-[color:var(--ink)]">
-            А
+          <div className="brand-glass mx-auto flex aspect-square w-full max-w-sm items-center justify-center overflow-hidden rounded-[28px]">
+            <img src="/brand/favicon.svg" alt="Шакин Артём, основатель ШАРиК-digital" className="h-40 w-40 opacity-90" />
           </div>
-          <p className="mt-5 text-sm text-[color:var(--muted)]">Фото директора здесь</p>
+          <p className="mt-5 text-sm text-[color:var(--muted)]">Добавьте фото в public/brand/founder-artem.jpg, чтобы заменить эту брендовую заглушку.</p>
         </div>
         <div>
-          <div className="pill mb-5">Директор</div>
-          <h2 className="brand-title text-4xl font-semibold tracking-tight text-[color:var(--ink)] sm:text-5xl">{site.directorName}</h2>
-          <p className="mt-3 text-sm font-semibold uppercase tracking-[0.2em] text-[color:var(--red)]">{site.directorRole}</p>
-          <p className="mt-5 max-w-2xl text-lg leading-8 text-[color:var(--muted)]">{site.directorSummary}</p>
+          <div className="pill mb-5">Основатель</div>
+          <h2 className="brand-title text-4xl font-semibold tracking-tight text-[color:var(--ink)] sm:text-5xl">Шакин Артём — основатель ШАРиК-digital</h2>
+          <p className="mt-5 max-w-3xl text-lg leading-8 text-[color:var(--muted)]">{site.directorSummary}</p>
+          <div className="mt-7 grid gap-3 sm:grid-cols-2">
+            {founderPoints.map((item) => (
+              <div key={item} className="flex items-center gap-3 rounded-2xl border border-white/80 bg-white/85 p-4">
+                <NumberBadge>✓</NumberBadge>
+                <p className="font-semibold text-[color:var(--ink)]">{item}</p>
+              </div>
+            ))}
+          </div>
           <div className="mt-7 flex flex-col gap-3 sm:flex-row">
-            <ButtonLink href="#contact">Оставить заявку на консультацию</ButtonLink>
-            <ButtonLink href={site.botUrl} variant="ghost">Написать в Telegram</ButtonLink>
+            <ButtonLink href={site.links.audit}>Понять, где теряются пациенты</ButtonLink>
+            <ButtonLink href={site.links.question} variant="ghost">Задать вопрос в Telegram</ButtonLink>
           </div>
         </div>
       </div>
@@ -169,12 +310,12 @@ function Director() {
 }
 
 function Process() {
-  const steps = ["Диагностика", "Карта роста", "Запуск", "Оптимизация"] as const;
+  const steps = ["Чек-лист", "Мини-диагностика", "Разбор клиники", "Карта роста", "Внедрение"] as const;
   return (
     <section id="process" className="section-pad">
       <div className="container-pad">
-        <SectionTitle kicker="Процесс" title="Четыре шага до результата" text="Сначала находим точки потерь, потом усиливаем путь пациента и закрепляем систему." />
-        <div className="grid gap-5 md:grid-cols-4">
+        <SectionTitle kicker="Процесс" title="От чек-листа до системы" text="Сначала находим точки потерь, потом усиливаем маршрут пациента и закрепляем результат." />
+        <div className="grid gap-5 md:grid-cols-5">
           {steps.map((step, i) => (
             <div key={step} className="rounded-[20px] border border-white/80 bg-white/90 p-6">
               <NumberBadge>{i + 1}</NumberBadge>
@@ -191,7 +332,7 @@ function Services() {
   return (
     <section id="services" className="section-pad bg-white/65">
       <div className="container-pad">
-        <SectionTitle kicker="Услуги" title="Что подключаем для роста" text="Только то, что помогает привести пациента к записи и не потерять его по дороге." />
+        <SectionTitle kicker="Услуги" title="Что подключаем после диагностики" text="Только то, что помогает не терять пациента по дороге к заявке и записи." />
         <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
           {services.map(([title, text]) => (
             <div key={title} className="rounded-[20px] border border-white/80 bg-white/90 p-6">
@@ -205,30 +346,11 @@ function Services() {
   );
 }
 
-function ServicesCta() {
-  return (
-    <section className="bg-white/65 pb-16">
-      <div className="container-pad">
-        <div className="section-divider mb-6" />
-        <div className="flex flex-col gap-5 rounded-[24px] border border-white/80 bg-white/90 p-6 md:flex-row md:items-center md:justify-between md:p-8">
-          <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[color:var(--red)]">Следующий шаг</p>
-            <p className="mt-2 max-w-2xl text-2xl font-semibold leading-tight text-[color:var(--ink)]">
-              Разберём, какие элементы digital-системы дадут быстрый эффект именно вашей клинике.
-            </p>
-          </div>
-          <ButtonLink href="#contact">Оставить заявку на консультацию</ButtonLink>
-        </div>
-      </div>
-    </section>
-  );
-}
-
 function Packages() {
   return (
     <section id="solutions" className="section-pad">
       <div className="container-pad">
-        <SectionTitle kicker="Решения" title="Несколько форматов работы" />
+        <SectionTitle kicker="Решения" title="Форматы работы" text="После чек-листа и диагностики становится понятнее, какой формат нужен именно вашей клинике." />
         <div className="grid gap-5 lg:grid-cols-4">
           {packages.map(([title, text, items]) => (
             <div key={title} className="rounded-[20px] border border-white/80 bg-white/90 p-6">
@@ -245,18 +367,23 @@ function Packages() {
   );
 }
 
-function Contact() {
+function RepeatChecklistCta() {
   return (
-    <section id="contact" className="section-pad bg-white/65">
-      <div className="container-pad grid gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
-        <div>
-          <div className="pill mb-5">Контакты</div>
-          <h2 className="brand-title text-4xl font-semibold tracking-tight text-[color:var(--ink)] sm:text-5xl">Хотите понять, где клиника теряет пациентов?</h2>
-          <p className="mt-5 max-w-xl text-lg leading-8 text-[color:var(--muted)]">
-            Оставьте заявку на консультацию — покажем точки роста, приоритеты и следующий шаг без расплывчатых обещаний.
-          </p>
+    <section className="section-pad bg-white/65">
+      <div className="container-pad">
+        <div className="section-divider mb-6" />
+        <div className="relative overflow-hidden rounded-[28px] border border-white/80 bg-white/90 p-6 md:p-8">
+          <img src="/brand/favicon.svg" alt="" className="pointer-events-none absolute -right-10 -top-10 h-48 w-48 opacity-10" />
+          <div className="relative flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
+            <div>
+              <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[color:var(--red)]">Повторный CTA</p>
+              <p className="mt-2 max-w-2xl text-2xl font-semibold leading-tight text-[color:var(--ink)]">
+                Начните с чек-листа: он быстро покажет, где пациент может отваливаться до записи.
+              </p>
+            </div>
+            <ButtonLink href={site.links.checklist}>Забрать чек-лист в Telegram</ButtonLink>
+          </div>
         </div>
-        <ContactForm />
       </div>
     </section>
   );
@@ -280,16 +407,41 @@ function FAQ() {
   );
 }
 
+function Contact() {
+  return (
+    <section id="contact" className="section-pad bg-white/65">
+      <div className="container-pad grid gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
+        <div>
+          <div className="pill mb-5">Контакты</div>
+          <h2 className="brand-title text-4xl font-semibold tracking-tight text-[color:var(--ink)] sm:text-5xl">Хотите понять, где клиника теряет пациентов?</h2>
+          <p className="mt-5 max-w-xl text-lg leading-8 text-[color:var(--muted)]">
+            Получите чек-лист или пройдите мини-диагностику в Telegram. Бот сохранит Telegram-профиль и задаст несколько вопросов. Телефон не обязателен.
+          </p>
+        </div>
+        <div className="rounded-[28px] border border-white/80 bg-white/90 p-6 md:p-8">
+          <div className="grid gap-3 sm:grid-cols-2">
+            <ButtonLink href={site.links.audit}>Получить разбор в Telegram</ButtonLink>
+            <ButtonLink href={site.links.checklist} variant="ghost">Забрать чек-лист</ButtonLink>
+          </div>
+          <p className="mt-5 text-sm leading-6 text-[color:var(--muted)]">
+            Дополнительный способ связи: <a href={`tel:${site.phone.replace(/\D/g, "")}`} className="font-semibold text-[color:var(--red)]">{site.phone}</a>
+          </p>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function Footer() {
   return (
     <footer className="border-t border-[color:var(--line)] bg-white/75 py-10">
       <div className="container-pad flex flex-col justify-between gap-6 md:flex-row md:items-center">
         <div>
           <img src="/brand/logo-footer.svg" alt="ШАРиК-digital" className="h-10 w-auto" />
-          <p className="mt-3 max-w-md text-sm text-[color:var(--muted)]">Digital-система для стоматологий и медицинских проектов.</p>
+          <p className="mt-3 max-w-md text-sm text-[color:var(--muted)]">Digital-система для стоматологий: чек-лист, диагностика, разбор и внедрение.</p>
         </div>
         <div className="flex flex-col items-start gap-3 text-sm text-[color:var(--muted)] md:items-end">
-          <ButtonLink href="#contact" className="px-5 py-3 text-sm">Оставить заявку на консультацию</ButtonLink>
+          <ButtonLink href={site.links.checklist} className="px-5 py-3 text-sm">Забрать чек-лист в Telegram</ButtonLink>
           <div className="md:text-right">
             <p>{site.botUsername}</p>
             <p>{site.phone}</p>

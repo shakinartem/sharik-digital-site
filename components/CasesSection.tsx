@@ -57,14 +57,16 @@ export function CasesSection() {
           ))}
         </div>
         <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-          {visibleCases.map((item) => (
+          {visibleCases.map((item, index) => (
             <button
               type="button"
               key={item.id}
               onClick={() => setActive(item)}
-              className="card group overflow-hidden text-left transition duration-200 hover:-translate-y-1 hover:border-[color:var(--red)]/30 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[color:var(--red)]"
+              className={`card card-lift group overflow-hidden text-left shadow-sm transition duration-200 hover:border-[color:var(--red)]/30 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[color:var(--red)] ${
+                index < 3 ? "ring-1 ring-[color:var(--line)]" : ""
+              }`}
             >
-              <div className="aspect-[4/3] overflow-hidden bg-[color:var(--blue-soft)]">
+              <div className="aspect-square overflow-hidden bg-[color:var(--blue-soft)]">
                 <img src={item.images[0]} alt={item.title} className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
               </div>
               <div className="p-6">
@@ -79,7 +81,7 @@ export function CasesSection() {
                   ))}
                 </div>
                 <h3 className="brand-title text-2xl font-semibold text-[color:var(--ink)]">{item.title}</h3>
-                <p className="mt-2 text-sm font-semibold text-[color:var(--red)]">{item.mainResult}</p>
+                <p className="metric-pulse mt-2 text-sm font-semibold text-[color:var(--red)]">{item.mainResult}</p>
                 <p className="mt-4 text-sm leading-6 text-[color:var(--muted)]">{item.shortDescription}</p>
                 <span className="mt-5 inline-flex font-semibold text-[color:var(--red)]">Открыть кейс →</span>
               </div>
@@ -119,7 +121,7 @@ function CaseModal({ item, onClose }: { item: CaseItem; onClose: () => void }) {
         role="dialog"
         aria-modal="true"
         aria-labelledby={`case-title-${item.id}`}
-        className="mx-auto my-4 max-w-5xl overflow-hidden rounded-[24px] bg-white shadow-2xl sm:my-8 sm:rounded-[32px]"
+        className="modal-pop mx-auto my-4 max-w-5xl overflow-hidden rounded-[24px] bg-white shadow-2xl sm:my-8 sm:rounded-[32px]"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex flex-col gap-5 border-b border-[color:var(--line)] p-5 sm:flex-row sm:items-start sm:justify-between md:p-8">

@@ -10,7 +10,7 @@ const nav = [
   ["Кейсы", "#cases"],
   ["Процесс", "#process"],
   ["Услуги", "#services"],
-  ["Контакты", "#contact"],
+  ["Пред-аудит", "#contact"],
 ];
 
 export function Header() {

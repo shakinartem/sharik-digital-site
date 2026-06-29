@@ -8,6 +8,7 @@ export const site = {
     consultation: "https://t.me/sharik_digital_bot?start=consultation",
     question: "https://t.me/sharik_digital_bot?start=question",
     cases: "https://t.me/sharik_digital_bot?start=cases",
+    caseLink: (caseId: string) => `https://t.me/sharik_digital_bot?start=case_${caseId}`,
   },
   phone: "+7 987 357-60-71",
   whatsappUrl: "https://wa.me/79873576071",

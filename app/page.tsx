@@ -66,11 +66,11 @@ export default function Home() {
 
 function Hero() {
   return (
-    <section id="hero" className="relative min-h-[calc(100svh-96px)] overflow-hidden pb-12 pt-8">
+    <section id="hero" className="relative overflow-hidden pb-10 pt-6 sm:pb-12 sm:pt-8 lg:min-h-[calc(100svh-96px)]">
       <div className="hero-wash pointer-events-none absolute inset-0" />
-      <div className="container-pad relative grid min-h-[calc(100svh-180px)] gap-10 lg:grid-cols-[0.95fr_1.05fr] lg:items-center">
+      <div className="container-pad relative grid gap-8 lg:min-h-[calc(100svh-180px)] lg:grid-cols-[0.95fr_1.05fr] lg:items-center">
         <div className="max-w-3xl">
-          <p className="mb-5 text-sm font-bold uppercase tracking-[0.24em] text-[color:var(--red)]">Telegram-воронка для стоматологий</p>
+          <p className="mb-4 text-xs font-bold uppercase tracking-[0.14em] text-[color:var(--red)] sm:mb-5 sm:text-sm sm:tracking-[0.24em]">Digital-диагностика для стоматологий</p>
           <h1 className="brand-title text-4xl font-semibold leading-[0.95] tracking-tight text-[color:var(--ink)] sm:text-6xl lg:text-7xl">
             Находим, где стоматология <span className="text-[color:var(--red)]">теряет пациентов</span>
           </h1>
@@ -86,12 +86,12 @@ function Hero() {
           </p>
         </div>
 
-        <div className="relative min-h-[500px] lg:min-h-[590px]">
-          <div className="absolute left-1/2 top-8 z-10 -translate-x-1/2 lg:top-16">
-            <img src="/brand/mascot-balloon.png" alt="Фирменный воздушный шар ШАРиК-digital" className="h-44 w-44 object-contain drop-shadow-2xl sm:h-60 sm:w-60 lg:h-80 lg:w-80" />
+        <div className="relative min-h-[360px] sm:min-h-[430px] lg:min-h-[590px]">
+          <div className="absolute left-1/2 top-2 z-10 -translate-x-1/2 sm:top-4 lg:top-28">
+            <img src="/brand/mascot-balloon.png" alt="Фирменный воздушный шар ШАРиК-digital" className="h-36 w-36 object-contain drop-shadow-2xl sm:h-44 sm:w-44 lg:h-64 lg:w-64" />
           </div>
           <div className="absolute left-1/2 top-24 hidden h-px w-[72%] -translate-x-1/2 border-t-2 border-dotted border-[color:var(--red)]/70 lg:block" />
-          <div className="grid grid-cols-2 gap-4 pt-56 sm:grid-cols-5 lg:absolute lg:inset-x-0 lg:top-0 lg:grid-cols-5 lg:pt-0">
+          <div className="grid grid-cols-2 gap-4 pt-40 sm:grid-cols-5 sm:pt-48 lg:absolute lg:inset-x-0 lg:top-0 lg:grid-cols-5 lg:pt-0">
             {patientPath.map((item) => (
               <DiagramNode key={item} label={item} />
             ))}

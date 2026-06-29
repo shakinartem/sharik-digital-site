@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { cases, type CaseItem } from "@/data/cases";
+import { site } from "@/data/site";
 import { ButtonLink, SectionTitle } from "./ui";
 
 const filters = [
@@ -154,7 +155,7 @@ function CaseModal({ item, onClose }: { item: CaseItem; onClose: () => void }) {
               </div>
               <InfoBlock title="Вывод" text={item.conclusion} />
               <div>
-                <ButtonLink href={`https://t.me/sharik_digital_bot?start=case_${item.id}`}>Хочу похожий результат</ButtonLink>
+                <ButtonLink href={site.links.caseLink(item.id)}>Хочу похожий результат</ButtonLink>
               </div>
             </div>
           </div>

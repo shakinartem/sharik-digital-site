@@ -180,6 +180,12 @@ html {
   color: #8a5c00;
 }
 
+.availability-dark {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.18);
+  color: #fff;
+}
+
 .recommended-package {
   overflow: hidden;
   border-color: rgba(155, 0, 47, 0.38);
@@ -197,6 +203,27 @@ html {
   transform: rotate(18deg);
   background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.62), transparent);
   animation: package-shine 5.5s ease-in-out infinite;
+}
+
+.premium-package {
+  overflow: hidden;
+  border-color: rgba(255, 255, 255, 0.16);
+  background:
+    radial-gradient(circle at 20% 15%, rgba(155, 0, 47, 0.26), transparent 28%),
+    radial-gradient(circle at 100% 0%, rgba(214, 170, 57, 0.18), transparent 24%),
+    linear-gradient(160deg, #081a39 0%, #0d2348 48%, #14192a 100%);
+  box-shadow:
+    0 26px 60px rgba(4, 14, 32, 0.32),
+    0 0 0 1px rgba(255, 255, 255, 0.06) inset,
+    0 0 36px rgba(155, 0, 47, 0.12);
+}
+
+.premium-package::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), transparent 36%);
+  pointer-events: none;
 }
 
 .checklist-row {

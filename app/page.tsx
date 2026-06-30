@@ -10,16 +10,12 @@ import {
   ChatIcon,
   ChevronDownIcon,
   CompareIcon,
-  DzenSocialIcon,
-  MaxSocialIcon,
   MegaphoneIcon,
   MapPinIcon,
   PasteIcon,
   ShieldIcon,
-  TelegramSocialIcon,
   ToothIcon,
   ToothbrushIcon,
-  VkSocialIcon,
 } from "@/components/icons";
 import { packages, problems, services, site, systemItems } from "@/data/site";
 
@@ -128,20 +124,12 @@ function Hero() {
           <p className="mt-4 text-sm leading-6 text-[color:var(--muted)]">
             Бот выдаст чек-лист, задаст несколько вопросов и подведёт к разбору клиники.
           </p>
+          <div className="mt-5 inline-flex max-w-2xl rounded-full border border-[color:var(--line)] bg-white/80 px-4 py-2 text-sm font-semibold leading-6 text-[color:var(--ink)] shadow-[var(--node-shadow)] backdrop-blur">
+            Интегрируем AI-автоматизацию: меньше рутины, быстрее обработка заявок и выше рентабельность без увеличения рекламного бюджета.
+          </div>
         </div>
 
         <div className="relative min-h-[540px] sm:min-h-[560px] lg:min-h-[620px]">
-          <svg className="orbit-arrows pointer-events-none absolute left-1/2 top-10 hidden h-72 w-[92%] -translate-x-1/2 text-[color:var(--red)] lg:block" viewBox="0 0 760 270" fill="none">
-            <defs>
-              <marker id="orbitArrow" markerHeight="10" markerWidth="10" orient="auto" refX="8" refY="5">
-                <path d="M1 1 9 5 1 9" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" fill="none" />
-              </marker>
-            </defs>
-            <path className="path-dash" d="M70 204C92 145 126 112 164 92" stroke="currentColor" strokeWidth="2.2" strokeDasharray="4 11" markerEnd="url(#orbitArrow)" />
-            <path className="path-dash" d="M208 76C266 48 326 39 380 40" stroke="currentColor" strokeWidth="2.2" strokeDasharray="4 11" markerEnd="url(#orbitArrow)" />
-            <path className="path-dash" d="M412 40C476 40 536 52 590 80" stroke="currentColor" strokeWidth="2.2" strokeDasharray="4 11" markerEnd="url(#orbitArrow)" />
-            <path className="path-dash" d="M636 96C666 124 688 157 706 202" stroke="currentColor" strokeWidth="2.2" strokeDasharray="4 11" markerEnd="url(#orbitArrow)" />
-          </svg>
           <div className="absolute left-1/2 top-20 z-10 -translate-x-1/2 lg:top-40">
             <img src="/brand/mascot-balloon.png" alt="Фирменный воздушный шар ШАРиК-digital" className="balloon-float h-40 w-40 object-contain drop-shadow-2xl sm:h-48 sm:w-48 lg:h-64 lg:w-64" />
             <span className="balloon-shadow absolute left-1/2 top-full -z-10 h-5 w-36 -translate-x-1/2 rounded-full bg-[color:var(--blue)]/15 blur-md lg:w-48" aria-hidden="true" />
@@ -458,20 +446,25 @@ function Packages() {
         <SectionTitle kicker="Решения" title="Форматы работы как путь взросления клиники" text="После чек-листа и диагностики становится понятнее, какой формат нужен именно вашей клинике." />
         <div className="grid gap-5 lg:grid-cols-3">
           {packages.map((item) => (
-            <div key={item.title} className={`card-lift package-card relative z-10 rounded-[22px] border bg-white/90 p-6 shadow-[var(--node-shadow)] ${item.price === "300 000 ₽" ? "recommended-package" : ""}`}>
+            <div
+              key={item.title}
+              className={`card-lift package-card relative z-10 rounded-[22px] border p-6 shadow-[var(--node-shadow)] ${
+                item.availabilityTone === "dark" ? "premium-package" : item.price === "300 000 ₽" ? "recommended-package bg-white/90" : "bg-white/90"
+              }`}
+            >
               <div className="mb-4 flex flex-wrap items-center gap-2">
-                <span className="inline-flex rounded-full bg-[color:var(--red)] px-3 py-1 text-xs font-bold text-white">{item.badge}</span>
-                <span className={`availability-pill availability-${item.availabilityTone} inline-flex rounded-full px-3 py-1 text-xs font-bold`}>{item.availability}</span>
-                <span className="inline-flex rounded-full border border-[color:var(--line)] bg-white px-3 py-1 text-xs font-bold text-[color:var(--red)]">{item.price}</span>
+                <span className={`inline-flex rounded-full px-3 py-1 text-xs font-bold ${item.availabilityTone === "dark" ? "bg-[color:var(--red)]/20 text-white ring-1 ring-white/20" : "bg-[color:var(--red)] text-white"}`}>{item.badge}</span>
+                <span className={`availability-pill availability-${item.availabilityTone} inline-flex rounded-full px-3 py-1 text-xs font-bold ${item.availabilityTone === "dark" ? "border-white/20 bg-white/10 text-white" : ""}`}>{item.availability}</span>
+                <span className={`inline-flex rounded-full px-3 py-1 text-xs font-bold ${item.availabilityTone === "dark" ? "border border-white/20 bg-white/10 text-white" : "border border-[color:var(--line)] bg-white text-[color:var(--red)]"}`}>{item.price}</span>
               </div>
-              <div className="text-4xl font-black leading-none text-[color:var(--ink)]">{item.price.replace(" ₽", "")}</div>
-              <h3 className="brand-title mt-4 text-2xl font-semibold text-[color:var(--ink)]">{item.title}</h3>
-              <p className="mt-3 text-sm leading-6 text-[color:var(--muted)]">{item.goal}</p>
-              <ul className="mt-5 space-y-2 text-sm leading-6 text-[color:var(--muted)]">
+              <div className={`text-4xl font-black leading-none ${item.availabilityTone === "dark" ? "text-white" : "text-[color:var(--ink)]"}`}>{item.price}</div>
+              <h3 className={`brand-title mt-4 text-2xl font-semibold ${item.availabilityTone === "dark" ? "text-white" : "text-[color:var(--ink)]"}`}>{item.title}</h3>
+              <p className={`mt-3 text-sm leading-6 ${item.availabilityTone === "dark" ? "text-white/80" : "text-[color:var(--muted)]"}`}>{item.goal}</p>
+              <ul className={`mt-5 space-y-2 text-sm leading-6 ${item.availabilityTone === "dark" ? "text-white/80" : "text-[color:var(--muted)]"}`}>
                 {item.includes.map((entry) => <li key={entry}>• {entry}</li>)}
               </ul>
               <div className="mt-6">
-                <ButtonLink href={site.links.audit} variant={item.price === "300 000 ₽" ? "primary" : "ghost"} className="min-h-10 px-4 py-2 text-xs">Обсудить пакет</ButtonLink>
+                <ButtonLink href={site.links.audit} variant={item.availabilityTone === "dark" ? "primary" : "ghost"} className="min-h-10 px-4 py-2 text-xs">Обсудить пакет</ButtonLink>
               </div>
             </div>
           ))}
@@ -530,10 +523,10 @@ function FAQ() {
 
 function Footer() {
   const socialLinks = [
-    { label: "Telegram", href: site.socials.telegram, icon: TelegramSocialIcon },
-    { label: "VK", href: site.socials.vk, icon: VkSocialIcon },
-    { label: "MAX", href: site.socials.max, icon: MaxSocialIcon },
-    { label: "Дзен", href: site.socials.dzen, icon: DzenSocialIcon },
+    { label: "Telegram", href: site.socials.telegram },
+    { label: "VK", href: site.socials.vk },
+    { label: "MAX", href: site.socials.max },
+    { label: "Дзен", href: site.socials.dzen },
   ] as const;
   const footerLinks = [
     ["Где теряются пациенты", "#loss-map"],
@@ -554,10 +547,8 @@ function Footer() {
           </p>
           <div className="mt-5 flex flex-wrap gap-3">
             {socialLinks.map((item) => {
-              const Icon = item.icon;
               return (
-                <a key={item.label} href={item.href} className="social-chip inline-flex items-center gap-2 rounded-full border border-[color:var(--line)] bg-white px-4 py-2 text-sm font-semibold text-[color:var(--ink)] transition hover:border-[color:var(--red)] hover:text-[color:var(--red)]">
-                  <Icon className="h-4 w-4" />
+                <a key={item.label} href={item.href} className="social-chip inline-flex items-center rounded-full border border-[color:var(--line)] bg-white px-4 py-2 text-sm font-semibold text-[color:var(--ink)] transition hover:border-[color:var(--red)] hover:text-[color:var(--red)]">
                   {item.label}
                 </a>
               );

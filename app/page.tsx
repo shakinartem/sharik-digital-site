@@ -1,6 +1,5 @@
 import { Header } from "@/components/Header";
 import { CasesSection } from "@/components/CasesSection";
-import { ProcessSection } from "@/components/ProcessSection";
 import { PreAuditForm } from "@/components/PreAuditForm";
 import { ButtonLink, NumberBadge, SectionTitle } from "@/components/ui";
 import {
@@ -9,25 +8,33 @@ import {
   CalendarIcon,
   ChartIcon,
   ChatIcon,
+  ChevronDownIcon,
   CompareIcon,
+  DzenSocialIcon,
+  MaxSocialIcon,
+  MegaphoneIcon,
   MapPinIcon,
+  PasteIcon,
   ShieldIcon,
+  TelegramSocialIcon,
   ToothIcon,
+  ToothbrushIcon,
+  VkSocialIcon,
 } from "@/components/icons";
 import { packages, problems, services, site, systemItems } from "@/data/site";
 
 const keyMetrics = [
   { title: "25 точек", text: "Чек-лист быстро показывает слабые места digital-маршрута.", icon: ChartIcon },
-  { title: "5 минут", text: "Мини-диагностика в Telegram без обязательного телефона.", icon: BotIcon },
+  { title: "5 минут", text: "Мини-диагностика в Telegram с понятными вопросами по маршруту пациента.", icon: BotIcon },
   { title: "1 маршрут", text: "Карты, сайт, отзывы, заявки, CRM и бот связываются в систему.", icon: ArrowIcon },
 ] as const;
 
 const patientPath = [
-  { label: "Увидел клинику", icon: MapPinIcon, className: "lg:left-[5%] lg:top-[46%]" },
-  { label: "Проверил доверие", icon: ShieldIcon, className: "lg:left-[20%] lg:top-[16%]" },
-  { label: "Сравнил", icon: CompareIcon, className: "lg:left-1/2 lg:top-[4%] lg:-translate-x-1/2" },
-  { label: "Написал", icon: ChatIcon, className: "lg:right-[20%] lg:top-[16%]" },
-  { label: "Записался", icon: CalendarIcon, className: "lg:right-[5%] lg:top-[46%]" },
+  { label: "Увидел клинику", icon: MapPinIcon, className: "lg:left-[4%] lg:top-[50%]" },
+  { label: "Проверил доверие", icon: ShieldIcon, className: "lg:left-[18%] lg:top-[17%]" },
+  { label: "Сравнил", icon: CompareIcon, className: "lg:left-1/2 lg:top-[5%] lg:-translate-x-1/2" },
+  { label: "Написал", icon: ChatIcon, className: "lg:right-[18%] lg:top-[17%]" },
+  { label: "Записался", icon: CalendarIcon, className: "lg:right-[4%] lg:top-[50%]" },
 ] as const;
 
 const lossChain = [
@@ -56,7 +63,7 @@ const faq = [
   ["Почему вы начинаете с диагностики, а не с рекламы?", "Реклама усиливает то, что уже собрано. Сначала нужно увидеть, где теряются заявки: в картах, сайте, доверии, кнопках или обработке."],
   ["Что входит в чек-лист?", "25 точек проверки: карты, сайт, соцсети, отзывы, заявки, CRM, скорость ответа и понятность маршрута пациента."],
   ["Что такое пред-аудит в Telegram?", "Короткая диагностика в боте. Вы отвечаете на вопросы, а мы видим первичные зоны риска до полноценного разбора."],
-  ["Телефон обязателен?", "Нет. Основной сценарий идёт через Telegram-профиль. Телефон можно дать позже, если это удобно."],
+  ["Нужно ли оставлять контакт сразу?", "Нет. Основной сценарий идёт через Telegram-профиль: бот соберёт контекст и подведёт к разбору."],
   ["Можно ли начать без сайта?", "Да. Часто первые потери видны в картах, отзывах, соцсетях и обработке обращений."],
   ["Вы работаете только со стоматологиями?", "Фокус сайта — стоматологии. Также есть опыт в смежной медицине, где важны доверие, запись и аккуратная коммуникация."],
   ["Что быстрее всего даст результат?", "Обычно быстрые улучшения дают карты, отзывы, понятный CTA и скорость обработки заявки."],
@@ -66,6 +73,7 @@ const faq = [
 ] as const;
 
 const caseMetrics = ["до 450 лидов", "1,5 млн охват", "146 обращений", "+68% действий в картах", "52 новых отзыва", "97 лидов"] as const;
+const problemDecorIcons = [ToothIcon, ToothbrushIcon, PasteIcon, MapPinIcon, BotIcon, MegaphoneIcon] as const;
 
 const serviceHints = [
   "Когда соцсети не объясняют ценность врачей",
@@ -82,7 +90,6 @@ export default function Home() {
     <main id="top" className="overflow-x-hidden">
       <Header />
       <Hero />
-      <ValueBand />
       <LossMap />
       <LossChain />
       <LeadMagnet />
@@ -91,13 +98,12 @@ export default function Home() {
       <CasesSection />
       <SystemApproach />
       <Founder />
-      <ProcessSection />
       <Services />
       <Packages />
       <RepeatChecklistCta />
-      <PreAuditForm />
       <FAQ />
-      <LegalLine />
+      <PreAuditForm />
+      <Footer />
     </main>
   );
 }
@@ -120,16 +126,25 @@ function Hero() {
             <ButtonLink href={site.links.audit} variant="ghost">Понять, где теряются пациенты</ButtonLink>
           </div>
           <p className="mt-4 text-sm leading-6 text-[color:var(--muted)]">
-            Бот выдаст чек-лист, задаст несколько вопросов и подведёт к разбору клиники. Телефон не обязателен.
+            Бот выдаст чек-лист, задаст несколько вопросов и подведёт к разбору клиники.
           </p>
         </div>
 
         <div className="relative min-h-[540px] sm:min-h-[560px] lg:min-h-[620px]">
-          <svg className="path-svg pointer-events-none absolute left-1/2 top-12 hidden h-64 w-[88%] -translate-x-1/2 text-[color:var(--red)] lg:block" viewBox="0 0 700 230" fill="none">
-            <path className="path-dash" d="M34 178C114 44 260 14 350 25c96 12 229 55 316 153" stroke="currentColor" strokeWidth="2" strokeDasharray="8 12" />
+          <svg className="orbit-arrows pointer-events-none absolute left-1/2 top-10 hidden h-72 w-[92%] -translate-x-1/2 text-[color:var(--red)] lg:block" viewBox="0 0 760 270" fill="none">
+            <defs>
+              <marker id="orbitArrow" markerHeight="10" markerWidth="10" orient="auto" refX="8" refY="5">
+                <path d="M1 1 9 5 1 9" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+              </marker>
+            </defs>
+            <path className="path-dash" d="M70 204C92 145 126 112 164 92" stroke="currentColor" strokeWidth="2.2" strokeDasharray="4 11" markerEnd="url(#orbitArrow)" />
+            <path className="path-dash" d="M208 76C266 48 326 39 380 40" stroke="currentColor" strokeWidth="2.2" strokeDasharray="4 11" markerEnd="url(#orbitArrow)" />
+            <path className="path-dash" d="M412 40C476 40 536 52 590 80" stroke="currentColor" strokeWidth="2.2" strokeDasharray="4 11" markerEnd="url(#orbitArrow)" />
+            <path className="path-dash" d="M636 96C666 124 688 157 706 202" stroke="currentColor" strokeWidth="2.2" strokeDasharray="4 11" markerEnd="url(#orbitArrow)" />
           </svg>
           <div className="absolute left-1/2 top-20 z-10 -translate-x-1/2 lg:top-40">
             <img src="/brand/mascot-balloon.png" alt="Фирменный воздушный шар ШАРиК-digital" className="balloon-float h-40 w-40 object-contain drop-shadow-2xl sm:h-48 sm:w-48 lg:h-64 lg:w-64" />
+            <span className="balloon-shadow absolute left-1/2 top-full -z-10 h-5 w-36 -translate-x-1/2 rounded-full bg-[color:var(--blue)]/15 blur-md lg:w-48" aria-hidden="true" />
           </div>
           <div className="grid grid-cols-2 gap-4 pt-64 sm:grid-cols-5 lg:absolute lg:inset-0 lg:block lg:pt-0">
             {patientPath.map((item) => (
@@ -141,7 +156,7 @@ function Hero() {
             {keyMetrics.map((metric) => {
               const Icon = metric.icon;
               return (
-                <div key={metric.title} className="metric-card card-lift border-l-2 border-dotted border-[color:var(--red)]/75 bg-white/80 px-5 py-4 shadow-[var(--node-shadow)] backdrop-blur">
+                <div key={metric.title} className="metric-card card-lift rounded-[22px] border border-white/90 bg-white/85 px-5 py-4 shadow-[var(--node-shadow)] backdrop-blur">
                   <div className="flex items-center gap-3">
                     <Icon className="h-5 w-5 text-[color:var(--red)]" />
                     <div className="metric-pulse text-xl font-black text-[color:var(--red)]">{metric.title}</div>
@@ -169,24 +184,6 @@ function DiagramNode({ node }: { node: (typeof patientPath)[number] }) {
   );
 }
 
-function ValueBand() {
-  return (
-    <section className="px-0 py-6">
-      <div className="container-pad">
-        <div className="section-divider mb-6" />
-        <div className="grid gap-4 md:grid-cols-3">
-          {["Сайт ведёт в Telegram-бота", "Чек-лист показывает точки потерь", "Диагностика готовит разбор клиники"].map((item, index) => (
-            <div key={item} className="card-lift flex items-center gap-4 rounded-[20px] border border-white/80 bg-white/90 p-5">
-              <NumberBadge>{index + 1}</NumberBadge>
-              <p className="font-semibold text-[color:var(--ink)]">{item}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
 function LossMap() {
   const icons = [MapPinIcon, ChatIcon, ShieldIcon, CalendarIcon, ArrowIcon, BotIcon] as const;
 
@@ -201,20 +198,19 @@ function LossMap() {
         />
         <div className="mb-7 flex flex-wrap justify-center gap-2">
           {caseMetrics.map((metric) => (
-            <span key={metric} className="rounded-full border border-[color:var(--line)] bg-white/85 px-4 py-2 text-sm font-bold text-[color:var(--red)] shadow-sm">
+            <span key={metric} className="premium-badge rounded-full border border-[color:var(--line)] bg-white/90 px-4 py-2 text-sm font-bold text-[color:var(--red)] shadow-sm">
               {metric}
             </span>
           ))}
         </div>
         <div className="relative">
-          <svg className="path-svg pointer-events-none absolute inset-x-10 top-1/2 hidden h-44 -translate-y-1/2 text-[color:var(--red)] lg:block" viewBox="0 0 1000 220" preserveAspectRatio="none" fill="none">
-            <path className="path-dash" d="M20 48C200 10 280 190 442 106C590 30 705 172 980 72" stroke="currentColor" strokeWidth="2" strokeDasharray="7 12" />
-          </svg>
           <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
             {problems.map(([title, text], index) => {
               const Icon = icons[index];
+              const DecorIcon = problemDecorIcons[index];
               return (
-                <div key={title} className={`card-lift relative z-10 rounded-[20px] border border-white/80 bg-white/90 p-6 shadow-sm ${index === 1 || index === 4 ? "lg:translate-y-8" : ""}`}>
+                <div key={title} className="card-lift relative z-10 min-h-64 overflow-hidden rounded-[20px] border border-white/80 bg-white/90 p-6 shadow-[var(--node-shadow)]">
+                  <DecorIcon className="pointer-events-none absolute -right-3 -top-3 h-20 w-20 text-[color:var(--red)] opacity-[0.08]" />
                   <Icon className="mb-5 h-8 w-8 text-[color:var(--red)]" />
                   <h3 className="text-xl font-semibold text-[color:var(--ink)]">{title}</h3>
                   <p className="mt-3 text-sm leading-7 text-[color:var(--muted)]">{text}</p>
@@ -234,11 +230,10 @@ function LossChain() {
       <div className="container-pad">
         <SectionTitle kicker="Цепочка потерь" title="Пять мест, где путь ломается" text="Если хотя бы одно звено провисает, пациент может не дойти до записи даже при хорошем трафике." />
         <div className="relative grid gap-5 md:grid-cols-5">
-          <div className="dashed-route pointer-events-none absolute left-[7%] right-[7%] top-14 hidden h-px md:block" />
           {lossChain.map((item, index) => {
             const Icon = item.icon;
             return (
-              <div key={item.title} className={`card-lift relative z-10 rounded-[20px] border border-white/80 bg-white/90 p-5 shadow-sm md:even:mt-10`}>
+              <div key={item.title} className="card-lift relative z-10 rounded-[20px] border border-white/80 bg-white/90 p-5 shadow-[var(--node-shadow)] md:even:mt-8 md:odd:mt-1">
                 <div className="flex items-center justify-between gap-3">
                   <div className="text-3xl font-black text-[color:var(--red)]">0{index + 1}</div>
                   <Icon className="h-7 w-7 text-[color:var(--red)]" />
@@ -258,10 +253,11 @@ function LeadMagnet() {
   return (
     <section id="checklist" className="section-pad">
       <div className="container-pad">
-        <div className="relative grid gap-8 overflow-hidden rounded-[28px] border border-white/80 bg-white/90 p-6 shadow-[var(--node-shadow)] md:p-8 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
+        <div className="lead-magnet-shell relative grid gap-8 overflow-hidden rounded-[28px] border border-white/80 bg-white/90 p-6 shadow-[var(--node-shadow)] md:p-8 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
           <img src="/brand/mascot-balloon.png" alt="" className="balloon-float pointer-events-none absolute -right-10 -top-10 h-44 w-44 object-contain opacity-10" />
           <div className="relative">
             <div className="pill mb-5">Чек-лист: 25 точек, из-за которых стоматология теряет пациентов</div>
+            <div className="mb-4 inline-flex rounded-full bg-[color:var(--red)] px-3 py-1 text-xs font-bold uppercase tracking-[0.12em] text-white">PDF / Telegram</div>
             <h2 className="brand-title text-4xl font-semibold tracking-tight text-[color:var(--ink)] sm:text-5xl">
               Проверьте, где ваша стоматология теряет пациентов в digital
             </h2>
@@ -300,12 +296,11 @@ function DiagnosticOutcome() {
     <section className="section-pad">
       <div className="container-pad">
         <SectionTitle kicker="После диагностики" title="Что вы получите после диагностики" />
-        <div className="relative grid gap-5 md:grid-cols-2 lg:grid-cols-4">
-          <div className="dashed-route pointer-events-none absolute left-[12%] right-[12%] top-1/2 hidden h-px lg:block" />
+        <div className="grid gap-5 lg:grid-cols-3">
           {diagnosticResults.map((item, index) => {
             const Icon = item.icon;
             return (
-              <div key={item.title} className={`card-lift relative z-10 rounded-[20px] border border-white/80 bg-white/90 p-6 shadow-sm ${item.className}`}>
+              <div key={item.title} className={`card-lift relative z-10 rounded-[20px] border border-white/80 bg-white/90 p-6 shadow-[var(--node-shadow)] ${item.className}`}>
                 <div className="flex items-center justify-between gap-3">
                   <NumberBadge>{index + 1}</NumberBadge>
                   <Icon className="h-7 w-7 text-[color:var(--red)]" />
@@ -347,9 +342,9 @@ function MiniDiagnostic() {
             {[
               "Проверим, где пациент может потеряться до записи?",
               "С чего начнём: карты, сайт, соцсети или обработка заявок?",
-              "Телефон не нужен. Достаточно ответить на несколько вопросов.",
+              "Достаточно ответить на несколько вопросов — бот сохранит контекст для разбора.",
             ].map((message) => (
-              <div key={message} className="mb-3 max-w-[88%] rounded-2xl bg-[color:var(--blue-soft)] px-4 py-3 text-sm leading-6 text-[color:var(--ink)]">
+              <div key={message} className="mb-3 max-w-[88%] rounded-2xl bg-[color:var(--blue-soft)] px-4 py-3 text-sm leading-6 text-[color:var(--ink)] odd:max-w-[76%] even:ml-auto even:bg-[color:var(--red-glass)]">
                 {message}
               </div>
             ))}
@@ -357,6 +352,7 @@ function MiniDiagnostic() {
               {["Карты", "Сайт", "Заявки", "Не знаю"].map((item) => (
                 <span key={item} className="rounded-full bg-[color:var(--red)] px-3 py-2 text-xs font-bold text-white">{item}</span>
               ))}
+              <span className="rounded-full border border-[color:var(--line)] bg-white px-3 py-2 text-xs font-bold text-[color:var(--red)]">Начать пред-аудит</span>
             </div>
           </div>
           <img src="/brand/mascot-balloon.png" alt="" className="balloon-float pointer-events-none absolute -right-7 -top-8 h-24 w-24 object-contain" />
@@ -373,16 +369,12 @@ function SystemApproach() {
     <section id="system" className="section-pad">
       <div className="container-pad">
         <SectionTitle kicker="Системный подход" title="Собираем маршрут пациента целиком" text="Не продаём отдельный инструмент ради инструмента. Связываем каналы, заявки и обработку в понятный маршрут." />
-        <div className="relative mx-auto grid max-w-6xl gap-5 lg:grid-cols-3 lg:grid-rows-3">
-          <div className="hidden rounded-[28px] border border-[color:var(--line)] bg-white/90 p-8 text-center shadow-[var(--node-shadow)] lg:col-start-2 lg:row-start-2 lg:block">
-            <BotIcon className="mx-auto mb-4 h-10 w-10 text-[color:var(--red)]" />
-            <h3 className="brand-title text-2xl font-semibold text-[color:var(--ink)]">Маршрут пациента</h3>
-          </div>
+        <div className="relative mx-auto grid max-w-6xl gap-5 md:grid-cols-2 lg:grid-cols-3">
           {systemItems.map(([title, text], index) => {
             const Icon = icons[index];
-            const positions = ["lg:col-start-1 lg:row-start-1", "lg:col-start-2 lg:row-start-1", "lg:col-start-3 lg:row-start-1", "lg:col-start-3 lg:row-start-3", "lg:col-start-2 lg:row-start-3", "lg:col-start-1 lg:row-start-3"];
+            const positions = ["", "lg:translate-y-5", "", "", "lg:translate-y-5", ""];
             return (
-              <div key={title} className={`card-lift rounded-[20px] border border-white/80 bg-white/90 p-6 shadow-sm ${positions[index]}`}>
+              <div key={title} className={`card-lift rounded-[20px] border border-white/80 bg-white/90 p-6 shadow-[var(--node-shadow)] ${positions[index]}`}>
                 <div className="flex items-center gap-3">
                   <Icon className="h-7 w-7 text-[color:var(--red)]" />
                   <h3 className="text-xl font-semibold text-[color:var(--ink)]">{title}</h3>
@@ -439,17 +431,17 @@ function Services() {
     <section id="services" className="section-pad bg-white/65">
       <div className="container-pad">
         <SectionTitle kicker="Услуги" title="Что подключаем после диагностики" text="Только то, что помогает не терять пациента по дороге к заявке и записи." />
-        <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-6">
+        <div className="service-ribbon flex flex-col gap-4 md:flex-row md:flex-wrap">
           {services.map(([title, text], index) => {
             const Icon = icons[index];
             return (
-              <div key={title} className={`card-lift rounded-[20px] border border-white/80 bg-white/90 p-6 shadow-sm ${index === 0 || index === 2 ? "lg:col-span-3" : "lg:col-span-2"}`}>
-                <Icon className="mb-5 h-8 w-8 text-[color:var(--red)]" />
-                <h3 className="text-xl font-semibold text-[color:var(--ink)]">{title}</h3>
-                <p className="mt-3 text-sm leading-7 text-[color:var(--muted)]">{text}</p>
-                <p className="mt-5 rounded-2xl bg-[color:var(--blue-soft)] px-4 py-3 text-sm font-semibold text-[color:var(--ink)]">
-                  {serviceHints[index]}
-                </p>
+              <div key={title} className="service-pill card-lift rounded-[24px] border border-white/80 bg-white/90 p-5 shadow-[var(--node-shadow)] md:min-w-[280px] md:flex-1">
+                <div className="flex items-center gap-3">
+                  <Icon className="h-7 w-7 shrink-0 text-[color:var(--red)]" />
+                  <h3 className="text-lg font-semibold text-[color:var(--ink)]">{title}</h3>
+                </div>
+                <p className="mt-3 text-sm leading-6 text-[color:var(--muted)]">{text}</p>
+                <p className="mt-4 rounded-2xl bg-[color:var(--blue-soft)] px-4 py-3 text-sm font-semibold text-[color:var(--ink)]">Когда подключаем: {serviceHints[index].replace("Когда ", "")}</p>
               </div>
             );
           })}
@@ -460,26 +452,26 @@ function Services() {
 }
 
 function Packages() {
-  const stages = ["Понять потери", "Запустить заявки", "Усилить поток", "Собрать систему"] as const;
-  const badges = ["Старт", "Быстро", "Рост", "Система"] as const;
-
   return (
     <section id="solutions" className="section-pad">
       <div className="container-pad">
         <SectionTitle kicker="Решения" title="Форматы работы как путь взросления клиники" text="После чек-листа и диагностики становится понятнее, какой формат нужен именно вашей клинике." />
-        <div className="relative grid gap-5 lg:grid-cols-4">
-          <div className="dashed-route pointer-events-none absolute left-[10%] right-[10%] top-10 hidden h-px lg:block" />
-          {packages.map(([title, text, items], index) => (
-            <div key={title} className="card-lift relative z-10 rounded-[20px] border border-white/80 bg-white/90 p-6 shadow-sm">
-              <span className="mb-5 inline-flex rounded-full bg-[color:var(--red)] px-3 py-1 text-xs font-bold text-white">{badges[index]}</span>
-              <h3 className="brand-title text-2xl font-semibold text-[color:var(--ink)]">{stages[index]}</h3>
-              <p className="mt-2 text-sm font-bold text-[color:var(--red)]">{title}</p>
-              <p className="mt-3 text-sm leading-6 text-[color:var(--muted)]">{text}</p>
-              <ul className="mt-5 space-y-2 text-sm text-[color:var(--muted)]">
-                {items.map((item) => <li key={item}>• {item}</li>)}
+        <div className="grid gap-5 lg:grid-cols-3">
+          {packages.map((item) => (
+            <div key={item.title} className={`card-lift package-card relative z-10 rounded-[22px] border bg-white/90 p-6 shadow-[var(--node-shadow)] ${item.price === "300 000 ₽" ? "recommended-package" : ""}`}>
+              <div className="mb-4 flex flex-wrap items-center gap-2">
+                <span className="inline-flex rounded-full bg-[color:var(--red)] px-3 py-1 text-xs font-bold text-white">{item.badge}</span>
+                <span className={`availability-pill availability-${item.availabilityTone} inline-flex rounded-full px-3 py-1 text-xs font-bold`}>{item.availability}</span>
+                <span className="inline-flex rounded-full border border-[color:var(--line)] bg-white px-3 py-1 text-xs font-bold text-[color:var(--red)]">{item.price}</span>
+              </div>
+              <div className="text-4xl font-black leading-none text-[color:var(--ink)]">{item.price.replace(" ₽", "")}</div>
+              <h3 className="brand-title mt-4 text-2xl font-semibold text-[color:var(--ink)]">{item.title}</h3>
+              <p className="mt-3 text-sm leading-6 text-[color:var(--muted)]">{item.goal}</p>
+              <ul className="mt-5 space-y-2 text-sm leading-6 text-[color:var(--muted)]">
+                {item.includes.map((entry) => <li key={entry}>• {entry}</li>)}
               </ul>
               <div className="mt-6">
-                <ButtonLink href={site.links.audit} variant="ghost" className="min-h-10 px-4 py-2 text-xs">Обсудить формат</ButtonLink>
+                <ButtonLink href={site.links.audit} variant={item.price === "300 000 ₽" ? "primary" : "ghost"} className="min-h-10 px-4 py-2 text-xs">Обсудить пакет</ButtonLink>
               </div>
             </div>
           ))}
@@ -505,7 +497,6 @@ function RepeatChecklistCta() {
             </div>
             <div className="flex flex-col gap-3 sm:flex-row">
               <ButtonLink href={site.links.audit}>Пройти пред-аудит</ButtonLink>
-              <ButtonLink href={site.links.checklist} variant="ghost">Сначала забрать чек-лист</ButtonLink>
             </div>
           </div>
         </div>
@@ -516,7 +507,7 @@ function RepeatChecklistCta() {
 
 function FAQ() {
   return (
-    <section className="section-pad">
+    <section id="faq" className="section-pad">
       <div className="container-pad">
         <SectionTitle kicker="FAQ" title="Частые вопросы" />
         <div className="mx-auto max-w-4xl space-y-4">
@@ -524,7 +515,9 @@ function FAQ() {
             <details key={q} className="faq-item rounded-[20px] border border-white/80 bg-white/90 p-6">
               <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-lg font-semibold text-[color:var(--ink)]">
                 {q}
-                <span className="faq-arrow grid h-9 w-9 shrink-0 place-items-center rounded-full border border-[color:var(--line)] text-[color:var(--red)]">⌄</span>
+                <span className="faq-arrow grid h-11 w-11 shrink-0 place-items-center rounded-full border border-[color:var(--line)] bg-white text-[color:var(--red)] shadow-sm">
+                  <ChevronDownIcon className="h-4 w-4" />
+                </span>
               </summary>
               <p className="faq-content mt-4 leading-7 text-[color:var(--muted)]">{a}</p>
             </details>
@@ -535,10 +528,58 @@ function FAQ() {
   );
 }
 
-function LegalLine() {
+function Footer() {
+  const socialLinks = [
+    { label: "Telegram", href: site.socials.telegram, icon: TelegramSocialIcon },
+    { label: "VK", href: site.socials.vk, icon: VkSocialIcon },
+    { label: "MAX", href: site.socials.max, icon: MaxSocialIcon },
+    { label: "Дзен", href: site.socials.dzen, icon: DzenSocialIcon },
+  ] as const;
+  const footerLinks = [
+    ["Где теряются пациенты", "#loss-map"],
+    ["Чек-лист", "#checklist"],
+    ["Кейсы", "#cases"],
+    ["Пакеты", "#solutions"],
+    ["FAQ", "#faq"],
+    ["Политика конфиденциальности", "/privacy"],
+  ] as const;
+
   return (
-    <div className="container-pad pb-8 text-center text-sm text-[color:var(--muted)]">
-      © ШАРиК-digital · <a href="/privacy" className="font-semibold text-[color:var(--red)]">Политика конфиденциальности</a>
-    </div>
+    <footer className="border-t border-[color:var(--line)] bg-white/70 py-10">
+      <div className="container-pad grid gap-8 lg:grid-cols-[1.1fr_1fr_0.8fr] lg:items-start">
+        <div>
+          <img src="/brand/logo-header.svg" alt="ШАРиК-digital" className="h-14 w-auto" />
+          <p className="mt-4 max-w-md text-sm leading-6 text-[color:var(--muted)]">
+            Digital-система для стоматологий: чек-лист, диагностика, пред-аудит и внедрение.
+          </p>
+          <div className="mt-5 flex flex-wrap gap-3">
+            {socialLinks.map((item) => {
+              const Icon = item.icon;
+              return (
+                <a key={item.label} href={item.href} className="social-chip inline-flex items-center gap-2 rounded-full border border-[color:var(--line)] bg-white px-4 py-2 text-sm font-semibold text-[color:var(--ink)] transition hover:border-[color:var(--red)] hover:text-[color:var(--red)]">
+                  <Icon className="h-4 w-4" />
+                  {item.label}
+                </a>
+              );
+            })}
+          </div>
+        </div>
+        <nav className="grid gap-2 sm:grid-cols-2">
+          {footerLinks.map(([label, href]) => (
+            <a key={href} href={href} className="text-sm font-semibold text-[color:var(--ink)] transition hover:text-[color:var(--red)]">
+              {label}
+            </a>
+          ))}
+        </nav>
+        <div className="lg:text-right">
+          <p className="text-sm font-semibold text-[color:var(--ink)]">Telegram-бот</p>
+          <a href={site.botUrl} className="mt-2 inline-flex text-sm font-bold text-[color:var(--red)]">{site.botUsername}</a>
+          <div className="mt-5">
+            <ButtonLink href={site.links.audit}>Пройти пред-аудит</ButtonLink>
+          </div>
+        </div>
+      </div>
+      <div className="container-pad mt-8 text-sm text-[color:var(--muted)]">© ШАРиК-digital</div>
+    </footer>
   );
 }

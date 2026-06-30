@@ -2,7 +2,6 @@
 
 import { FormEvent, useState } from "react";
 import { BotIcon, ChatIcon, ToothIcon } from "./icons";
-import { ButtonLink } from "./ui";
 import { site } from "@/data/site";
 
 const improvementOptions = ["больше заявок", "карты", "сайт", "соцсети", "CRM", "автоматизация", "не знаю"] as const;
@@ -16,6 +15,7 @@ export function PreAuditForm() {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
     const payload = {
+      name: String(formData.get("name") || ""),
       clinic: String(formData.get("clinic") || ""),
       city: String(formData.get("city") || ""),
       improvement,
@@ -43,7 +43,7 @@ export function PreAuditForm() {
             </div>
             <div className="rounded-[20px] border border-white/80 bg-white/90 p-5">
               <ToothIcon className="mb-4 h-7 w-7 text-[color:var(--red)]" />
-              <p className="font-semibold text-[color:var(--ink)]">Телефон не обязателен. Сначала смотрим маршрут пациента.</p>
+              <p className="font-semibold text-[color:var(--ink)]">Сначала смотрим маршрут пациента, точки потерь и приоритет запуска.</p>
             </div>
           </div>
         </div>
@@ -51,6 +51,10 @@ export function PreAuditForm() {
         <form onSubmit={handleSubmit} className="card relative overflow-hidden p-6 shadow-[var(--node-shadow)] md:p-8">
           <ChatIcon className="pointer-events-none absolute -right-5 -top-5 h-28 w-28 text-[color:var(--red)] opacity-10" />
           <div className="relative grid gap-5">
+            <label className="grid gap-2">
+              <span className="text-sm font-bold text-[color:var(--ink)]">Имя</span>
+              <input name="name" required className="min-h-12 rounded-2xl border border-[color:var(--line)] bg-white px-4 text-[color:var(--ink)] outline-none transition focus:border-[color:var(--red)]" />
+            </label>
             <label className="grid gap-2">
               <span className="text-sm font-bold text-[color:var(--ink)]">Название клиники</span>
               <input name="clinic" required className="min-h-12 rounded-2xl border border-[color:var(--line)] bg-white px-4 text-[color:var(--ink)] outline-none transition focus:border-[color:var(--red)]" />
@@ -93,13 +97,8 @@ export function PreAuditForm() {
               type="submit"
               className="inline-flex min-h-12 items-center justify-center rounded-full bg-[color:var(--red)] px-5 py-3 text-center text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:brightness-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--red)]"
             >
-              Продолжить пред-аудит в Telegram
+              Продолжить в Telegram
             </button>
-            <div className="text-center text-sm">
-              <ButtonLink href={site.links.checklist} variant="ghost" className="min-h-10 px-4 py-2 text-xs">
-                Сначала забрать чек-лист
-              </ButtonLink>
-            </div>
           </div>
         </form>
       </div>

@@ -7,7 +7,7 @@ from aiogram import F, Router
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
-from aiogram.types import CallbackQuery, Contact, Message, FSInputFile
+from aiogram.types import CallbackQuery, Contact, Message, FSInputFile, ReplyKeyboardRemove
 
 from bot.config import Settings
 from bot.flow import extract_case_id, resolve_start_param
@@ -27,8 +27,11 @@ from bot.messages import (
     build_case_text,
     build_cases_menu_text,
     build_checklist_text,
+    build_contact_request_text,
+    build_contact_saved_text,
     build_main_menu_text,
     build_question_intro,
+    format_contact_after_diagnostic_message,
     format_lead_message,
 )
 from bot.storage import BotStorage
@@ -96,7 +99,7 @@ def build_router(storage: BotStorage, settings: Settings) -> Router:
     async def contact_callback_handler(callback: CallbackQuery, state: FSMContext) -> None:
         await callback.answer()
         await callback.message.answer(
-            "Если удобно, нажмите кнопку ниже и поделитесь контактом. Это необязательно.",
+            build_contact_request_text(),
             reply_markup=contact_request_keyboard(),
         )
         await state.set_state(FlowStates.question)
@@ -132,33 +135,110 @@ def build_router(storage: BotStorage, settings: Settings) -> Router:
     @router.message(FlowStates.question)
     async def question_message_handler(message: Message, state: FSMContext) -> None:
         data = await state.get_data()
-        if data.get("question_kind") == "contact_request":
-            await message.answer("Пришлите контакт кнопкой ниже, если хотите.", reply_markup=contact_request_keyboard())
+        if data.get("question_kind") != "contact_request":
+            # Free-text question flow (not contact request)
+            await state.clear()
+            await save_question(message, storage, settings, message.text or "")
+            await message.answer("Спасибо. Сообщение сохранил и передал команде.", reply_markup=None)
+            await send_menu(message)
             return
 
+        # --- contact_request flow ---
+        user = message.from_user
+        if user is None:
+            return
+
+        contact_text: str | None = None
+        telegram_contact_allowed = False
+
+        # Handle Telegram contact object
+        if message.contact is not None:
+            contact_obj = message.contact
+            if contact_obj.user_id and contact_obj.user_id != user.id:
+                await message.answer(
+                    "Пожалуйста, отправьте свой собственный контакт.",
+                    reply_markup=contact_request_keyboard(),
+                )
+                return
+            contact_text = contact_obj.phone_number
+
+        # Handle text messages
+        elif message.text:
+            text = message.text.strip()
+
+            # "В меню" button
+            if text.lower() in ("в меню", "/menu", "/cancel"):
+                await state.clear()
+                await message.answer("Возвращаю в меню.", reply_markup=ReplyKeyboardRemove())
+                await send_menu(message)
+                return
+
+            # "Пишите сюда в Telegram"
+            if text.lower() == "пишите сюда" or "пишите сюда" in text.lower():
+                contact_text = "Telegram"
+                telegram_contact_allowed = True
+            else:
+                # Treat any other text as a contact (phone, username, etc.)
+                contact_text = text
+
+        # No contact and no text - ask again
+        else:
+            await message.answer(
+                "Пожалуйста, отправьте контакт кнопкой, номер телефона или напишите \"пишите сюда\".",
+                reply_markup=contact_request_keyboard(),
+            )
+            return
+
+        # Save contact
+        storage.save_contact(telegram_id=user.id, contact_phone=contact_text)
+
+        # Save lead with contact info
+        diagnostic_payload = {}
+        latest_lead = storage.get_latest_lead(user.id)
+
+        if latest_lead is not None and latest_lead.kind == "diagnostic":
+            diagnostic_payload = latest_lead.payload.copy()
+
+        lead_payload = {
+            **diagnostic_payload,
+            "contact_phone": contact_text,
+            "telegram_contact_allowed": telegram_contact_allowed,
+        }
+        storage.save_lead(telegram_id=user.id, payload=lead_payload, kind="contact_after_diagnostic")
+
+        # Send to admin
+        await send_admin_contact_after_diagnostic(
+            storage=storage,
+            settings=settings,
+            user=user,
+            contact=contact_text,
+            telegram_contact_allowed=telegram_contact_allowed,
+            latest_diagnostic=diagnostic_payload if diagnostic_payload else None,
+        )
+
+        # Confirm to user
         await state.clear()
-        await save_question(message, storage, settings, message.text or "")
-        await message.answer("Спасибо. Сообщение сохранил и передал команде.", reply_markup=None)
+        await message.answer(
+            build_contact_saved_text(),
+            reply_markup=ReplyKeyboardRemove(),
+        )
         await send_menu(message)
 
     @router.message(F.contact)
     async def contact_message_handler(message: Message, state: FSMContext) -> None:
+        """Handle contact received outside of any state."""
         contact = message.contact
         user = message.from_user
         if user is None or contact is None:
             return
         if contact.user_id and contact.user_id != user.id:
-            await message.answer("Пожалуйста, отправьте свой собственный контакт.", reply_markup=contact_request_keyboard())
+            await message.answer("Пожалуйста, отправьте свой собственный контакт.")
             return
 
         storage.save_contact(telegram_id=user.id, contact_phone=contact.phone_number)
         await state.clear()
-        await message.answer("Контакт сохранён. Спасибо.", reply_markup=None)
-
-        latest = storage.get_latest_lead(user.id)
-        if latest is not None:
-            latest.payload["contact_phone"] = contact.phone_number
-            await send_admin_lead(storage, settings, user, latest.payload, kind="contact")
+        await message.answer("Контакт сохранён. Спасибо.", reply_markup=ReplyKeyboardRemove())
+        await send_menu(message)
 
     @router.message(F.text)
     async def fallback_message_handler(message: Message) -> None:
@@ -253,6 +333,37 @@ async def save_question(message: Message, storage: BotStorage, settings: Setting
     }
     storage.save_lead(telegram_id=user.id, payload=payload, kind="question")
     await send_admin_lead(storage, settings, user, payload, kind="question")
+
+
+async def send_admin_contact_after_diagnostic(
+    storage: BotStorage,
+    settings: Settings,
+    user: Any,
+    contact: str,
+    telegram_contact_allowed: bool,
+    latest_diagnostic: dict[str, Any] | None = None,
+) -> None:
+    del storage
+    bot = settings.bot_username
+    text = format_contact_after_diagnostic_message(
+        telegram_id=user.id,
+        username=user.username,
+        first_name=user.first_name,
+        last_name=user.last_name,
+        contact=contact,
+        telegram_contact_allowed=telegram_contact_allowed,
+        latest_diagnostic=latest_diagnostic,
+        source=f"@{bot}",
+    )
+
+    if settings.admin_chat_id == 0:
+        logger.warning("ADMIN_CHAT_ID is missing; lead was not forwarded.")
+        return
+
+    from aiogram import Bot
+
+    async with Bot(token=settings.bot_token) as bot_client:
+        await bot_client.send_message(settings.admin_chat_id, text)
 
 
 async def send_admin_lead(

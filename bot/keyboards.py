@@ -72,7 +72,8 @@ def contact_request_keyboard() -> ReplyKeyboardMarkup:
     return ReplyKeyboardMarkup(
         keyboard=[
             [KeyboardButton(text="Поделиться контактом", request_contact=True)],
-            [KeyboardButton(text="/menu")],
+            [KeyboardButton(text="Пишите сюда в Telegram")],
+            [KeyboardButton(text="В меню")],
         ],
         resize_keyboard=True,
         one_time_keyboard=True,

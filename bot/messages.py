@@ -167,6 +167,30 @@ def build_question_intro() -> str:
     ).strip()
 
 
+def build_contact_request_text() -> str:
+    return dedent(
+        """
+        Оставьте удобный контакт или просто напишите, что можно связаться с вами здесь в Telegram.
+
+        Можно отправить:
+        — контакт кнопкой ниже;
+        — номер телефона;
+        — Telegram / WhatsApp / MAX;
+        — или просто написать "пишите сюда".
+        """
+    ).strip()
+
+
+def build_contact_saved_text() -> str:
+    return dedent(
+        """
+        Готово, контакт сохранил и передал команде.
+
+        Мы посмотрим ответы диагностики и напишем, чтобы разобрать, где клиника может терять пациентов.
+        """
+    ).strip()
+
+
 def build_cases_menu_text() -> str:
     return dedent(
         """
@@ -252,3 +276,47 @@ def format_lead_message(
 
     return "\n".join(lines)
 
+
+def format_contact_after_diagnostic_message(
+    *,
+    telegram_id: int,
+    username: str | None,
+    first_name: str | None,
+    last_name: str | None,
+    contact: str,
+    telegram_contact_allowed: bool,
+    latest_diagnostic: dict[str, Any] | None = None,
+    source: str = f"@{BOT_USERNAME}",
+) -> str:
+    def field(label: str, value: Any) -> str:
+        formatted = "—" if value in (None, "", []) else str(value)
+        return f"{label}: {formatted}"
+
+    lines = [
+        "🦷 Контакт после пред-аудита",
+        "",
+        field("Telegram ID", telegram_id),
+        field("Username", f"@{username}" if username else None),
+        field("Имя", f"{first_name or ''} {last_name or ''}".strip() or None),
+    ]
+
+    if latest_diagnostic:
+        lines += [
+            "",
+            "Последняя диагностика:",
+            field("- тип клиники", latest_diagnostic.get("clinic_type")),
+            field("- что уже есть", latest_diagnostic.get("existing_tools")),
+            field("- главная проблема", latest_diagnostic.get("main_problem")),
+            field("- куда приходят заявки", latest_diagnostic.get("lead_channels")),
+            field("- скорость ответа", latest_diagnostic.get("response_speed")),
+            field("- приоритет", latest_diagnostic.get("priority")),
+        ]
+
+    lines += [
+        "",
+        field("Контакт", contact),
+        field("Можно писать в Telegram", "Да" if telegram_contact_allowed else "Нет"),
+        field("Источник", "contact_after_diagnostic"),
+    ]
+
+    return "\n".join(lines)

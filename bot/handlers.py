@@ -173,8 +173,8 @@ def build_router(storage: BotStorage, settings: Settings) -> Router:
                 await send_menu(message)
                 return
 
-            # "Пишите сюда в Telegram"
-            if text.lower() == "пишите сюда" or "пишите сюда" in text.lower():
+            # "Пишите сюда в Telegram" or "пишите в Telegram"
+            if text.lower() == "пишите сюда" or "пишите сюда" in text.lower() or "пишите в telegram" in text.lower():
                 contact_text = "Telegram"
                 telegram_contact_allowed = True
             else:

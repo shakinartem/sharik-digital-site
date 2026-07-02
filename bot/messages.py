@@ -312,11 +312,14 @@ def format_contact_after_diagnostic_message(
             field("- приоритет", latest_diagnostic.get("priority")),
         ]
 
+    from datetime import datetime, timezone
+
     lines += [
         "",
         field("Контакт", contact),
         field("Можно писать в Telegram", "Да" if telegram_contact_allowed else "Нет"),
         field("Источник", "contact_after_diagnostic"),
+        field("Дата", datetime.now(timezone.utc).isoformat()),
     ]
 
     return "\n".join(lines)

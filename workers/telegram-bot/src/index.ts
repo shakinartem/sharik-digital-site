@@ -298,6 +298,47 @@ async function handleCallbackOrContact(env: Env, parsed: ReturnType<typeof parse
   const callbackData = parsed.callbackData;
   const userId = parsed.userId;
 
+  if (callbackData) {
+    if (callbackData === "menu") {
+      await handleMenu(env, parsed, state);
+      return;
+    }
+    if (callbackData === "checklist") {
+      await handleChecklist(env, parsed);
+      return;
+    }
+    if (callbackData === "audit") {
+      await handleAudit(env, parsed, null, "audit");
+      return;
+    }
+    if (callbackData === "cases") {
+      await handleCases(env, parsed);
+      return;
+    }
+    if (callbackData === "question") {
+      await handleQuestion(env, parsed, state);
+      return;
+    }
+    if (callbackData === "contact_request") {
+      await setUserState(env.DB, parsed.userId, { kind: "contact_request" });
+      await sendMessage(env.BOT_TOKEN, chatId, buildContactRequestText(), contactRequestKeyboard());
+      return;
+    }
+    if (callbackData === "telegram_contact_allowed") {
+      await saveContact(env.DB, userId, "Telegram");
+      await sendMessage(env.BOT_TOKEN, chatId, buildContactSavedText());
+      await sendAdminContactAfterDiagnostic(env, userId, "Telegram", true);
+      await setUserState(env.DB, userId, null);
+      await sendMessage(env.BOT_TOKEN, chatId, buildMainMenuText(), mainMenuKeyboard());
+      return;
+    }
+    if (callbackData.startsWith("case_")) {
+      const caseId = callbackData.slice(5);
+      await sendMessage(env.BOT_TOKEN, chatId, buildCaseText(caseId), mainMenuKeyboard());
+      return;
+    }
+  }
+
   if (!state) {
     if (text && ["в меню", "/menu", "/cancel"].includes(text.toLowerCase())) {
       await handleMenu(env, parsed, state);
@@ -335,7 +376,7 @@ async function handleCallbackOrContact(env: Env, parsed: ReturnType<typeof parse
       return;
     }
 
-    if (text.toLowerCase() in ["в меню", "/menu", "/cancel"]) {
+    if (["в меню", "/menu", "/cancel"].includes(text.toLowerCase())) {
       await handleMenu(env, parsed, state);
       return;
     }
@@ -344,47 +385,6 @@ async function handleCallbackOrContact(env: Env, parsed: ReturnType<typeof parse
     await setUserState(env.DB, userId, null);
     await sendMessage(env.BOT_TOKEN, chatId, "Спасибо. Сообщение сохранил и передал команде.", mainMenuKeyboard());
     return;
-  }
-
-  if (callbackData) {
-    if (callbackData === "menu") {
-      await handleMenu(env, parsed, state);
-      return;
-    }
-    if (callbackData === "checklist") {
-      await handleChecklist(env, parsed);
-      return;
-    }
-    if (callbackData === "audit") {
-      await handleAudit(env, parsed, null, state.source_route || "audit");
-      return;
-    }
-    if (callbackData === "cases") {
-      await handleCases(env, parsed);
-      return;
-    }
-    if (callbackData === "question") {
-      await handleQuestion(env, parsed, state);
-      return;
-    }
-    if (callbackData === "contact_request") {
-      await setUserState(env.DB, parsed.userId, { kind: "contact_request" });
-      await sendMessage(env.BOT_TOKEN, chatId, buildContactRequestText(), contactRequestKeyboard());
-      return;
-    }
-    if (callbackData === "telegram_contact_allowed") {
-      await saveContact(env.DB, userId, "Telegram");
-      await sendMessage(env.BOT_TOKEN, chatId, buildContactSavedText());
-      await sendAdminContactAfterDiagnostic(env, userId, "Telegram", true);
-      await setUserState(env.DB, userId, null);
-      await sendMessage(env.BOT_TOKEN, chatId, buildMainMenuText(), mainMenuKeyboard());
-      return;
-    }
-    if (callbackData.startsWith("case_")) {
-      const caseId = callbackData.slice(5);
-      await sendMessage(env.BOT_TOKEN, chatId, buildCaseText(caseId), mainMenuKeyboard());
-      return;
-    }
   }
 
   await sendMessage(env.BOT_TOKEN, chatId, buildMainMenuText(), mainMenuKeyboard());
@@ -432,7 +432,7 @@ async function handleQuestionText(env: Env, parsed: ReturnType<typeof parseUpdat
   const chatId = parsed.chatId as number;
   const text = parsed.text as string;
 
-  if (text.toLowerCase() in ["в меню", "/menu", "/cancel"]) {
+  if (["в меню", "/menu", "/cancel"].includes(text.toLowerCase())) {
     await handleMenu(env, parsed, state);
     return;
   }

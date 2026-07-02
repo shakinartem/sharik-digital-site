@@ -5,11 +5,13 @@ import { site } from "@/data/site";
 import { ButtonLink } from "./ui";
 
 const nav = [
-  ["Услуги", "#services"],
-  ["Решения", "#solutions"],
+  ["Где теряются пациенты", "#loss-map"],
+  ["Чек-лист", "#checklist"],
   ["Кейсы", "#cases"],
-  ["Процесс", "#process"],
-  ["Контакты", "#contact"],
+  ["Услуги", "#services"],
+  ["Пакеты", "#solutions"],
+  ["FAQ", "#faq"],
+  ["Пред-аудит", "#contact"],
 ];
 
 export function Header() {
@@ -30,7 +32,7 @@ export function Header() {
           ))}
         </nav>
         <div className="hidden md:block">
-          <ButtonLink href="#contact">Оставить заявку на консультацию</ButtonLink>
+          <ButtonLink href={site.links.checklist}>Забрать чек-лист</ButtonLink>
         </div>
         <button
           type="button"
@@ -61,7 +63,7 @@ export function Header() {
               </a>
             ))}
             <div className="px-4 pt-2">
-              <ButtonLink href="#contact">Оставить заявку на консультацию</ButtonLink>
+              <ButtonLink href={site.links.checklist}>Забрать чек-лист</ButtonLink>
             </div>
           </div>
         </nav>

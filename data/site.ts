@@ -2,13 +2,27 @@ export const site = {
   name: "ШАРиК-digital",
   botUrl: "https://t.me/sharik_digital_bot",
   botUsername: "@sharik_digital_bot",
+  socials: {
+    telegram: "https://t.me/sharik_digitall",
+    dzen: "https://dzen.ru/sharik_didgital",
+    vk: "https://vk.com/sharik_digital",
+    max: "https://max.ru/join/JmvFHmmsKJnsPUhQnwbF1jkQVvDTblxUjyAn2ZTKVVM",
+  },
+  links: {
+    checklist: "https://t.me/sharik_digital_bot?start=checklist",
+    audit: "https://t.me/sharik_digital_bot?start=audit",
+    consultation: "https://t.me/sharik_digital_bot?start=consultation",
+    question: "https://t.me/sharik_digital_bot?start=question",
+    cases: "https://t.me/sharik_digital_bot?start=cases",
+    caseLink: (caseId: string) => `https://t.me/sharik_digital_bot?start=case_${caseId}`,
+  },
   phone: "+7 987 357-60-71",
   whatsappUrl: "https://wa.me/79873576071",
   telegramDirect: "https://t.me/sharik_digital_bot",
   directorName: "Шакин Артём",
-  directorRole: "Директор и основатель",
+  directorRole: "Основатель",
   directorSummary:
-    "Собираю digital-системы для стоматологий: от упаковки и карты потерь до заявок, CRM и автоматизации.",
+    "Собираю digital-системы для стоматологий: сайты, Telegram-боты, CRM, автоматизации, AI-инструменты, контент и продвижение. В медицинских проектах важно не просто “быть в интернете”, а не терять пациента на пути к записи. Поэтому мы смотрим на весь маршрут: от первого касания до заявки, обработки и повторного обращения.",
 };
 
 export const problems = [
@@ -40,8 +54,31 @@ export const services = [
 ] as const;
 
 export const packages = [
-  ["Digital-аудит стоматологии", "Для клиник, которые хотят понять, где сейчас теряются пациенты.", ["Анализ сайта, карт, соцсетей и отзывов", "Анализ пути заявки", "Карта быстрых улучшений"]],
-  ["Быстрый запуск заявок", "Для клиник, которым нужна рабочая система первичных обращений.", ["Лид-магнит", "Telegram-бот", "Посадочная страница", "Кнопки Telegram / WhatsApp / MAX"]],
-  ["Упаковка и привлечение пациентов", "Для клиник, которым нужно усилить доверие, контент и поток обращений.", ["SMM", "Карты", "Сайт или лендинг", "Отзывы и офферы", "Сопровождение"]],
-  ["Digital-система клиники", "Для клиник, которые хотят связать маркетинг, заявки, CRM и автоматизацию.", ["Сайт", "SMM", "Карты", "CRM", "Telegram-бот", "AI-инструменты", "Аналитика"]],
+  {
+    title: "База присутствия",
+    badge: "Старт",
+    price: "100 000 ₽",
+    goal: "Собираем уверенное первое впечатление и базовый маршрут до обращения.",
+    includes: ["упаковка 2 соцсетей", "карты и доверие", "базовая стратегия позиционирования"],
+    availability: "10 клиник",
+    availabilityTone: "blue",
+  },
+  {
+    title: "Система привлечения",
+    badge: "Рекомендуем",
+    price: "300 000 ₽",
+    goal: "Выстраиваем связанный digital-маршрут без потерь заявок.",
+    includes: ["соцсети + реклама", "Telegram / VK / сайт-бот", "автоматизация и воронки"],
+    availability: "6 клиник",
+    availabilityTone: "red",
+  },
+  {
+    title: "Масштабирование клиники",
+    badge: "Масштаб",
+    price: "от 500 000 ₽ / мес",
+    goal: "Системно масштабируем трафик, аналитику, автоматизацию и запись по всем каналам.",
+    includes: ["полный маркетинг", "глубокая аналитика", "автоматизация процессов", "стратегия роста"],
+    availability: "2 клиники",
+    availabilityTone: "dark",
+  },
 ] as const;

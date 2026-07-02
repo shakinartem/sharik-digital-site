@@ -21,7 +21,7 @@ export const metadata: Metadata = {
     title: "ШАРиК-digital — находим, где стоматология теряет пациентов",
     description:
       "Чек-лист, диагностика и digital-система для стоматологий и медицинских клиник.",
-    images: ["/brand/превью сайта.png"],
+    images: ["/brand/og-preview.png"],
   },
   icons: {
     icon: "/brand/favicon.svg",

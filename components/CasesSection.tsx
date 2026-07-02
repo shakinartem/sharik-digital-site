@@ -5,8 +5,32 @@ import { cases, type CaseItem } from "@/data/cases";
 import { site } from "@/data/site";
 import { ButtonLink, SectionTitle } from "./ui";
 
+const filters = [
+  ["all", "Все"],
+  ["dentistry", "Стоматологии"],
+  ["medical", "Смежная медицина"],
+] as const;
+
+type CaseFilter = (typeof filters)[number][0];
+
+const dentistryIds = new Set(["eurodent", "biomed", "interdent", "dental-pro", "ibradent"]);
+
+function getCaseFilter(item: CaseItem): Exclude<CaseFilter, "all"> {
+  return dentistryIds.has(item.id) ? "dentistry" : "medical";
+}
+
+function getCaseOrder(item: CaseItem) {
+  const order = ["eurodent", "biomed", "interdent", "dental-pro", "ibradent", "divina-podology", "kerala", "arximed-security", "po-pyatam"];
+  return order.indexOf(item.id);
+}
+
 export function CasesSection() {
   const [active, setActive] = useState<CaseItem | null>(null);
+  const [filter, setFilter] = useState<CaseFilter>("all");
+  const visibleCases = cases
+    .slice()
+    .sort((a, b) => getCaseOrder(a) - getCaseOrder(b))
+    .filter((item) => filter === "all" || getCaseFilter(item) === filter);
 
   return (
     <section id="cases" className="section-pad bg-white/65">
@@ -14,29 +38,50 @@ export function CasesSection() {
         <SectionTitle
           kicker="Кейсы"
           title="Показываем на практике, как digital влияет на заявки, доверие и запись"
-          text="9 кейсов в стоматологии, медицине и смежных нишах. Каждый кейс открывается внутри страницы без перехода."
+          text="Сначала стоматологии, затем смежные медицинские проекты. Каждый кейс открывается внутри страницы без перехода."
         />
+        <div className="mb-7 flex flex-wrap justify-center gap-3">
+          {filters.map(([value, label]) => (
+            <button
+              key={value}
+              type="button"
+              onClick={() => setFilter(value)}
+              className={`rounded-full border px-5 py-2 text-sm font-semibold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--red)] ${
+                filter === value
+                  ? "border-[color:var(--red)] bg-[color:var(--red)] text-white"
+                  : "border-[color:var(--line)] bg-white/80 text-[color:var(--ink)] hover:border-[color:var(--red)]/40"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
         <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-          {cases.map((item) => (
+          {visibleCases.map((item, index) => (
             <button
               type="button"
               key={item.id}
               onClick={() => setActive(item)}
-              className="card group overflow-hidden text-left transition duration-200 hover:-translate-y-1 hover:border-[color:var(--red)]/30 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[color:var(--red)]"
+              className={`card card-lift group overflow-hidden text-left shadow-sm transition duration-200 hover:border-[color:var(--red)]/30 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[color:var(--red)] ${
+                index < 3 ? "ring-1 ring-[color:var(--line)]" : ""
+              }`}
             >
-              <div className="aspect-[4/3] overflow-hidden bg-[color:var(--blue-soft)]">
+              <div className="aspect-square overflow-hidden bg-[color:var(--blue-soft)]">
                 <img src={item.images[0]} alt={item.title} className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
               </div>
               <div className="p-6">
                 <div className="mb-3 flex flex-wrap gap-2">
-                  {item.tags.slice(0, 3).map((tag) => (
+                  <span className="rounded-full bg-[color:var(--blue)] px-3 py-1 text-xs font-semibold text-white">
+                    {getCaseFilter(item) === "dentistry" ? "Стоматология" : "Смежная медицина"}
+                  </span>
+                  {item.tags.filter((tag) => tag !== "Стоматология").slice(0, 3).map((tag) => (
                     <span key={tag} className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-[color:var(--red)] ring-1 ring-[color:var(--line)]">
                       {tag}
                     </span>
                   ))}
                 </div>
                 <h3 className="brand-title text-2xl font-semibold text-[color:var(--ink)]">{item.title}</h3>
-                <p className="mt-2 text-sm font-semibold text-[color:var(--red)]">{item.mainResult}</p>
+                <p className="metric-pulse mt-2 text-sm font-semibold text-[color:var(--red)]">{item.mainResult}</p>
                 <p className="mt-4 text-sm leading-6 text-[color:var(--muted)]">{item.shortDescription}</p>
                 <span className="mt-5 inline-flex font-semibold text-[color:var(--red)]">Открыть кейс →</span>
               </div>
@@ -76,7 +121,7 @@ function CaseModal({ item, onClose }: { item: CaseItem; onClose: () => void }) {
         role="dialog"
         aria-modal="true"
         aria-labelledby={`case-title-${item.id}`}
-        className="mx-auto my-4 max-w-5xl overflow-hidden rounded-[24px] bg-white shadow-2xl sm:my-8 sm:rounded-[32px]"
+        className="modal-pop mx-auto my-4 max-w-5xl overflow-hidden rounded-[24px] bg-white shadow-2xl sm:my-8 sm:rounded-[32px]"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex flex-col gap-5 border-b border-[color:var(--line)] p-5 sm:flex-row sm:items-start sm:justify-between md:p-8">
@@ -112,7 +157,7 @@ function CaseModal({ item, onClose }: { item: CaseItem; onClose: () => void }) {
               </div>
               <InfoBlock title="Вывод" text={item.conclusion} />
               <div>
-                <ButtonLink href={site.botUrl}>Хочу похожий результат</ButtonLink>
+                <ButtonLink href={site.links.caseLink(item.id)}>Хочу похожий результат</ButtonLink>
               </div>
             </div>
           </div>

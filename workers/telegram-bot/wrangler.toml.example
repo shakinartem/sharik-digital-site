@@ -1,0 +1,18 @@
+name = "sharik-digital-telegram-bot"
+main = "src/index.ts"
+compatibility_date = "2025-01-01"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "sharik-digital-bot-db"
+database_id = "replace-with-real-db-id"
+
+[vars]
+SITE_URL = "https://sharik-digital.ru"
+CHECKLIST_URL = "https://sharik-digital.ru/lead-magnets/checklist-25-points.pdf"
+BOT_USERNAME = "sharik_digital_bot"
+
+# Secrets (set via `wrangler secret put`):
+# BOT_TOKEN
+# ADMIN_CHAT_ID
+# WEBHOOK_SECRET

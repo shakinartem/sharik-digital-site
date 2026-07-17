@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sharik-digital-bot"
+version = "0.1.0"
+description = "Telegram bot MVP for SHARiK-digital"
+requires-python = ">=3.11"
+dependencies = [
+  "aiogram>=3.4,<4",
+  "python-dotenv>=1.0,<2",
+]
+
+[project.scripts]
+sharik-digital-bot = "bot.app:run"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["bot*"]
+

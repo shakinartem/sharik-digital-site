@@ -1,6 +1,11 @@
 import { Header } from "@/components/Header";
 import { site } from "@/data/site";
 
+export const metadata = {
+  title: "Политика конфиденциальности ШАРиК digital",
+  description: "Информация об обработке персональных данных, которые мы собираем через Telegram-бот при диагностике пациентопотока.",
+};
+
 export default function PrivacyPage() {
   return (
     <main>
@@ -8,9 +13,9 @@ export default function PrivacyPage() {
       <section className="section-pad">
         <div className="container-pad max-w-4xl">
           <div className="card p-8 md:p-12">
-            <h1 className="text-4xl font-black tracking-tight">Политика конфиденциальности</h1>
+            <h1 className="text-4xl font-black tracking-tight">Политика конфиденциальности ШАРиК digital</h1>
             <p className="mt-6 leading-8 text-muted">
-              Эта страница — MVP-шаблон политики конфиденциальности для сайта ШАРиК-digital. Перед публикацией рекомендуется адаптировать текст под юридические данные владельца сайта и фактические способы обработки персональных данных.
+              Эта страница — шаблон политики конфиденциальности для сайта ШАРиК digital. Перед публикацией рекомендуется адаптировать текст под юридические данные владельца сайта и фактические способы обработки персональных данных.
             </p>
             <div className="mt-8 space-y-6 text-muted">
               <section>

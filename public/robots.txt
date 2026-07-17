@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://shakinartem.github.io/sharik-digital-site/sitemap.xml

@@ -1,0 +1,20 @@
+{
+  "name": "sharik-digital-telegram-bot",
+  "version": "1.0.0",
+  "private": true,
+  "main": "src/index.ts",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "db:migrate": "wrangler d1 migrations apply sharik-digital-bot-db --remote",
+    "db:create": "wrangler d1 create sharik-digital-bot-db",
+    "webhook:set": "wrangler deploy && curl -X POST \"https://api.telegram.org/bot$BOT_TOKEN/setWebhook\" -H \"Content-Type: application/json\" -d '{\"url\": \"https://YOUR_WORKER_URL/webhook\", \"secret_token\": \"YOUR_WEBHOOK_SECRET\", \"drop_pending_updates\": true}'",
+    "webhook:delete": "curl -X POST \"https://api.telegram.org/bot$BOT_TOKEN/deleteWebhook\" -H \"Content-Type: application/json\" -d '{\"drop_pending_updates\": true}'"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20250110.0",
+    "wrangler": "^3.99.0",
+    "typescript": "^5.7.2"
+  }
+}

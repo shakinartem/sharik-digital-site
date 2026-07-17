@@ -159,3 +159,29 @@ export function MaxSocialIcon(props: IconProps) {
     </IconBase>
   );
 }
+
+export function UsersIcon(props: IconProps) {
+  return (
+    <IconBase {...props}>
+      <path d="M7 8.6a3.2 3.2 0 1 0 0 0M17 8.6a3.2 3.2 0 1 0 0 0M7 19.4v-2.4a3.2 3.2 0 0 1 3.2-3.2h4.6a3.2 3.2 0 0 1 3.2 3.2v2.4M12 2.5v2.6" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+    </IconBase>
+  );
+}
+
+export function RefreshIcon(props: IconProps) {
+  return (
+    <IconBase {...props}>
+      <path d="M19.6 8.4A7.6 7.6 0 1 0 12 19.6" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="m17 7 2.6 2.6-2.6 2.6" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+    </IconBase>
+  );
+}
+
+export function ControlIcon(props: IconProps) {
+  return (
+    <IconBase {...props}>
+      <rect x="4.5" y="5.2" width="15" height="13.6" rx="2.5" stroke="currentColor" strokeWidth="1.7" />
+      <path d="M8.2 12.5h7.6M12 9.2v6.6" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+    </IconBase>
+  );
+}

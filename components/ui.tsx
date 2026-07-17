@@ -1,4 +1,3 @@
-import Link from "next/link";
 import type { ReactNode } from "react";
 
 export function ButtonLink({
@@ -9,37 +8,51 @@ export function ButtonLink({
 }: {
   href: string;
   children: ReactNode;
-  variant?: "primary" | "secondary" | "ghost";
+  variant?: "primary" | "outline";
   className?: string;
 }) {
   const isExternal = href.startsWith("http");
-  const styles = {
-    primary: "bg-[color:var(--red)] text-white hover:-translate-y-0.5 hover:brightness-90",
-    secondary: "bg-[color:var(--blue)] text-white hover:-translate-y-0.5 hover:brightness-110",
-    ghost: "border border-[color:var(--line)] bg-white/80 text-[color:var(--ink)] hover:-translate-y-0.5 hover:border-[color:var(--red)]/40 hover:bg-white",
-  }[variant];
+  const base =
+    variant === "primary"
+      ? "btn-primary"
+      : "btn-outline";
   return (
-    <Link
+    <a
       href={href}
       target={isExternal ? "_blank" : undefined}
       rel={isExternal ? "noreferrer" : undefined}
-      className={`inline-flex min-h-12 w-full max-w-full items-center justify-center rounded-full px-5 py-3 text-center text-sm font-semibold transition duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--red)] sm:w-auto ${styles} ${className}`}
+      className={`inline-flex items-center justify-center rounded-full px-6 py-3 text-sm font-black transition duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${base} ${className}`}
     >
       {children}
-    </Link>
+    </a>
   );
 }
 
 export function SectionTitle({ kicker, title, text }: { kicker?: string; title: string; text?: string }) {
   return (
     <div className="mx-auto mb-10 max-w-3xl text-center">
-      {kicker && <div className="mb-4 text-sm font-bold uppercase tracking-[0.22em] text-[color:var(--red)]">{kicker}</div>}
-      <h2 className="brand-title text-3xl font-semibold tracking-tight text-[color:var(--ink)] sm:text-4xl lg:text-5xl">{title}</h2>
-      {text && <p className="mt-5 text-lg leading-8 text-[color:var(--muted)]">{text}</p>}
+      {kicker && (
+        <div className="mb-5 inline-flex items-center rounded-full bg-muted px-4 py-1.5 text-xs font-black text-muted-foreground">
+          {kicker}
+        </div>
+      )}
+      <h2
+        className="font-black leading-[0.95] text-foreground"
+        style={{
+          fontSize: "clamp(1.4rem, min(5cqi, 5rem), 3.6rem)",
+        }}
+      >
+        {title}
+      </h2>
+      {text && <p className="mt-5 text-base leading-7 text-muted-foreground">{text}</p>}
     </div>
   );
 }
 
 export function NumberBadge({ children }: { children: ReactNode }) {
-  return <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-white font-bold text-[color:var(--red)] ring-1 ring-[color:var(--line)]">{children}</div>;
+  return (
+    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-white font-black text-primary ring-1 ring-border">
+      {children}
+    </div>
+  );
 }

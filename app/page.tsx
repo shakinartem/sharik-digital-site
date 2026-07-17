@@ -1,102 +1,108 @@
+"use client";
+
+import { useEffect, useRef, useState } from "react";
 import { Header } from "@/components/Header";
 import { CasesSection } from "@/components/CasesSection";
 import { PreAuditForm } from "@/components/PreAuditForm";
-import { ButtonLink, NumberBadge, SectionTitle } from "@/components/ui";
+import { ButtonLink, SectionTitle, NumberBadge } from "@/components/ui";
 import {
-  ArrowIcon,
-  BotIcon,
-  CalendarIcon,
   ChartIcon,
-  ChatIcon,
-  ChevronDownIcon,
-  CompareIcon,
-  MegaphoneIcon,
+  ArrowIcon,
   MapPinIcon,
-  PasteIcon,
   ShieldIcon,
-  ToothIcon,
-  ToothbrushIcon,
+  ChatIcon,
+  CalendarIcon,
+  UsersIcon,
+  RefreshIcon,
+  ControlIcon,
+  ChevronDownIcon,
 } from "@/components/icons";
-import { packages, problems, services, site, systemItems } from "@/data/site";
+import { site, contours7K } from "@/data/site";
+import { Eye, FileText, PhoneCall, BarChart3, MessageCircle, ArrowRightToLine, RotateCcw, ArrowUpRight, Plus, Minus } from "lucide-react";
 
-const keyMetrics = [
-  { title: "25 точек", text: "Чек-лист быстро показывает слабые места digital-маршрута.", icon: ChartIcon },
-  { title: "5 минут", text: "Мини-диагностика в Telegram с понятными вопросами по маршруту пациента.", icon: BotIcon },
-  { title: "1 маршрут", text: "Карты, сайт, отзывы, заявки, CRM и бот связываются в систему.", icon: ArrowIcon },
-] as const;
+// ==============================
+// SCROLL REVEAL HOOK
+// ==============================
 
-const patientPath = [
-  { label: "Увидел клинику", icon: MapPinIcon, className: "lg:left-[4%] lg:top-[50%]" },
-  { label: "Проверил доверие", icon: ShieldIcon, className: "lg:left-[18%] lg:top-[17%]" },
-  { label: "Сравнил", icon: CompareIcon, className: "lg:left-1/2 lg:top-[5%] lg:-translate-x-1/2" },
-  { label: "Написал", icon: ChatIcon, className: "lg:right-[18%] lg:top-[17%]" },
-  { label: "Записался", icon: CalendarIcon, className: "lg:right-[4%] lg:top-[50%]" },
-] as const;
+function useScrollReveal() {
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("show");
+          }
+        });
+      },
+      { threshold: 0.08 }
+    );
 
-const lossChain = [
-  { title: "Не заметил", text: "Клиника плохо видна в картах, поиске, соцсетях или рекомендациях.", icon: MapPinIcon },
-  { title: "Не нашёл ответы", text: "На сайте и в карточках не хватает понятных услуг, врачей, ценности и сценария записи.", icon: ShieldIcon },
-  { title: "Не доверился", text: "Отзывы, фото, контент и упаковка не снимают тревогу перед обращением.", icon: ToothIcon },
-  { title: "Не оставил заявку", text: "Кнопки, мессенджеры, лид-магнит и путь до контакта не собраны в простой маршрут.", icon: ChatIcon },
-  { title: "Не дошёл до записи", text: "Заявка обработана поздно, нет статуса, CRM, уведомлений или понятного следующего шага.", icon: CalendarIcon },
-] as const;
+    const targets = document.querySelectorAll(".reveal");
+    targets.forEach((el) => observer.observe(el));
 
-const diagnosticResults = [
-  { title: "3–5 точек потерь", text: "Покажем, где клиника может терять пациентов: в картах, сайте, соцсетях, заявках или обработке.", icon: MapPinIcon, className: "lg:col-span-2" },
-  { title: "Приоритеты на запуск", text: "Поможем понять, что чинить первым: упаковку, карты, сайт, Telegram-бота, CRM или контент.", icon: ChartIcon, className: "" },
-  { title: "Карта быстрых улучшений", text: "Сформируем список действий, которые можно внедрить без долгой перестройки.", icon: ArrowIcon, className: "" },
-  { title: "Понимание системы", text: "Покажем, как связать digital-каналы, заявки и обработку в один маршрут пациента.", icon: BotIcon, className: "lg:col-span-2" },
-] as const;
+    return () => observer.disconnect();
+  }, []);
+}
 
-const founderPoints = [
-  "Команда с опытом работы со стоматологиями",
-  "Понимаем путь пациента внутри клиники",
-  "Соединяем маркетинг, разработку и автоматизацию",
-  "3 года в digital и медицинских проектах",
-] as const;
+// ==============================
+// 7K ICONS (Lucide + local)
+// ==============================
+
+const contourIcons = [Eye, ShieldIcon, FileText, MessageCircle, PhoneCall, RotateCcw, BarChart3];
+
+// ==============================
+// FAQ DATA
+// ==============================
 
 const faq = [
-  ["Почему вы начинаете с диагностики, а не с рекламы?", "Реклама усиливает то, что уже собрано. Сначала нужно увидеть, где теряются заявки: в картах, сайте, доверии, кнопках или обработке."],
-  ["Что входит в чек-лист?", "25 точек проверки: карты, сайт, соцсети, отзывы, заявки, CRM, скорость ответа и понятность маршрута пациента."],
-  ["Что такое пред-аудит в Telegram?", "Короткая диагностика в боте. Вы отвечаете на вопросы, а мы видим первичные зоны риска до полноценного разбора."],
-  ["Нужно ли оставлять контакт сразу?", "Нет. Основной сценарий идёт через Telegram-профиль: бот соберёт контекст и подведёт к разбору."],
-  ["Можно ли начать без сайта?", "Да. Часто первые потери видны в картах, отзывах, соцсетях и обработке обращений."],
-  ["Вы работаете только со стоматологиями?", "Фокус сайта — стоматологии. Также есть опыт в смежной медицине, где важны доверие, запись и аккуратная коммуникация."],
-  ["Что быстрее всего даст результат?", "Обычно быстрые улучшения дают карты, отзывы, понятный CTA и скорость обработки заявки."],
-  ["Можно ли подключить CRM позже?", "Да. На старте можно собрать маршрут через Telegram и уведомления, а CRM подключить после диагностики процесса."],
-  ["Чем вы отличаетесь от обычного SMM-подрядчика?", "Мы смотрим не только на публикации, а на путь пациента: от первого касания до заявки, ответа администратора и записи."],
-  ["Как понять, что клиника теряет заявки именно в обработке?", "Смотрим скорость ответа, статусы обращений, уведомления, повторные касания и то, доходит ли диалог до записи."],
-] as const;
+  { q: "Чем вы отличаетесь от digital-агентства?", a: "Digital-агентства продают услуги: сайты, рекламу, SMM. Мы продаём систему. Мы — Patient Flow Company. Наша задача — сделать так, чтобы пациент приходил, записывался, лечился, возвращался и приводил друзей." },
+  { q: "Что такое Индекс пациентопотока?", a: "Это наша собственная метрика, которая оценивает здоровье системы привлечения и удержания пациентов по шкале от 0 до 100. ИПП складывается из 7 параметров — от охвата касаний до прозрачности аналитики." },
+  { q: "Можно ли заказать только сайт или только рекламу?", a: "Мы не рекомендуем заказывать услуги по отдельности. Сайт без контура доверия и конверсии — это красивый буклет, который не приводит пациентов." },
+  { q: "Сколько стоит внедрение системы?", a: "Диагностика — бесплатно. Внедрение одного контура — фиксированная стоимость. Полное внедрение системы 7К — индивидуальный проект." },
+  { q: "Как быстро будет результат?", a: "Первые изменения видны через 2–4 недели. Устойчивый рост ИПП — от 2 до 6 месяцев в зависимости от формата." },
+  { q: "Вы работаете только со стоматологами?", a: "Да, мы специализируемся исключительно на стоматологических клиниках. Понимаем специфику цикла принятия решения, сезонности и юридических аспектов." },
+];
 
-const caseMetrics = ["до 450 лидов", "1,5 млн охват", "146 обращений", "+68% действий в картах", "52 новых отзыва", "97 лидов"] as const;
-const problemDecorIcons = [ToothIcon, ToothbrushIcon, PasteIcon, MapPinIcon, BotIcon, MegaphoneIcon] as const;
+// ==============================
+// FOUNDER POINTS
+// ==============================
 
-const serviceHints = [
-  "Когда соцсети не объясняют ценность врачей",
-  "Когда карты не дают обращений",
-  "Когда сайт не ведёт к заявке",
-  "Когда заявки теряются в переписке",
-  "Когда нет статусов и контроля",
-  "Когда рутину можно ускорить",
-  "Когда система уже готова принимать трафик",
-] as const;
+const founderPoints = [
+  "Patient Flow Company вместо digital-агентства",
+  "Методология 7К для стоматологий",
+  "Измеряем результат индексом пациентопотока",
+  "90-дневные циклы роста вместо одиночных услуг",
+];
+
+// ==============================
+// METRICS FOR DARK SECTION
+// ==============================
+
+const flowMetrics = [
+  { value: "7", label: "контуров пациентопотока" },
+  { value: "9", label: "реализованных кейсов" },
+  { value: "150–750 тыс.", label: "средний доход от внедрения" },
+  { value: "90", label: "дней до первых результатов" },
+];
+
+// ==============================
+// MAIN PAGE
+// ==============================
 
 export default function Home() {
+  useScrollReveal();
+
   return (
     <main id="top" className="overflow-x-hidden">
       <Header />
       <Hero />
-      <LossMap />
-      <LossChain />
-      <LeadMagnet />
-      <DiagnosticOutcome />
-      <MiniDiagnostic />
+      <Methodology7K />
+      <FlowIndex />
+      <DarkStats />
       <CasesSection />
-      <SystemApproach />
+      <WhatWeImplement />
       <Founder />
-      <Services />
-      <Packages />
-      <RepeatChecklistCta />
+      <CollaborationFormats />
       <FAQ />
       <PreAuditForm />
       <Footer />
@@ -104,392 +110,56 @@ export default function Home() {
   );
 }
 
+// ==============================
+// HERO
+// ==============================
+
 function Hero() {
   return (
-    <section id="hero" className="relative overflow-hidden pb-10 pt-6 sm:pb-12 sm:pt-8 lg:min-h-[calc(100svh-96px)]">
-      <div className="hero-wash pointer-events-none absolute inset-0" />
-      <div className="container-pad relative grid gap-8 lg:min-h-[calc(100svh-180px)] lg:grid-cols-[0.92fr_1.08fr] lg:items-center">
-        <div className="max-w-3xl">
-          <p className="mb-4 text-xs font-bold uppercase tracking-[0.14em] text-[color:var(--red)] sm:mb-5 sm:text-sm sm:tracking-[0.24em]">Digital-диагностика для стоматологий</p>
-          <h1 className="brand-title text-4xl font-semibold leading-[0.95] text-[color:var(--ink)] sm:text-6xl lg:text-7xl">
-            Находим, где стоматология <span className="text-[color:var(--red)]">теряет пациентов</span>
-          </h1>
-          <p className="mt-6 max-w-2xl text-lg leading-8 text-[color:var(--muted)]">
-            Собираем digital-систему, которая доводит человека от первого касания до заявки и записи: сайт, карты, отзывы, Telegram-бот, CRM, контент и аналитика.
-          </p>
-          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-            <ButtonLink href={site.links.checklist}>Забрать чек-лист в Telegram</ButtonLink>
-            <ButtonLink href={site.links.audit} variant="ghost">Понять, где теряются пациенты</ButtonLink>
-          </div>
-          <p className="mt-4 text-sm leading-6 text-[color:var(--muted)]">
-            Бот выдаст чек-лист, задаст несколько вопросов и подведёт к разбору клиники.
-          </p>
-          <div className="mt-5 inline-flex max-w-2xl rounded-full border border-[color:var(--line)] bg-white/80 px-4 py-2 text-sm font-semibold leading-6 text-[color:var(--ink)] shadow-[var(--node-shadow)] backdrop-blur">
-            Интегрируем AI-автоматизацию: меньше рутины, быстрее обработка заявок и выше рентабельность без увеличения рекламного бюджета.
-          </div>
-        </div>
-
-        <div className="relative min-h-[540px] sm:min-h-[560px] lg:min-h-[620px]">
-          <div className="absolute left-1/2 top-20 z-10 -translate-x-1/2 lg:top-40">
-            <img src="/brand/mascot-balloon.png" alt="Фирменный воздушный шар ШАРиК-digital" className="balloon-float h-40 w-40 object-contain drop-shadow-2xl sm:h-48 sm:w-48 lg:h-64 lg:w-64" />
-            <span className="balloon-shadow absolute left-1/2 top-full -z-10 h-5 w-36 -translate-x-1/2 rounded-full bg-[color:var(--blue)]/15 blur-md lg:w-48" aria-hidden="true" />
-          </div>
-          <div className="grid grid-cols-2 gap-4 pt-64 sm:grid-cols-5 lg:absolute lg:inset-0 lg:block lg:pt-0">
-            {patientPath.map((item) => (
-              <DiagramNode key={item.label} node={item} />
-            ))}
-          </div>
-
-          <div className="mt-8 grid gap-4 sm:grid-cols-3 lg:absolute lg:bottom-2 lg:left-0 lg:right-0">
-            {keyMetrics.map((metric) => {
-              const Icon = metric.icon;
-              return (
-                <div key={metric.title} className="metric-card card-lift rounded-[22px] border border-white/90 bg-white/85 px-5 py-4 shadow-[var(--node-shadow)] backdrop-blur">
-                  <div className="flex items-center gap-3">
-                    <Icon className="h-5 w-5 text-[color:var(--red)]" />
-                    <div className="metric-pulse text-xl font-black text-[color:var(--red)]">{metric.title}</div>
-                  </div>
-                  <p className="mt-2 text-sm leading-6 text-[color:var(--muted)]">{metric.text}</p>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function DiagramNode({ node }: { node: (typeof patientPath)[number] }) {
-  const Icon = node.icon;
-  return (
-    <div className={`grid justify-items-center gap-3 text-center lg:absolute ${node.className}`}>
-      <div className="icon-float flex h-14 w-14 items-center justify-center rounded-full border border-white bg-white text-[color:var(--red)] shadow-[var(--node-shadow)]">
-        <Icon className="h-6 w-6" />
-      </div>
-      <p className="max-w-[7.5rem] text-sm font-semibold leading-5 text-[color:var(--ink)]">{node.label}</p>
-    </div>
-  );
-}
-
-function LossMap() {
-  const icons = [MapPinIcon, ChatIcon, ShieldIcon, CalendarIcon, ArrowIcon, BotIcon] as const;
-
-  return (
-    <section id="loss-map" className="section-pad relative">
-      <ToothIcon className="pointer-events-none absolute left-4 top-24 h-16 w-16 text-[color:var(--red)] opacity-10 lg:left-14" />
-      <div className="container-pad">
-        <SectionTitle
-          kicker="Где теряются пациенты"
-          title="Проблема редко в одной рекламе"
-          text="Пациент может потеряться на сайте, в картах, отзывах, переписке, звонке или CRM. Поэтому мы смотрим на весь маршрут до записи."
-        />
-        <div className="mb-7 flex flex-wrap justify-center gap-2">
-          {caseMetrics.map((metric) => (
-            <span key={metric} className="premium-badge rounded-full border border-[color:var(--line)] bg-white/90 px-4 py-2 text-sm font-bold text-[color:var(--red)] shadow-sm">
-              {metric}
-            </span>
-          ))}
-        </div>
-        <div className="relative">
-          <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-            {problems.map(([title, text], index) => {
-              const Icon = icons[index];
-              const DecorIcon = problemDecorIcons[index];
-              return (
-                <div key={title} className="card-lift relative z-10 min-h-64 overflow-hidden rounded-[20px] border border-white/80 bg-white/90 p-6 shadow-[var(--node-shadow)]">
-                  <DecorIcon className="pointer-events-none absolute -right-3 -top-3 h-20 w-20 text-[color:var(--red)] opacity-[0.08]" />
-                  <Icon className="mb-5 h-8 w-8 text-[color:var(--red)]" />
-                  <h3 className="text-xl font-semibold text-[color:var(--ink)]">{title}</h3>
-                  <p className="mt-3 text-sm leading-7 text-[color:var(--muted)]">{text}</p>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function LossChain() {
-  return (
-    <section id="loss-chain" className="section-pad bg-white/65">
-      <div className="container-pad">
-        <SectionTitle kicker="Цепочка потерь" title="Пять мест, где путь ломается" text="Если хотя бы одно звено провисает, пациент может не дойти до записи даже при хорошем трафике." />
-        <div className="relative grid gap-5 md:grid-cols-5">
-          {lossChain.map((item, index) => {
-            const Icon = item.icon;
-            return (
-              <div key={item.title} className="card-lift relative z-10 rounded-[20px] border border-white/80 bg-white/90 p-5 shadow-[var(--node-shadow)] md:even:mt-8 md:odd:mt-1">
-                <div className="flex items-center justify-between gap-3">
-                  <div className="text-3xl font-black text-[color:var(--red)]">0{index + 1}</div>
-                  <Icon className="h-7 w-7 text-[color:var(--red)]" />
-                </div>
-                <h3 className="mt-4 text-xl font-semibold text-[color:var(--ink)]">{item.title}</h3>
-                <p className="mt-3 text-sm leading-6 text-[color:var(--muted)]">{item.text}</p>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function LeadMagnet() {
-  return (
-    <section id="checklist" className="section-pad">
-      <div className="container-pad">
-        <div className="lead-magnet-shell relative grid gap-8 overflow-hidden rounded-[28px] border border-white/80 bg-white/90 p-6 shadow-[var(--node-shadow)] md:p-8 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
-          <img src="/brand/mascot-balloon.png" alt="" className="balloon-float pointer-events-none absolute -right-10 -top-10 h-44 w-44 object-contain opacity-10" />
-          <div className="relative">
-            <div className="pill mb-5">Чек-лист: 25 точек, из-за которых стоматология теряет пациентов</div>
-            <div className="mb-4 inline-flex rounded-full bg-[color:var(--red)] px-3 py-1 text-xs font-bold uppercase tracking-[0.12em] text-white">PDF / Telegram</div>
-            <h2 className="brand-title text-4xl font-semibold tracking-tight text-[color:var(--ink)] sm:text-5xl">
-              Проверьте, где ваша стоматология теряет пациентов в digital
-            </h2>
-            <p className="mt-5 max-w-2xl text-lg leading-8 text-[color:var(--muted)]">
-              Чек-лист помогает быстро пройтись по картам, сайту, соцсетям, отзывам, заявкам, обработке и аналитике. В конце станет видно, что требует внимания первым.
-            </p>
-            <div className="mt-7 flex flex-col gap-3 sm:flex-row">
-              <ButtonLink href={site.links.checklist}>Забрать чек-лист в Telegram</ButtonLink>
+    <section className="relative overflow-hidden pb-16 pt-20 sm:pb-20 sm:pt-24 lg:pb-24 lg:pt-32 min-h-[calc(100svh-5rem)] lg:min-h-[calc(100svh-4rem)]">
+      <div className="container-wide h-full flex flex-col lg:flex-row lg:items-center lg:justify-between">
+        <div className="grid gap-12 lg:grid-cols-[1.12fr_0.88fr] lg:items-center w-full">
+          <div className="reveal">
+            <div className="mb-5 inline-flex items-center rounded-full bg-muted px-4 py-1.5 text-xs font-black text-muted-foreground">
+              Patient Flow Company
             </div>
-          </div>
-          <div className="relative rounded-[24px] bg-[color:var(--blue-soft)] p-5">
-            <div className="rounded-[22px] border border-[color:var(--line)] bg-white p-5 shadow-lg">
-              <div className="mb-5 flex items-center justify-between border-b border-dotted border-[color:var(--line)] pb-4">
-                <div>
-                  <p className="text-xs font-bold uppercase tracking-[0.18em] text-[color:var(--red)]">Диагностическая карта</p>
-                  <h3 className="mt-1 text-xl font-bold text-[color:var(--ink)]">25 точек проверки</h3>
-                </div>
-                <ToothIcon className="h-9 w-9 text-[color:var(--red)]" />
-              </div>
-              {["Карты и локальная видимость", "Сайт и посадочные страницы", "Отзывы и доверие", "Заявки, CRM и скорость ответа"].map((item, index) => (
-                <div key={item} className="checklist-row flex items-center gap-4 border-b border-dotted border-[color:var(--line)]/55 py-4 last:border-0">
-                  <NumberBadge>{index + 1}</NumberBadge>
-                  <p className="font-semibold text-[color:var(--ink)]">{item}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function DiagnosticOutcome() {
-  return (
-    <section className="section-pad">
-      <div className="container-pad">
-        <SectionTitle kicker="После диагностики" title="Что вы получите после диагностики" />
-        <div className="grid gap-5 lg:grid-cols-3">
-          {diagnosticResults.map((item, index) => {
-            const Icon = item.icon;
-            return (
-              <div key={item.title} className={`card-lift relative z-10 rounded-[20px] border border-white/80 bg-white/90 p-6 shadow-[var(--node-shadow)] ${item.className}`}>
-                <div className="flex items-center justify-between gap-3">
-                  <NumberBadge>{index + 1}</NumberBadge>
-                  <Icon className="h-7 w-7 text-[color:var(--red)]" />
-                </div>
-                <h3 className="mt-5 text-xl font-semibold text-[color:var(--ink)]">{item.title}</h3>
-                <p className="mt-3 text-sm leading-7 text-[color:var(--muted)]">{item.text}</p>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function MiniDiagnostic() {
-  return (
-    <section id="diagnostic" className="section-pad bg-white/65">
-      <div className="container-pad grid gap-8 lg:grid-cols-[0.85fr_1.15fr] lg:items-center">
-        <div>
-          <div className="pill mb-5">Мини-диагностика в Telegram</div>
-          <h2 className="brand-title text-4xl font-semibold tracking-tight text-[color:var(--ink)] sm:text-5xl">Бот задаст вопросы и покажет слабые места</h2>
-          <p className="mt-5 text-lg leading-8 text-[color:var(--muted)]">
-            Один главный сценарий: пройти пред-аудит, получить контекст и перейти к разбору клиники.
-          </p>
-          <div className="mt-7">
-            <ButtonLink href={site.links.audit}>Пройти пред-аудит в Telegram</ButtonLink>
-          </div>
-        </div>
-        <div className="relative mx-auto w-full max-w-lg rounded-[30px] border border-[color:var(--line)] bg-[color:var(--blue)] p-4 shadow-2xl">
-          <div className="rounded-[24px] bg-white p-4">
-            <div className="mb-4 flex items-center gap-3 border-b border-[color:var(--line)] pb-4">
-              <span className="grid h-10 w-10 place-items-center rounded-full bg-[color:var(--blue-soft)] text-[color:var(--red)]"><BotIcon className="h-5 w-5" /></span>
-              <div>
-                <p className="font-bold text-[color:var(--ink)]">ШАРиК-бот</p>
-                <p className="text-xs text-[color:var(--muted)]">пред-аудит клиники</p>
-              </div>
-            </div>
-            {[
-              "Проверим, где пациент может потеряться до записи?",
-              "С чего начнём: карты, сайт, соцсети или обработка заявок?",
-              "Достаточно ответить на несколько вопросов — бот сохранит контекст для разбора.",
-            ].map((message) => (
-              <div key={message} className="mb-3 max-w-[88%] rounded-2xl bg-[color:var(--blue-soft)] px-4 py-3 text-sm leading-6 text-[color:var(--ink)] odd:max-w-[76%] even:ml-auto even:bg-[color:var(--red-glass)]">
-                {message}
-              </div>
-            ))}
-            <div className="mt-4 flex flex-wrap gap-2">
-              {["Карты", "Сайт", "Заявки", "Не знаю"].map((item) => (
-                <span key={item} className="rounded-full bg-[color:var(--red)] px-3 py-2 text-xs font-bold text-white">{item}</span>
-              ))}
-              <span className="rounded-full border border-[color:var(--line)] bg-white px-3 py-2 text-xs font-bold text-[color:var(--red)]">Начать пред-аудит</span>
-            </div>
-          </div>
-          <img src="/brand/mascot-balloon.png" alt="" className="balloon-float pointer-events-none absolute -right-7 -top-8 h-24 w-24 object-contain" />
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function SystemApproach() {
-  const icons = [ToothIcon, MapPinIcon, ChatIcon, CalendarIcon, BotIcon, ChartIcon] as const;
-
-  return (
-    <section id="system" className="section-pad">
-      <div className="container-pad">
-        <SectionTitle kicker="Системный подход" title="Собираем маршрут пациента целиком" text="Не продаём отдельный инструмент ради инструмента. Связываем каналы, заявки и обработку в понятный маршрут." />
-        <div className="relative mx-auto grid max-w-6xl gap-5 md:grid-cols-2 lg:grid-cols-3">
-          {systemItems.map(([title, text], index) => {
-            const Icon = icons[index];
-            const positions = ["", "lg:translate-y-5", "", "", "lg:translate-y-5", ""];
-            return (
-              <div key={title} className={`card-lift rounded-[20px] border border-white/80 bg-white/90 p-6 shadow-[var(--node-shadow)] ${positions[index]}`}>
-                <div className="flex items-center gap-3">
-                  <Icon className="h-7 w-7 text-[color:var(--red)]" />
-                  <h3 className="text-xl font-semibold text-[color:var(--ink)]">{title}</h3>
-                </div>
-                <p className="mt-3 text-sm leading-7 text-[color:var(--muted)]">{text}</p>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function Founder() {
-  return (
-    <section id="founder" className="section-pad bg-white/65">
-      <div className="container-pad grid gap-8 lg:grid-cols-[0.82fr_1.18fr] lg:items-center">
-        <div className="relative rounded-[28px] border border-white/80 bg-white/90 p-5 text-center shadow-[var(--node-shadow)] md:p-8">
-          <div className="absolute right-5 top-5 rounded-full bg-[color:var(--red)] px-4 py-2 text-sm font-bold text-white">3 года опыта</div>
-          <div className="brand-glass mx-auto aspect-square w-full max-w-sm overflow-hidden rounded-[28px]">
-            <img src="/brand/founder-artem.png" alt="Шакин Артём, основатель ШАРиК-digital" className="h-full w-full object-cover object-center" />
-          </div>
-          <p className="mt-5 text-sm font-semibold text-[color:var(--ink)]">Шакин Артём</p>
-          <p className="text-sm text-[color:var(--muted)]">Основатель ШАРиК-digital</p>
-        </div>
-        <div>
-          <div className="pill mb-5">Основатель</div>
-          <h2 className="brand-title text-4xl font-semibold tracking-tight text-[color:var(--ink)] sm:text-5xl">Шакин Артём — основатель ШАРиК-digital</h2>
-          <div className="mt-5 space-y-4 text-lg leading-8 text-[color:var(--muted)]">
-            <p>Я собираю digital-системы для стоматологий и медицинских проектов: сайты, Telegram-боты, CRM, автоматизации, AI-инструменты, контент и продвижение.</p>
-            <p>Важное отличие ШАРиК-digital — мы смотрим не только на рекламу и красивые страницы, а на реальный путь пациента внутри клиники: как человек выбирает врача, где проверяет доверие, куда пишет, как быстро получает ответ и доходит ли до записи.</p>
-            <p>В команде есть специалисты, которые напрямую работают со стоматологическими клиниками и понимают внутренние процессы: администраторов, врачей, обработку обращений, карты, отзывы и повторные касания.</p>
-            <p>За 3 года работы в digital и медицинских проектах мы пришли к простой логике: клинике нужна не отдельная услуга, а связанная система, где маркетинг, заявки и обработка работают вместе.</p>
-          </div>
-          <div className="mt-7 grid gap-3 sm:grid-cols-2">
-            {founderPoints.map((item) => (
-              <div key={item} className="card-lift flex items-center gap-3 rounded-2xl border border-white/80 bg-white/85 p-4">
-                <NumberBadge>✓</NumberBadge>
-                <p className="font-semibold text-[color:var(--ink)]">{item}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function Services() {
-  const icons = [ChatIcon, MapPinIcon, ToothIcon, BotIcon, CalendarIcon, ChartIcon, ArrowIcon] as const;
-
-  return (
-    <section id="services" className="section-pad bg-white/65">
-      <div className="container-pad">
-        <SectionTitle kicker="Услуги" title="Что подключаем после диагностики" text="Только то, что помогает не терять пациента по дороге к заявке и записи." />
-        <div className="service-ribbon flex flex-col gap-4 md:flex-row md:flex-wrap">
-          {services.map(([title, text], index) => {
-            const Icon = icons[index];
-            return (
-              <div key={title} className="service-pill card-lift rounded-[24px] border border-white/80 bg-white/90 p-5 shadow-[var(--node-shadow)] md:min-w-[280px] md:flex-1">
-                <div className="flex items-center gap-3">
-                  <Icon className="h-7 w-7 shrink-0 text-[color:var(--red)]" />
-                  <h3 className="text-lg font-semibold text-[color:var(--ink)]">{title}</h3>
-                </div>
-                <p className="mt-3 text-sm leading-6 text-[color:var(--muted)]">{text}</p>
-                <p className="mt-4 rounded-2xl bg-[color:var(--blue-soft)] px-4 py-3 text-sm font-semibold text-[color:var(--ink)]">Когда подключаем: {serviceHints[index].replace("Когда ", "")}</p>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function Packages() {
-  return (
-    <section id="solutions" className="section-pad">
-      <div className="container-pad">
-        <SectionTitle kicker="Решения" title="Форматы работы как путь взросления клиники" text="После чек-листа и диагностики становится понятнее, какой формат нужен именно вашей клинике." />
-        <div className="grid gap-5 lg:grid-cols-3">
-          {packages.map((item) => (
-            <div
-              key={item.title}
-              className={`card-lift package-card relative z-10 rounded-[22px] border p-6 shadow-[var(--node-shadow)] ${
-                item.availabilityTone === "dark" ? "premium-package" : item.price === "300 000 ₽" ? "recommended-package bg-white/90" : "bg-white/90"
-              }`}
+            <h1
+              className="font-black leading-[0.92] text-foreground"
+              style={{
+                fontSize: "clamp(2rem, min(7cqi, 5rem), 5rem)",
+              }}
             >
-              <div className="mb-4 flex flex-wrap items-center gap-2">
-                <span className={`inline-flex rounded-full px-3 py-1 text-xs font-bold ${item.availabilityTone === "dark" ? "bg-[color:var(--red)]/20 text-white ring-1 ring-white/20" : "bg-[color:var(--red)] text-white"}`}>{item.badge}</span>
-                <span className={`availability-pill availability-${item.availabilityTone} inline-flex rounded-full px-3 py-1 text-xs font-bold ${item.availabilityTone === "dark" ? "border-white/20 bg-white/10 text-white" : ""}`}>{item.availability}</span>
-                <span className={`inline-flex rounded-full px-3 py-1 text-xs font-bold ${item.availabilityTone === "dark" ? "border border-white/20 bg-white/10 text-white" : "border border-[color:var(--line)] bg-white text-[color:var(--red)]"}`}>{item.price}</span>
-              </div>
-              <div className={`text-4xl font-black leading-none ${item.availabilityTone === "dark" ? "text-white" : "text-[color:var(--ink)]"}`}>{item.price}</div>
-              <h3 className={`brand-title mt-4 text-2xl font-semibold ${item.availabilityTone === "dark" ? "text-white" : "text-[color:var(--ink)]"}`}>{item.title}</h3>
-              <p className={`mt-3 text-sm leading-6 ${item.availabilityTone === "dark" ? "text-white/80" : "text-[color:var(--muted)]"}`}>{item.goal}</p>
-              <ul className={`mt-5 space-y-2 text-sm leading-6 ${item.availabilityTone === "dark" ? "text-white/80" : "text-[color:var(--muted)]"}`}>
-                {item.includes.map((entry) => <li key={entry}>• {entry}</li>)}
-              </ul>
-              <div className="mt-6">
-                <ButtonLink href={site.links.audit} variant={item.availabilityTone === "dark" ? "primary" : "ghost"} className="min-h-10 px-4 py-2 text-xs">Обсудить пакет</ButtonLink>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function RepeatChecklistCta() {
-  return (
-    <section className="section-pad bg-white/65">
-      <div className="container-pad">
-        <div className="section-divider mb-6" />
-        <div className="relative overflow-hidden rounded-[28px] border border-white/80 bg-white/90 p-6 shadow-[var(--node-shadow)] md:p-8">
-          <img src="/brand/mascot-balloon.png" alt="" className="balloon-float pointer-events-none absolute -right-10 -top-10 h-48 w-48 object-contain opacity-10" />
-          <div className="relative flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
-            <div>
-              <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[color:var(--red)]">Пред-аудит в Telegram</p>
-              <p className="mt-2 max-w-2xl text-2xl font-semibold leading-tight text-[color:var(--ink)]">
-                Ответьте на несколько вопросов в боте — и мы увидим, где клиника может терять пациентов ещё до консультации.
-              </p>
-            </div>
-            <div className="flex flex-col gap-3 sm:flex-row">
+              Управляем <span className="text-primary">пациентопотоком</span> стоматологий
+            </h1>
+            <p className="mt-6 max-w-xl text-base leading-7 text-muted-foreground">
+              Внедряем систему 7К: от первого касания до удержания. Не точечные услуги, а готовый контур управления потоком пациентов.
+            </p>
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <ButtonLink href={site.links.audit}>Пройти пред-аудит</ButtonLink>
+              <ButtonLink href={site.links.checklist} variant="outline">
+                Забрать карту потерь
+              </ButtonLink>
+            </div>
+            <p className="mt-4 text-sm text-muted-foreground">
+              5 минут — и увидите, где ваша стоматология теряет пациентов. Бесплатно.
+            </p>
+          </div>
+
+          <div className="relative reveal reveal-delay-2">
+            <SevenKDiagram />
+            <div className="mt-6 grid gap-4 sm:grid-cols-3">
+              <div className="card-sm p-4 shadow-card">
+                <div className="text-2xl font-black text-primary">25</div>
+                <p className="mt-1 text-xs text-muted-foreground">точек пациентопотока</p>
+              </div>
+              <div className="card-sm p-4 shadow-card">
+                <div className="text-2xl font-black text-primary">7</div>
+                <p className="mt-1 text-xs text-muted-foreground">контуров системы</p>
+              </div>
+              <div className="card-sm p-4 shadow-card">
+                <div className="text-2xl font-black text-primary">90</div>
+                <p className="mt-1 text-xs text-muted-foreground">дней до результата</p>
+              </div>
             </div>
           </div>
         </div>
@@ -498,22 +168,175 @@ function RepeatChecklistCta() {
   );
 }
 
-function FAQ() {
+// ==============================
+// 7K DIAGRAM (SVG)
+// ==============================
+
+function SevenKDiagram() {
+  const cx = 200, cy = 160, radius = 110, centerR = 28;
+  const angles = [0, 1, 2, 3, 4, 5, 6].map((i) => (i * 51.43 - 90) * (Math.PI / 180));
+
+  const labels = ["1К", "2К", "3К", "4К", "5К", "6К", "7К"];
+
   return (
-    <section id="faq" className="section-pad">
-      <div className="container-pad">
-        <SectionTitle kicker="FAQ" title="Частые вопросы" />
-        <div className="mx-auto max-w-4xl space-y-4">
-          {faq.map(([q, a]) => (
-            <details key={q} className="faq-item rounded-[20px] border border-white/80 bg-white/90 p-6">
-              <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-lg font-semibold text-[color:var(--ink)]">
-                {q}
-                <span className="faq-arrow grid h-11 w-11 shrink-0 place-items-center rounded-full border border-[color:var(--line)] bg-white text-[color:var(--red)] shadow-sm">
-                  <ChevronDownIcon className="h-4 w-4" />
-                </span>
-              </summary>
-              <p className="faq-content mt-4 leading-7 text-[color:var(--muted)]">{a}</p>
-            </details>
+    <svg viewBox="0 0 400 320" className="mx-auto w-full max-w-md" aria-hidden="true">
+      {angles.map((a, i) => {
+        const next = angles[(i + 1) % 7];
+        return (
+          <line
+            key={`line-${i}`}
+            x1={cx + radius * Math.cos(a)}
+            y1={cy + radius * Math.sin(a)}
+            x2={cx + radius * Math.cos(next)}
+            y2={cy + radius * Math.sin(next)}
+            stroke="#D1D5DB"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+          />
+        );
+      })}
+
+      <circle cx={cx} cy={cy} r={centerR} fill="#FFF" stroke="#760229" strokeWidth="1.5" />
+      <text x={cx} y={cy + 5} textAnchor="middle" className="text-sm font-black" fill="#760229" style={{ fontFamily: "var(--font-body)" }}>
+        7К
+      </text>
+
+      {angles.map((a, i) => {
+        const x = cx + radius * Math.cos(a);
+        const y = cy + radius * Math.sin(a);
+        return (
+          <g key={i}>
+            <circle cx={x} cy={y} r={28} fill="#FFF" stroke={i === 0 ? "#760229" : "#D1D5DB"} strokeWidth="1.5" />
+            <text x={x} y={y + 5} textAnchor="middle" className="text-sm font-black" fill={i === 0 ? "#760229" : "#6B7280"} style={{ fontFamily: "var(--font-body)" }}>
+              {labels[i]}
+            </text>
+          </g>
+        );
+      })}
+    </svg>
+  );
+}
+
+// ==============================
+// METHODOLOGY 7K
+// ==============================
+
+function Methodology7K() {
+  return (
+    <section id="methodology-7k" className="section-pad bg-muted">
+      <div className="container-wide">
+        <div className="reveal">
+          <SectionTitle
+            kicker="Методология 7К"
+            title="7 контуров, которые работают как единый механизм"
+            text="Не разовые услуги, а семь контуров, каждый из которых решает конкретную задачу в маршруте пациента."
+          />
+        </div>
+
+        <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {contours7K.map((contour, index) => {
+            const Icon = contourIcons[index];
+            const label = `${index + 1}К`;
+            return (
+              <div key={contour.id} className="card-base card-lift relative overflow-hidden p-6 sm:p-7">
+                <div className="absolute right-4 top-4 text-5xl font-black text-primary/10 select-none">
+                  {String(index + 1).padStart(2, "0")}
+                </div>
+                <Icon className="mb-4 h-6 w-6 text-primary" strokeWidth={1.5} />
+                <div className="text-xs font-black text-primary">{label}</div>
+                <h3
+                  className="mt-1 font-black text-foreground"
+                  style={{ fontSize: "clamp(1.2rem, min(4cqi, 5rem), 1.75rem)", lineHeight: 1.05 }}
+                >
+                  {contour.title}
+                </h3>
+                <div className="mt-4 space-y-2">
+                  <p className="flex items-start gap-2 text-xs font-black text-primary">
+                    <span className="mt-1.5 block h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
+                    <span>Проверяем: {contour.check}</span>
+                  </p>
+                  <p className="flex items-start gap-2 text-xs text-muted-foreground">
+                    <span className="mt-1.5 block h-1.5 w-1.5 shrink-0 rounded-full bg-muted-foreground/40" />
+                    <span>Потеря: {contour.loss}</span>
+                  </p>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        <div className="mt-10 text-center reveal reveal-delay-3">
+          <div className="card-sm mx-auto inline-block max-w-2xl p-5 shadow-card">
+            <p className="text-base font-black text-foreground">
+              Каждый контур — это конкретная точка потери или точка роста. Мы проверяем все 7 контуров и показываем, с чего стоит начать.
+            </p>
+          </div>
+        </div>
+
+        <div className="mt-8 text-center reveal reveal-delay-4">
+          <ButtonLink href={site.links.audit}>Начать с диагностики</ButtonLink>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ==============================
+// FLOW INDEX
+// ==============================
+
+function FlowIndex() {
+  return (
+    <section id="flow-index" className="section-pad bg-background">
+      <div className="container-wide">
+        <div className="reveal">
+          <SectionTitle
+            kicker="Индекс пациентопотока"
+            title="Метрика, которая заменяет гадание"
+            text="Вместо разрозненных KPI — один числовой показатель здоровья вашего потока пациентов. ИПП учитывает 7 параметров и выдаёт оценку от 0 до 100."
+          />
+        </div>
+
+        <div className="mt-10 grid gap-8 lg:grid-cols-2">
+          <div className="reveal reveal-delay-1">
+            <RadarChart />
+          </div>
+          <div className="reveal reveal-delay-2">
+            <div className="card-base p-6 sm:p-7">
+              <h3 className="font-black text-foreground" style={{ fontSize: "clamp(1.2rem, min(4cqi, 5rem), 1.75rem)", lineHeight: 1.05 }}>
+                Что получите после пред-аудита:
+              </h3>
+              <ul className="mt-6 space-y-3 text-sm text-muted-foreground">
+                {["Ваш текущий ИПП от 0 до 100", "Карту потерь: конкретные этапы", "3–5 приоритетных действий", "План внедрения по контурам", "PDF-отчёт на email"].map((item) => (
+                  <li key={item} className="flex items-center gap-3">
+                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-black text-primary">✓</span>
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div className="mt-6">
+              <ButtonLink href={site.links.audit}>Рассчитать индекс пациентопотока</ButtonLink>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-10 grid gap-5 sm:grid-cols-2">
+          {[
+            { value: "0–100", label: "шкала ИПП" },
+            { value: "7", label: "параметров оценки" },
+            { value: "50–100", label: "средний индекс до внедрения" },
+            { value: "85+", label: "целевой индекс после системы" },
+          ].map((m) => (
+            <div key={m.value} className="card-sm p-4 shadow-card reveal">
+              <div
+                className="font-black text-primary leading-none"
+                style={{ fontSize: "clamp(1.3rem, min(4cqi, 5rem), 2.5rem)" }}
+              >
+                {m.value}
+              </div>
+              <p className="mt-2 text-sm text-muted-foreground">{m.label}</p>
+            </div>
           ))}
         </div>
       </div>
@@ -521,56 +344,422 @@ function FAQ() {
   );
 }
 
-function Footer() {
-  const socialLinks = [
-    { label: "Telegram", href: site.socials.telegram },
-    { label: "VK", href: site.socials.vk },
-    { label: "MAX", href: site.socials.max },
-    { label: "Дзен", href: site.socials.dzen },
-  ] as const;
-  const footerLinks = [
-    ["Где теряются пациенты", "#loss-map"],
-    ["Чек-лист", "#checklist"],
-    ["Кейсы", "#cases"],
-    ["Пакеты", "#solutions"],
-    ["FAQ", "#faq"],
-    ["Политика конфиденциальности", "/privacy"],
-  ] as const;
+// ==============================
+// RADAR CHART (SVG)
+// ==============================
+
+function RadarChart() {
+  const points = 7;
+  const cx = 200, cy = 180, r = 130;
+
+  const getPoint = (i: number, scale: number) => {
+    const angle = (i * (360 / points) - 90) * (Math.PI / 180);
+    return { x: cx + r * scale * Math.cos(angle), y: cy + r * scale * Math.sin(angle) };
+  };
+
+  const data = [0.85, 0.7, 0.6, 0.75, 0.5, 0.4, 0.65];
+  const labels = ["Касание", "Доверие", "Конкретика", "Контакт", "Конверсия", "Курация", "Контроль"];
 
   return (
-    <footer className="border-t border-[color:var(--line)] bg-white/70 py-10">
-      <div className="container-pad grid gap-8 lg:grid-cols-[1.1fr_1fr_0.8fr] lg:items-start">
-        <div>
-          <img src="/brand/logo-header.svg" alt="ШАРиК-digital" className="h-14 w-auto" />
-          <p className="mt-4 max-w-md text-sm leading-6 text-[color:var(--muted)]">
-            Digital-система для стоматологий: чек-лист, диагностика, пред-аудит и внедрение.
-          </p>
-          <div className="mt-5 flex flex-wrap gap-3">
-            {socialLinks.map((item) => {
-              return (
-                <a key={item.label} href={item.href} className="social-chip inline-flex items-center rounded-full border border-[color:var(--line)] bg-white px-4 py-2 text-sm font-semibold text-[color:var(--ink)] transition hover:border-[color:var(--red)] hover:text-[color:var(--red)]">
-                  {item.label}
-                </a>
-              );
-            })}
+    <svg viewBox="0 0 400 360" className="mx-auto w-full max-w-sm" aria-hidden="true">
+      {[0.25, 0.5, 0.75, 1].map((scale) => (
+        <polygon
+          key={scale}
+          points={Array.from({ length: points }, (_, i) => {
+            const p = getPoint(i, scale);
+            return `${p.x},${p.y}`;
+          }).join(" ")}
+          fill="none"
+          stroke="#E5E7EB"
+          strokeWidth="1"
+        />
+      ))}
+      {Array.from({ length: points }, (_, i) => {
+        const p = getPoint(i, 1);
+        return <line key={i} x1={cx} y1={cy} x2={p.x} y2={p.y} stroke="#E5E7EB" strokeWidth="1" />;
+      })}
+      <polygon
+        points={data.map((d, i) => {
+          const p = getPoint(i, d);
+          return `${p.x},${p.y}`;
+        }).join(" ")}
+        fill="rgba(118, 2, 41, 0.1)"
+        stroke="#760229"
+        strokeWidth="2"
+        strokeLinejoin="round"
+      />
+      {data.map((d, i) => {
+        const p = getPoint(i, d);
+        return <circle key={i} cx={p.x} cy={p.y} r="4" fill="#760229" />;
+      })}
+      {labels.map((label, i) => {
+        const p = getPoint(i, 1.18);
+        return (
+          <text key={i} x={p.x} y={p.y} textAnchor="middle" dominantBaseline="middle" className="text-[10px] font-black" fill="#6B7280" style={{ fontFamily: "var(--font-body)" }}>
+            {label}
+          </text>
+        );
+      })}
+    </svg>
+  );
+}
+
+// ==============================
+// DARK STATS SECTION
+// ==============================
+
+function DarkStats() {
+  return (
+    <section className="section-pad" style={{ background: "var(--premium)" }}>
+      <div className="container-wide">
+        <div className="reveal">
+          <h2
+            className="text-center font-black leading-[0.95] text-white"
+            style={{ fontSize: "clamp(1.4rem, min(5cqi, 5rem), 3.6rem)" }}
+          >
+            Patient Flow в цифрах
+          </h2>
+        </div>
+        <div className="mt-10 grid gap-5 lg:grid-cols-[0.95fr_1.05fr]">
+          {/* Left: Image */}
+          <div className="relative reveal reveal-delay-1">
+            <div className="overflow-hidden rounded-[2rem]">
+              <img src="/brand/founder-artem.png" alt="Patient Flow" className="h-full w-full object-cover" />
+            </div>
+            <div className="absolute bottom-4 left-4 right-4 rounded-[1.45rem] border border-white/10 bg-white/8 p-4 backdrop-blur-md">
+              <div className="font-black text-white" style={{ fontSize: "clamp(1.5rem, min(4cqi, 5rem), 2.5rem)" }}>
+                25+
+              </div>
+              <p className="mt-1 text-sm text-white/85">точек пациентопотока</p>
+            </div>
+          </div>
+          {/* Right: Grid of metrics + media block */}
+          <div className="grid gap-4 lg:grid-rows-[auto_1fr]">
+            <div className="grid gap-4 sm:grid-cols-2">
+              {flowMetrics.map((m, i) => (
+                <div
+                  key={m.label}
+                  className="reveal"
+                  style={{
+                    borderRadius: "1.45rem",
+                    borderColor: "rgba(255,255,255,0.1)",
+                    background: "rgba(255,255,255,0.08)",
+                  }}
+                >
+                  <div className="border border-white/10 bg-white/8 p-4 rounded-[1.45rem] backdrop-blur-md">
+                    <div
+                      className="font-black text-white leading-none"
+                      style={{ fontSize: "clamp(1.3rem, min(4cqi, 5rem), 2.5rem)" }}
+                    >
+                      {m.value}
+                    </div>
+                    <p className="mt-2 text-sm text-white/85">{m.label}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="reveal reveal-delay-2 rounded-[1.75rem] border border-white/10 bg-white/8 p-6 backdrop-blur-md">
+              <p className="text-base font-black text-white">
+                Мои медиа: Telegram-канал, YouTube, подкаст о пациентопотоке
+              </p>
+              <div className="mt-4">
+                <ButtonLink href={site.links.consultation} variant="outline">
+                  Задать вопрос
+                </ButtonLink>
+              </div>
+            </div>
           </div>
         </div>
-        <nav className="grid gap-2 sm:grid-cols-2">
-          {footerLinks.map(([label, href]) => (
-            <a key={href} href={href} className="text-sm font-semibold text-[color:var(--ink)] transition hover:text-[color:var(--red)]">
-              {label}
-            </a>
-          ))}
-        </nav>
-        <div className="lg:text-right">
-          <p className="text-sm font-semibold text-[color:var(--ink)]">Telegram-бот</p>
-          <a href={site.botUrl} className="mt-2 inline-flex text-sm font-bold text-[color:var(--red)]">{site.botUsername}</a>
-          <div className="mt-5">
+      </div>
+    </section>
+  );
+}
+
+// ==============================
+// WHAT WE IMPLEMENT
+// ==============================
+
+const implementGroups = [
+  {
+    title: "Контакт + Доверие",
+    icon: Eye,
+    items: ["Карты и локальная видимость", "Репутация и отзывы", "Реклама с привязкой к потоку"],
+    note: "Клиника становится заметной и вызывает доверие на первом же касании.",
+  },
+  {
+    title: "Доверие + Выбор",
+    icon: ShieldIcon,
+    items: ["Упаковка клиники и позиционирование", "Личный бренд врача", "SMM и контент-маркетинг"],
+    note: "Пациент понимает, почему выбрать именно эту клинику.",
+  },
+  {
+    title: "Выбор + Действие",
+    icon: FileText,
+    items: ["Сайты и посадочные страницы", "Формы записи и мессенджеры", "Telegram-боты для сбора заявок"],
+    note: "Каждое касание ведёт к конкретному действию — записи, звонку, заявке.",
+  },
+  {
+    title: "Коммуникация + Камбэк",
+    icon: MessageCircle,
+    items: ["Скрипты и обучение администраторов", "Обработка «подумаю» и недозвонов", "Реактивация и повторные касания"],
+    note: "Ни один пациент не теряется после первого контакта.",
+  },
+  {
+    title: "Камбэк + Контроль",
+    icon: BarChart3,
+    items: ["CRM и автоматизация", "Сквозная аналитика", "AI-инструменты", "Дашборды и отчёты"],
+    note: "Вся система управляется по цифрам, а не по ощущениям.",
+  },
+];
+
+function WhatWeImplement() {
+  return (
+    <section id="services" className="section-pad bg-muted">
+      <div className="container-wide">
+        <div className="reveal">
+          <SectionTitle
+            kicker="Что внедряем"
+            title="Контуры пациентопотока"
+            text="Мы не продаём услуги по отдельности. Мы собираем контуры — готовые блоки системы."
+          />
+        </div>
+
+        <div className="mt-10 grid gap-5 lg:grid-cols-2">
+          {implementGroups.map((group, i) => {
+            const Icon = group.icon;
+            return (
+              <div key={group.title} className="card-base card-lift p-6 sm:p-7 reveal">
+                <div className="mb-4 flex items-center gap-3">
+                  <Icon className="h-6 w-6 text-primary" strokeWidth={1.5} />
+                  <h3 className="text-xl font-black text-foreground">{group.title}</h3>
+                </div>
+                <p className="text-sm leading-7 text-muted-foreground">{group.items.join(" · ")}</p>
+                <div className="mt-4 rounded-[1.45rem] border border-border bg-white p-5">
+                  <p className="text-sm font-black text-foreground">{group.note}</p>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        <div className="mt-10 text-center reveal">
+          <div className="card-sm mx-auto inline-block max-w-xl p-5 shadow-card">
+            <p className="text-base font-black text-foreground">
+              Не уверены, какой контур нужен? Начните с пред-аудита. Мы проверим все 7 контуров и покажем, с чего стоит начать именно вам.
+            </p>
+          </div>
+          <div className="mt-6">
             <ButtonLink href={site.links.audit}>Пройти пред-аудит</ButtonLink>
           </div>
         </div>
       </div>
-      <div className="container-pad mt-8 text-sm text-[color:var(--muted)]">© ШАРиК-digital</div>
+    </section>
+  );
+}
+
+// ==============================
+// FOUNDER
+// ==============================
+
+function Founder() {
+  return (
+    <section id="founder" className="section-pad bg-background">
+      <div className="container-wide">
+        <div className="grid gap-10 lg:grid-cols-[0.82fr_1.18fr] lg:items-center">
+          <div className="reveal">
+            <div className="card-base overflow-hidden p-5 text-center sm:p-7">
+              <div className="mx-auto mb-4 inline-flex items-center rounded-full bg-primary px-4 py-1.5 text-xs font-black text-primary-foreground">
+                Patient Flow Company
+              </div>
+              <div className="mx-auto aspect-square w-full max-w-sm overflow-hidden rounded-section bg-muted">
+                <img src="/brand/founder-artem.png" alt="Шакин Артём" className="h-full w-full object-cover object-center" />
+              </div>
+              <p className="mt-5 text-sm font-black text-foreground">Шакин Артём</p>
+              <p className="text-sm text-muted-foreground">Основатель ШАРиК digital</p>
+            </div>
+          </div>
+          <div className="reveal reveal-delay-1">
+            <div className="mb-5 inline-flex items-center rounded-full bg-muted px-4 py-1.5 text-xs font-black text-muted-foreground">
+              Основатель
+            </div>
+            <h2
+              className="font-black leading-[0.95] text-foreground"
+              style={{ fontSize: "clamp(1.4rem, min(5cqi, 5rem), 3.6rem)" }}
+            >
+              Patient Flow Company для стоматологий
+            </h2>
+            <div className="mt-5 space-y-4 text-base leading-7 text-muted-foreground">
+              <p>Я создаю digital-системы, где маркетинг, заявки и обработка работают как единый маршрут пациента.</p>
+              <p>Наша миссия — научить стоматологию управлять пациентопотоком: видеть потери, закрывать утечки, измерять результат.</p>
+              <p>Мы работаем по методологии 7К: каждый контур оценивается по единому критерию — закрывает ли он потерю пациента.</p>
+            </div>
+            <div className="mt-7 grid gap-3 sm:grid-cols-2">
+              {founderPoints.map((item) => (
+                <div key={item} className="card-lift flex items-center gap-3 rounded-2xl border border-border bg-white p-4 shadow-card">
+                  <NumberBadge>✓</NumberBadge>
+                  <p className="text-sm font-black text-foreground">{item}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ==============================
+// COLLABORATION FORMATS
+// ==============================
+
+const formats = [
+  {
+    badge: "Базовый",
+    title: "База присутствия",
+    desc: "Закрываем критические потери в 1–3 контурах: контакт, доверие, действие",
+    includes: ["Карты и локальная видимость", "Репутация и отзывы", "Базовая рекламная упаковка", "Быстрый старт маршрута"],
+  },
+  {
+    badge: "Системный",
+    title: "Система привлечения",
+    desc: "Связываем 4–6 контуров в единый маршрут + контроль",
+    includes: ["Упаковка клиники и позиционирование", "Личный бренд врачей", "Telegram-бот и мессенджеры", "Скрипты и реактивация"],
+    recommended: true,
+  },
+  {
+    badge: "Масштабирование",
+    title: "Полная система 7К",
+    desc: "Полный patient flow management + индекс потока + 90-дневные циклы + AI-автоматизация",
+    includes: ["Полный контур 1–7", "Индекс пациентопотока", "90-дневные циклы роста", "AI-автоматизация", "Глубокая аналитика"],
+  },
+];
+
+function CollaborationFormats() {
+  return (
+    <section id="solutions" className="section-pad bg-background">
+      <div className="container-wide">
+        <div className="reveal">
+          <SectionTitle
+            kicker="Форматы работы"
+            title="Варианты карт"
+            text="Выбираем формат под задачу: отдельные участки или полная система 7К."
+          />
+        </div>
+
+        <div className="mt-10 grid gap-5 lg:grid-cols-3">
+          {formats.map((f, i) => (
+            <div
+              key={f.title}
+              className={`card-base card-lift p-6 sm:p-7 reveal ${f.recommended ? "ring-1 ring-primary" : ""}`}
+            >
+              <div className="mb-4 inline-flex items-center rounded-full bg-muted px-3 py-1 text-xs font-black text-muted-foreground">
+                {f.badge}
+              </div>
+              <h3
+                className="font-black text-foreground"
+                style={{ fontSize: "clamp(1.2rem, min(4cqi, 5rem), 1.75rem)", lineHeight: 1.05 }}
+              >
+                {f.title}
+              </h3>
+              <p className="mt-2 text-sm text-muted-foreground">{f.desc}</p>
+              <ul className="mt-6 space-y-2">
+                {f.includes.map((item) => (
+                  <li key={item} className="flex items-start gap-2 text-sm text-muted-foreground">
+                    <span className="mt-1 block h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+              <div className="mt-6">
+                <ButtonLink href={site.links.audit} variant={f.recommended ? "primary" : "outline"}>
+                  {f.recommended ? "На встречу" : "Обсудить"}
+                </ButtonLink>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ==============================
+// FAQ
+// ==============================
+
+function FAQ() {
+  const [openIndex, setOpenIndex] = useState<number | null>(null);
+
+  return (
+    <section id="faq" className="section-pad bg-muted">
+      <div className="container-wide">
+        <div className="reveal">
+          <SectionTitle kicker="FAQ" title="Частые вопросы" />
+        </div>
+        <div className="mx-auto mt-10 max-w-3xl">
+          {faq.map((item, i) => (
+            <div key={i} className="border-t border-border/60">
+              <button
+                type="button"
+                onClick={() => setOpenIndex(openIndex === i ? null : i)}
+                className="flex w-full items-center justify-between py-4 text-left text-base font-black text-foreground transition hover:text-primary"
+              >
+                {item.q}
+                <span className="ml-4 shrink-0 text-primary">
+                  {openIndex === i ? <Minus className="h-5 w-5" /> : <Plus className="h-5 w-5" />}
+                </span>
+              </button>
+              {openIndex === i && <div className="pb-4 text-base leading-7 text-muted-foreground">{item.a}</div>}
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ==============================
+// FOOTER
+// ==============================
+
+function Footer() {
+  const socialLinks = [
+    { label: "Telegram", href: site.socials.telegram, icon: "telegram" },
+    { label: "VK", href: site.socials.vk, icon: "vk" },
+    { label: "Дзен", href: site.socials.dzen, icon: "dzen" },
+  ];
+
+  return (
+    <footer className="border-t border-border bg-muted/55 py-10">
+      <div className="container-wide grid gap-8 lg:grid-cols-2 lg:items-start">
+        <div>
+          <div className="text-lg font-black text-foreground">
+            ШАРиК<span className="text-primary">.</span>digital
+          </div>
+          <p className="mt-3 max-w-sm text-sm leading-6 text-muted-foreground">
+            Patient Flow Company для стоматологий: управляем пациентопотоком по методологии 7К.
+          </p>
+          <p className="mt-4 text-sm text-muted-foreground">© ШАРиК digital</p>
+        </div>
+        <div className="flex flex-col items-start gap-4 lg:items-end">
+          <div className="flex flex-wrap gap-3">
+            {socialLinks.map((item) => (
+              <a key={item.label} href={item.href} className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-foreground text-white transition hover:bg-primary">
+                <span className="text-xs font-black">{item.label}</span>
+              </a>
+            ))}
+          </div>
+          <a href="/privacy" className="text-sm font-black text-muted-foreground transition hover:text-primary">
+            Политика конфиденциальности
+          </a>
+          <div>
+            <p className="text-sm font-black text-foreground">Telegram-бот</p>
+            <a href={site.botUrl} className="mt-1 inline-flex text-sm font-black text-primary">
+              {site.botUsername}
+            </a>
+          </div>
+        </div>
+      </div>
     </footer>
   );
 }

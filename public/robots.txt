@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://sharik-digital.ru/sitemap.xml
+Sitemap: https://shakinartem.github.io/sharik-digital-site/sitemap.xml

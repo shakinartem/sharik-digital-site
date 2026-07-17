@@ -1,6 +1,19 @@
-export type MessageReplyMarkup = {
-  inline_keyboard?: Array<Array<{ text: string; url?: string; callback_data?: string }>>;
-} | null;
+export type InlineKeyboardButton = {
+  text: string;
+  url?: string;
+  callback_data?: string;
+};
+
+export type ReplyKeyboardButton = {
+  text: string;
+  request_contact?: boolean;
+};
+
+export type MessageReplyMarkup =
+  | { inline_keyboard: InlineKeyboardButton[][] }
+  | { keyboard: ReplyKeyboardButton[][]; resize_keyboard?: boolean; one_time_keyboard?: boolean; selective?: boolean }
+  | { remove_keyboard: true }
+  | null;
 
 export async function sendMessage(
   token: string,
@@ -99,14 +112,3 @@ export function parseUpdate(update: any) {
     updateId: update?.update_id || null,
   };
 }
-
-</file_content>
-<task_progress>
-- [x] Create Cloudflare Worker structure and configs
-- [x] Implement D1 schema and migrations
-- [x] Implement Telegram API helpers
-- [ ] Implement bot logic: /start, menu, checklist, cases, question, diagnostic, contact flow, cancel/menu
-- [ ] Create docs/cloudflare-worker-bot.md with deploy and rollback
-- [ ] Commit and push
-</task_progress>
-</write_to_file>

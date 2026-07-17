@@ -1,39 +1,38 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://sharik-digital.ru/</loc>
+    <loc>https://shakinartem.github.io/sharik-digital-site/</loc>
     <lastmod>2025-01-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://sharik-digital.ru/blog</loc>
+    <loc>https://shakinartem.github.io/sharik-digital-site/blog</loc>
     <lastmod>2025-01-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://sharik-digital.ru/blog/7-konturov-pacientopotoka</loc>
+    <loc>https://shakinartem.github.io/sharik-digital-site/blog/7-konturov-pacientopotoka</loc>
     <lastmod>2025-01-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://sharik-digital.ru/blog/karta-poter-stomatologii</loc>
+    <loc>https://shakinartem.github.io/sharik-digital-site/blog/karta-poter-stomatologii</loc>
     <lastmod>2025-01-10</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://sharik-digital.ru/blog/indeks-pacientopotoka</loc>
+    <loc>https://shakinartem.github.io/sharik-digital-site/blog/indeks-pacientopotoka</loc>
     <lastmod>2025-01-05</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://sharik-digital.ru/privacy</loc>
+    <loc>https://shakinartem.github.io/sharik-digital-site/privacy</loc>
     <lastmod>2025-01-01</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.5</priority>
   </url>
-</urlset>

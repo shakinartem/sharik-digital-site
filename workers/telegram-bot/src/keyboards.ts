@@ -33,15 +33,23 @@ export function diagnosticResultKeyboard(): MessageReplyMarkup {
 
 export function contactRequestKeyboard(): MessageReplyMarkup {
   return {
-    inline_keyboard: [
-      [{ text: "Поделиться контактом", callback_data: "contact_request" }],
-      [{ text: "Пишите сюда в Telegram", callback_data: "telegram_contact_allowed" }],
-      [{ text: "В меню", callback_data: "menu" }],
+    keyboard: [
+      [{ text: "Поделиться контактом", request_contact: true }],
+      [{ text: "Пишите сюда в Telegram" }],
+      [{ text: "В меню" }],
     ],
+    resize_keyboard: true,
+    one_time_keyboard: true,
   };
 }
 
-export function diagnosticKeyboard(step: number): MessageReplyMarkup {
-  // This will be built dynamically based on questions
-  return null;
+export function diagnosticKeyboard(step: number, options: readonly string[]): MessageReplyMarkup {
+  return {
+    inline_keyboard: options.map((option, index) => [
+      {
+        text: option,
+        callback_data: `diag:${step}:${index}`,
+      },
+    ]),
+  };
 }

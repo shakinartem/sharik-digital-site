@@ -1,0 +1,7 @@
+Metadata-Version: 2.4
+Name: sharik-digital-bot
+Version: 0.1.0
+Summary: Telegram bot MVP for SHARiK-digital
+Requires-Python: >=3.11
+Requires-Dist: aiogram<4,>=3.4
+Requires-Dist: python-dotenv<2,>=1.0

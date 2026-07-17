@@ -16,6 +16,9 @@ import {
   RefreshIcon,
   ControlIcon,
   ChevronDownIcon,
+  TelegramSocialIcon,
+  VkSocialIcon,
+  DzenSocialIcon,
 } from "@/components/icons";
 import { site, contours7K } from "@/data/site";
 import { Eye, FileText, PhoneCall, BarChart3, MessageCircle, ArrowRightToLine, RotateCcw, ArrowUpRight, Plus, Minus } from "lucide-react";
@@ -420,53 +423,38 @@ function DarkStats() {
             Patient Flow в цифрах
           </h2>
         </div>
-        <div className="mt-10 grid gap-5 lg:grid-cols-[0.95fr_1.05fr]">
-          {/* Left: Image */}
-          <div className="relative reveal reveal-delay-1">
-            <div className="overflow-hidden rounded-[2rem]">
-              <img src="/brand/founder-artem.png" alt="Patient Flow" className="h-full w-full object-cover" />
-            </div>
-            <div className="absolute bottom-4 left-4 right-4 rounded-[1.45rem] border border-white/10 bg-white/8 p-4 backdrop-blur-md">
-              <div className="font-black text-white" style={{ fontSize: "clamp(1.5rem, min(4cqi, 5rem), 2.5rem)" }}>
-                25+
-              </div>
-              <p className="mt-1 text-sm text-white/85">точек пациентопотока</p>
-            </div>
-          </div>
-          {/* Right: Grid of metrics + media block */}
-          <div className="grid gap-4 lg:grid-rows-[auto_1fr]">
-            <div className="grid gap-4 sm:grid-cols-2">
-              {flowMetrics.map((m, i) => (
+        <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          {flowMetrics.map((m, i) => (
+            <div
+              key={m.label}
+              className="reveal"
+              style={{
+                borderRadius: "1.45rem",
+                borderColor: "rgba(255,255,255,0.1)",
+                background: "rgba(255,255,255,0.08)",
+              }}
+            >
+              <div className="border border-white/10 bg-white/8 p-5 rounded-[1.45rem] backdrop-blur-md text-center">
                 <div
-                  key={m.label}
-                  className="reveal"
-                  style={{
-                    borderRadius: "1.45rem",
-                    borderColor: "rgba(255,255,255,0.1)",
-                    background: "rgba(255,255,255,0.08)",
-                  }}
+                  className="font-black text-white leading-none"
+                  style={{ fontSize: "clamp(1.5rem, min(4cqi, 5rem), 2.75rem)" }}
                 >
-                  <div className="border border-white/10 bg-white/8 p-4 rounded-[1.45rem] backdrop-blur-md">
-                    <div
-                      className="font-black text-white leading-none"
-                      style={{ fontSize: "clamp(1.3rem, min(4cqi, 5rem), 2.5rem)" }}
-                    >
-                      {m.value}
-                    </div>
-                    <p className="mt-2 text-sm text-white/85">{m.label}</p>
-                  </div>
+                  {m.value}
                 </div>
-              ))}
-            </div>
-            <div className="reveal reveal-delay-2 rounded-[1.75rem] border border-white/10 bg-white/8 p-6 backdrop-blur-md">
-              <p className="text-base font-black text-white">
-                Мои медиа: Telegram-канал, YouTube, подкаст о пациентопотоке
-              </p>
-              <div className="mt-4">
-                <ButtonLink href={site.links.consultation} variant="outline">
-                  Задать вопрос
-                </ButtonLink>
+                <p className="mt-2 text-sm text-white/85">{m.label}</p>
               </div>
+            </div>
+          ))}
+        </div>
+        <div className="mt-10 reveal">
+          <div className="rounded-[1.75rem] border border-white/10 bg-white/8 p-6 backdrop-blur-md text-center">
+            <p className="text-base font-black text-white">
+              Мои медиа: Telegram-канал, YouTube, подкаст о пациентопотоке
+            </p>
+            <div className="mt-4">
+              <ButtonLink href={site.links.consultation} variant="outline">
+                Задать вопрос
+              </ButtonLink>
             </div>
           </div>
         </div>
@@ -481,31 +469,31 @@ function DarkStats() {
 
 const implementGroups = [
   {
-    title: "Контакт + Доверие",
+    title: "Касание + Доверие",
     icon: Eye,
     items: ["Карты и локальная видимость", "Репутация и отзывы", "Реклама с привязкой к потоку"],
     note: "Клиника становится заметной и вызывает доверие на первом же касании.",
   },
   {
-    title: "Доверие + Выбор",
+    title: "Доверие + Конкретика",
     icon: ShieldIcon,
     items: ["Упаковка клиники и позиционирование", "Личный бренд врача", "SMM и контент-маркетинг"],
     note: "Пациент понимает, почему выбрать именно эту клинику.",
   },
   {
-    title: "Выбор + Действие",
+    title: "Конкретика + Контакт",
     icon: FileText,
     items: ["Сайты и посадочные страницы", "Формы записи и мессенджеры", "Telegram-боты для сбора заявок"],
     note: "Каждое касание ведёт к конкретному действию — записи, звонку, заявке.",
   },
   {
-    title: "Коммуникация + Камбэк",
+    title: "Контакт + Конверсия",
     icon: MessageCircle,
     items: ["Скрипты и обучение администраторов", "Обработка «подумаю» и недозвонов", "Реактивация и повторные касания"],
     note: "Ни один пациент не теряется после первого контакта.",
   },
   {
-    title: "Камбэк + Контроль",
+    title: "Конверсия + Курация",
     icon: BarChart3,
     items: ["CRM и автоматизация", "Сквозная аналитика", "AI-инструменты", "Дашборды и отчёты"],
     note: "Вся система управляется по цифрам, а не по ощущениям.",
@@ -568,7 +556,7 @@ function Founder() {
         <div className="grid gap-10 lg:grid-cols-[0.82fr_1.18fr] lg:items-center">
           <div className="reveal">
             <div className="card-base overflow-hidden p-5 text-center sm:p-7">
-              <div className="mx-auto mb-4 inline-flex items-center rounded-full bg-primary px-4 py-1.5 text-xs font-black text-primary-foreground">
+              <div className="mx-auto mb-4 inline-flex items-center rounded-full bg-primary px-4 py-1.5 text-xs font-black text-white">
                 Patient Flow Company
               </div>
               <div className="mx-auto aspect-square w-full max-w-sm overflow-hidden rounded-section bg-muted">
@@ -650,9 +638,12 @@ function CollaborationFormats() {
           {formats.map((f, i) => (
             <div
               key={f.title}
-              className={`card-base card-lift p-6 sm:p-7 reveal ${f.recommended ? "ring-1 ring-primary" : ""}`}
+              className={`card-base card-lift p-6 sm:p-7 reveal ${
+                f.recommended ? "ring-2 ring-primary shadow-xl" : 
+                i === 2 ? "ring-1 ring-primary shadow-card" : ""
+              }`}
             >
-              <div className="mb-4 inline-flex items-center rounded-full bg-muted px-3 py-1 text-xs font-black text-muted-foreground">
+              <div className="mb-4 inline-flex items-center rounded-full px-3 py-1 text-xs font-black bg-white/10 border border-white/20 text-white">
                 {f.badge}
               </div>
               <h3
@@ -698,18 +689,20 @@ function FAQ() {
         </div>
         <div className="mx-auto mt-10 max-w-3xl">
           {faq.map((item, i) => (
-            <div key={i} className="border-t border-border/60">
+            <div key={i} className={`border-t border-border/60 transition-all duration-300 ${openIndex === i ? "bg-primary/5" : ""}`}>
               <button
                 type="button"
                 onClick={() => setOpenIndex(openIndex === i ? null : i)}
                 className="flex w-full items-center justify-between py-4 text-left text-base font-black text-foreground transition hover:text-primary"
               >
                 {item.q}
-                <span className="ml-4 shrink-0 text-primary">
+                <span className="ml-4 shrink-0 text-primary transition-transform duration-200" style={{ transform: openIndex === i ? "rotate(180deg)" : undefined }}>
                   {openIndex === i ? <Minus className="h-5 w-5" /> : <Plus className="h-5 w-5" />}
                 </span>
               </button>
-              {openIndex === i && <div className="pb-4 text-base leading-7 text-muted-foreground">{item.a}</div>}
+              <div className={`overflow-hidden transition-all duration-300 ${openIndex === i ? "max-h-96 pb-4" : "max-h-0"}`}>
+                <p className="text-base leading-7 text-muted-foreground">{item.a}</p>
+              </div>
             </div>
           ))}
         </div>
@@ -723,10 +716,10 @@ function FAQ() {
 // ==============================
 
 function Footer() {
-  const socialLinks = [
-    { label: "Telegram", href: site.socials.telegram, icon: "telegram" },
-    { label: "VK", href: site.socials.vk, icon: "vk" },
-    { label: "Дзен", href: site.socials.dzen, icon: "dzen" },
+  const socialIcons = [
+    { Icon: TelegramSocialIcon, href: site.socials.telegram, label: "Telegram" },
+    { Icon: VkSocialIcon, href: site.socials.vk, label: "VK" },
+    { Icon: DzenSocialIcon, href: site.socials.dzen, label: "Дзен" },
   ];
 
   return (
@@ -743,9 +736,14 @@ function Footer() {
         </div>
         <div className="flex flex-col items-start gap-4 lg:items-end">
           <div className="flex flex-wrap gap-3">
-            {socialLinks.map((item) => (
-              <a key={item.label} href={item.href} className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-foreground text-white transition hover:bg-primary">
-                <span className="text-xs font-black">{item.label}</span>
+            {socialIcons.map(({ Icon, href, label }) => (
+              <a
+                key={label}
+                href={href}
+                className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-foreground text-white transition hover:bg-primary"
+                aria-label={label}
+              >
+                <Icon className="h-5 w-5" />
               </a>
             ))}
           </div>

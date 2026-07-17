@@ -51,7 +51,7 @@ export function CasesSection() {
               type="button"
               onClick={() => setFilter(value)}
               className={`rounded-full border px-4 py-2 text-sm font-black transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
-                filter === value ? "border-primary bg-primary text-primary-foreground" : "border-border bg-white text-foreground hover:border-primary/40"
+                filter === value ? "border-primary bg-primary text-white" : "border-border bg-white text-foreground hover:border-primary/40"
               }`}
             >
               {label}
@@ -60,32 +60,37 @@ export function CasesSection() {
         </div>
 
         <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-          {visibleCases.map((item) => (
-            <button
-              type="button"
-              key={item.id}
-              onClick={() => setActive(item)}
-              className="group overflow-hidden text-left rounded-[2rem] border border-border bg-white transition duration-200 hover:-translate-y-1 hover:shadow-xl hover:shadow-black/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary reveal"
-            >
-              <div className="h-44 overflow-hidden">
-                <img src={item.images[0]} alt={item.title} className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
-              </div>
-              <div className="p-5 sm:p-6">
-                <div className="mb-2 inline-flex items-center rounded-full bg-muted px-3 py-1 text-xs font-black text-muted-foreground">
-                  {item.niche}
+          {visibleCases.map((item, idx) => {
+            const isWide = idx < 2;
+            return (
+              <button
+                type="button"
+                key={item.id}
+                onClick={() => setActive(item)}
+                className={`group overflow-hidden text-left rounded-[2rem] border border-border bg-white transition duration-200 hover:-translate-y-1 hover:shadow-xl hover:shadow-black/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary reveal ${
+                  isWide ? 'lg:col-span-2 lg:flex lg:items-stretch' : ''
+                }`}
+              >
+                <div className={`h-44 overflow-hidden ${isWide ? 'lg:w-2/5 lg:h-auto' : ''}`}>
+                  <img src={item.images[0]} alt={item.title} className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
                 </div>
-                <h3 className="font-black text-foreground" style={{ fontSize: "clamp(1.2rem, min(4cqi, 5rem), 1.75rem)", lineHeight: 1.05 }}>
-                  {item.title}
-                </h3>
-                <div className="mt-2 font-black text-primary">{item.mainResult}</div>
-                <p className="mt-3 text-sm leading-6 text-muted-foreground">{item.shortDescription}</p>
-                <div className="cta-link mt-4 group">
-                  <span>Подробнее</span>
-                  <ArrowUpRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1 group-hover:-translate-y-1" strokeWidth={2.5} />
+                <div className={`p-5 sm:p-6 ${isWide ? 'lg:w-3/5' : ''}`}>
+                  <div className="mb-2 inline-flex items-center rounded-full bg-muted px-3 py-1 text-xs font-black text-muted-foreground">
+                    {item.niche}
+                  </div>
+                  <h3 className="font-black text-foreground" style={{ fontSize: "clamp(1.2rem, min(4cqi, 5rem), 1.75rem)", lineHeight: 1.05 }}>
+                    {item.title}
+                  </h3>
+                  <div className="mt-2 font-black text-primary">{item.mainResult}</div>
+                  <p className="mt-3 text-sm leading-6 text-muted-foreground">{item.shortDescription}</p>
+                  <div className="cta-link mt-4 group">
+                    <span>Подробнее</span>
+                    <ArrowUpRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1 group-hover:-translate-y-1" strokeWidth={2.5} />
+                  </div>
                 </div>
-              </div>
-            </button>
-          ))}
+              </button>
+            );
+          })}
         </div>
 
         {active && <CaseModal item={active} onClose={() => setActive(null)} />}

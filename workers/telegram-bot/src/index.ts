@@ -249,12 +249,12 @@ async function handleAudit(env: Env, parsed: ReturnType<typeof parseUpdate>, sta
       source_route: sourceRoute,
     });
     await sendMessage(env.BOT_TOKEN, chatId, buildAuditIntroText());
-    await sendMessage(
-      env.BOT_TOKEN,
-      chatId,
-      `Шаг 1 из ${QUESTIONS.length}\n\n${QUESTIONS[0].prompt}`,
-      diagnosticKeyboard(0),
-    );
+      await sendMessage(
+        env.BOT_TOKEN,
+        chatId,
+        `Шаг 1 из ${QUESTIONS.length}\n\n${QUESTIONS[0].prompt}`,
+        diagnosticKeyboard(0, QUESTIONS[0].options),
+      );
     return;
   }
 
@@ -272,7 +272,7 @@ async function handleAudit(env: Env, parsed: ReturnType<typeof parseUpdate>, sta
     env.BOT_TOKEN,
     chatId,
     `Шаг ${step + 2} из ${QUESTIONS.length}\n\n${QUESTIONS[step + 1].prompt}`,
-    diagnosticKeyboard(step + 1),
+    diagnosticKeyboard(step + 1, QUESTIONS[step + 1].options),
   );
 }
 
@@ -297,6 +297,11 @@ async function handleCallbackOrContact(env: Env, parsed: ReturnType<typeof parse
   const contact = parsed.contact;
   const callbackData = parsed.callbackData;
   const userId = parsed.userId;
+
+  if (callbackData?.startsWith("diag:")) {
+    await handleDiagnosticCallback(env, parsed, state, callbackData);
+    return;
+  }
 
   if (callbackData) {
     if (callbackData === "menu") {
@@ -400,7 +405,7 @@ async function handleDiagnosticText(env: Env, parsed: ReturnType<typeof parseUpd
 
   const optionIndex = question.options.indexOf(text);
   if (optionIndex === -1) {
-    await sendMessage(env.BOT_TOKEN, chatId, question.prompt, diagnosticKeyboard(question.step));
+    await sendMessage(env.BOT_TOKEN, chatId, question.prompt, diagnosticKeyboard(question.step, question.options));
     return;
   }
 
@@ -424,7 +429,7 @@ async function handleDiagnosticText(env: Env, parsed: ReturnType<typeof parseUpd
     env.BOT_TOKEN,
     chatId,
     `Шаг ${nextStep + 1} из ${QUESTIONS.length}\n\n${QUESTIONS[nextStep].prompt}`,
-    diagnosticKeyboard(nextStep),
+    diagnosticKeyboard(nextStep, QUESTIONS[nextStep].options),
   );
 }
 

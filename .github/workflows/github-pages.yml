@@ -24,6 +24,11 @@ jobs:
 
       - run: npm run build
 
+      - name: Prepare for GitHub Pages
+        run: |
+          touch ./out/.nojekyll
+          cp sitemap.xml ./out/
+
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
         with:

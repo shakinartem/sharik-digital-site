@@ -23,9 +23,7 @@ import {
 import { site, contours7K } from "@/data/site";
 import { Eye, FileText, PhoneCall, BarChart3, MessageCircle, ArrowRightToLine, RotateCcw, ArrowUpRight, Plus, Minus } from "lucide-react";
 
-// ==============================
-// SCROLL REVEAL HOOK
-// ==============================
+const basePath = "/sharik-digital-site";
 
 function useScrollReveal() {
   useEffect(() => {
@@ -47,15 +45,7 @@ function useScrollReveal() {
   }, []);
 }
 
-// ==============================
-// 7K ICONS (Lucide + local)
-// ==============================
-
 const contourIcons = [Eye, ShieldIcon, FileText, MessageCircle, PhoneCall, RotateCcw, BarChart3];
-
-// ==============================
-// FAQ DATA
-// ==============================
 
 const faq = [
   { q: "Чем вы отличаетесь от digital-агентства?", a: "Digital-агентства продают услуги: сайты, рекламу, SMM. Мы продаём систему. Мы — Patient Flow Company. Наша задача — сделать так, чтобы пациент приходил, записывался, лечился, возвращался и приводил друзей." },
@@ -66,10 +56,6 @@ const faq = [
   { q: "Вы работаете только со стоматологами?", a: "Да, мы специализируемся исключительно на стоматологических клиниках. Понимаем специфику цикла принятия решения, сезонности и юридических аспектов." },
 ];
 
-// ==============================
-// FOUNDER POINTS
-// ==============================
-
 const founderPoints = [
   "Patient Flow Company вместо digital-агентства",
   "Методология 7К для стоматологий",
@@ -77,20 +63,12 @@ const founderPoints = [
   "90-дневные циклы роста вместо одиночных услуг",
 ];
 
-// ==============================
-// METRICS FOR DARK SECTION
-// ==============================
-
 const flowMetrics = [
   { value: "7", label: "контуров пациентопотока" },
   { value: "9", label: "реализованных кейсов" },
   { value: "150–750 тыс.", label: "средний доход от внедрения" },
   { value: "90", label: "дней до первых результатов" },
 ];
-
-// ==============================
-// MAIN PAGE
-// ==============================
 
 export default function Home() {
   useScrollReveal();
@@ -113,10 +91,6 @@ export default function Home() {
   );
 }
 
-// ==============================
-// HERO
-// ==============================
-
 function Hero() {
   return (
     <section className="relative overflow-hidden pb-16 pt-20 sm:pb-20 sm:pt-24 lg:pb-24 lg:pt-32 min-h-[calc(100svh-5rem)] lg:min-h-[calc(100svh-4rem)]">
@@ -128,9 +102,7 @@ function Hero() {
             </div>
             <h1
               className="font-black leading-[0.92] text-foreground"
-              style={{
-                fontSize: "clamp(2rem, min(7cqi, 5rem), 5rem)",
-              }}
+              style={{ fontSize: "clamp(2rem, min(7cqi, 5rem), 5rem)" }}
             >
               Управляем <span className="text-primary">пациентопотоком</span> стоматологий
             </h1>
@@ -171,14 +143,9 @@ function Hero() {
   );
 }
 
-// ==============================
-// 7K DIAGRAM (SVG)
-// ==============================
-
 function SevenKDiagram() {
   const cx = 200, cy = 160, radius = 110, centerR = 28;
   const angles = [0, 1, 2, 3, 4, 5, 6].map((i) => (i * 51.43 - 90) * (Math.PI / 180));
-
   const labels = ["1К", "2К", "3К", "4К", "5К", "6К", "7К"];
 
   return (
@@ -198,12 +165,10 @@ function SevenKDiagram() {
           />
         );
       })}
-
       <circle cx={cx} cy={cy} r={centerR} fill="#FFF" stroke="#760229" strokeWidth="1.5" />
       <text x={cx} y={cy + 5} textAnchor="middle" className="text-sm font-black" fill="#760229" style={{ fontFamily: "var(--font-body)" }}>
         7К
       </text>
-
       {angles.map((a, i) => {
         const x = cx + radius * Math.cos(a);
         const y = cy + radius * Math.sin(a);
@@ -220,10 +185,6 @@ function SevenKDiagram() {
   );
 }
 
-// ==============================
-// METHODOLOGY 7K
-// ==============================
-
 function Methodology7K() {
   return (
     <section id="methodology-7k" className="section-pad bg-muted">
@@ -235,7 +196,6 @@ function Methodology7K() {
             text="Не разовые услуги, а семь контуров, каждый из которых решает конкретную задачу в маршруте пациента."
           />
         </div>
-
         <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {contours7K.map((contour, index) => {
             const Icon = contourIcons[index];
@@ -267,7 +227,6 @@ function Methodology7K() {
             );
           })}
         </div>
-
         <div className="mt-10 text-center reveal reveal-delay-3">
           <div className="card-sm mx-auto inline-block max-w-2xl p-5 shadow-card">
             <p className="text-base font-black text-foreground">
@@ -275,7 +234,6 @@ function Methodology7K() {
             </p>
           </div>
         </div>
-
         <div className="mt-8 text-center reveal reveal-delay-4">
           <ButtonLink href={site.links.audit}>Начать с диагностики</ButtonLink>
         </div>
@@ -283,10 +241,6 @@ function Methodology7K() {
     </section>
   );
 }
-
-// ==============================
-// FLOW INDEX
-// ==============================
 
 function FlowIndex() {
   return (
@@ -299,7 +253,6 @@ function FlowIndex() {
             text="Вместо разрозненных KPI — один числовой показатель здоровья вашего потока пациентов. ИПП учитывает 7 параметров и выдаёт оценку от 0 до 100."
           />
         </div>
-
         <div className="mt-10 grid gap-8 lg:grid-cols-2">
           <div className="reveal reveal-delay-1">
             <RadarChart />
@@ -323,7 +276,6 @@ function FlowIndex() {
             </div>
           </div>
         </div>
-
         <div className="mt-10 grid gap-5 sm:grid-cols-2">
           {[
             { value: "0–100", label: "шкала ИПП" },
@@ -346,10 +298,6 @@ function FlowIndex() {
     </section>
   );
 }
-
-// ==============================
-// RADAR CHART (SVG)
-// ==============================
 
 function RadarChart() {
   const points = 7;
@@ -407,10 +355,6 @@ function RadarChart() {
   );
 }
 
-// ==============================
-// DARK STATS SECTION
-// ==============================
-
 function DarkStats() {
   return (
     <section className="section-pad" style={{ background: "var(--premium)" }}>
@@ -463,10 +407,6 @@ function DarkStats() {
   );
 }
 
-// ==============================
-// WHAT WE IMPLEMENT
-// ==============================
-
 const implementGroups = [
   {
     title: "Касание + Доверие",
@@ -511,9 +451,8 @@ function WhatWeImplement() {
             text="Мы не продаём услуги по отдельности. Мы собираем контуры — готовые блоки системы."
           />
         </div>
-
         <div className="mt-10 grid gap-5 lg:grid-cols-2">
-          {implementGroups.map((group, i) => {
+          {implementGroups.map((group) => {
             const Icon = group.icon;
             return (
               <div key={group.title} className="card-base card-lift p-6 sm:p-7 reveal">
@@ -529,7 +468,6 @@ function WhatWeImplement() {
             );
           })}
         </div>
-
         <div className="mt-10 text-center reveal">
           <div className="card-sm mx-auto inline-block max-w-xl p-5 shadow-card">
             <p className="text-base font-black text-foreground">
@@ -545,10 +483,6 @@ function WhatWeImplement() {
   );
 }
 
-// ==============================
-// FOUNDER
-// ==============================
-
 function Founder() {
   return (
     <section id="founder" className="section-pad bg-background">
@@ -560,7 +494,7 @@ function Founder() {
                 Patient Flow Company
               </div>
               <div className="mx-auto aspect-square w-full max-w-sm overflow-hidden rounded-section bg-muted">
-                <img src="/brand/founder-artem.png" alt="Шакин Артём" className="h-full w-full object-cover object-center" />
+                <img src={`${basePath}/brand/founder-artem.png`} alt="Шакин Артём" className="h-full w-full object-cover object-center" />
               </div>
               <p className="mt-5 text-sm font-black text-foreground">Шакин Артём</p>
               <p className="text-sm text-muted-foreground">Основатель ШАРиК digital</p>
@@ -596,10 +530,6 @@ function Founder() {
   );
 }
 
-// ==============================
-// COLLABORATION FORMATS
-// ==============================
-
 const formats = [
   {
     badge: "Базовый",
@@ -633,7 +563,6 @@ function CollaborationFormats() {
             text="Выбираем формат под задачу: отдельные участки или полная система 7К."
           />
         </div>
-
         <div className="mt-10 grid gap-5 lg:grid-cols-3">
           {formats.map((f, i) => (
             <div
@@ -674,10 +603,6 @@ function CollaborationFormats() {
   );
 }
 
-// ==============================
-// FAQ
-// ==============================
-
 function FAQ() {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
@@ -710,10 +635,6 @@ function FAQ() {
     </section>
   );
 }
-
-// ==============================
-// FOOTER
-// ==============================
 
 function Footer() {
   const socialIcons = [

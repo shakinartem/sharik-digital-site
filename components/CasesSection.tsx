@@ -6,6 +6,8 @@ import { site } from "@/data/site";
 import { SectionTitle, ButtonLink } from "./ui";
 import { ArrowUpRight } from "lucide-react";
 
+const basePath = "/sharik-digital-site";
+
 const filters = [
   ["all", "Все"],
   ["dentistry", "Стоматологии"],
@@ -72,7 +74,7 @@ export function CasesSection() {
                 }`}
               >
                 <div className={`h-44 overflow-hidden ${isWide ? 'lg:w-2/5 lg:h-auto' : ''}`}>
-                  <img src={item.images[0]} alt={item.title} className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
+                  <img src={`${basePath}${item.images[0]}`} alt={item.title} className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
                 </div>
                 <div className={`p-5 sm:p-6 ${isWide ? 'lg:w-3/5' : ''}`}>
                   <div className="mb-2 inline-flex items-center rounded-full bg-muted px-3 py-1 text-xs font-black text-muted-foreground">
@@ -186,7 +188,7 @@ function CaseModal({ item, onClose }: { item: CaseItem; onClose: () => void }) {
           </div>
           <div className="space-y-4">
             {item.images.map((image, i) => (
-              <img key={image} src={image} alt={`${item.title}, слайд ${i + 1}`} className="w-full rounded-card border border-border" />
+              <img key={image} src={`${basePath}${image}`} alt={`${item.title}, слайд ${i + 1}`} className="w-full rounded-card border border-border" />
             ))}
           </div>
         </div>

@@ -182,6 +182,19 @@ export function parseArticle(raw, fallbackSlug = "") {
       continue;
     }
 
+    // Картинка: строка вида ![alt](src). Подпись, если есть, берётся
+    // из следующей строки, начинающейся с "caption: ".
+    const image = line.match(/^!\[([^\]]*)\]\(([^)\s]+)\)$/);
+    if (image) {
+      const [, alt, src] = image;
+      const next = (lines[i + 1] || "").trim();
+      const caption = next.startsWith("caption: ")
+        ? next.slice("caption: ".length).trim()
+        : undefined;
+      blocks.push({ t: "image", src, alt, ...(caption ? { caption } : {}) });
+      if (caption) i++;
+      continue;
+    }
     if (line.startsWith("### ")) {
       blocks.push({ t: "h3", text: line.slice(4).trim() });
       continue;
@@ -234,7 +247,9 @@ export function parseArticle(raw, fallbackSlug = "") {
     }
 
     // Абзац: склеиваем мягкие переносы до пустой строки или нового блока
-    const boundary = /^(#{2,3}\s|- |\d+\.\s|\||:::)/;
+    // Границы блоков. Картинка (![...) обязательно в списке: иначе
+  // предыдущий абзац склеился бы с ней в один абзац из двух строк.
+  const boundary = /^(#{2,3}\s|- |\d+\.\s|\||:::|!\[[^\]]*\]\([^)\s]+\)$)/;
     const paragraph = [line];
     while (
       i + 1 < lines.length &&

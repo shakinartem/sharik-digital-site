@@ -26,7 +26,9 @@ export type Block =
   | { t: "ul"; items: string[] }
   | { t: "ol"; items: string[] }
   | { t: "note"; kind: "note" | "warn" | "tip"; title: string; text: string }
-  | { t: "table"; head: string[]; rows: string[][] };
+  | { t: "table"; head: string[]; rows: string[][] }
+  /** Картинка. alt обязателен: без него изображение недоступно. */
+  | { t: "image"; src: string; alt: string; caption?: string }
 
 export type Article = {
   slug: string;

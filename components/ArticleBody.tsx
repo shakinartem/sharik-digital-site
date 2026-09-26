@@ -1,3 +1,4 @@
+import { InlineText } from "@/components/InlineText";
 import { type Block, slugifyHeading } from "@/data/articles";
 import { Info, AlertTriangle, Lightbulb, ExternalLink } from "lucide-react";
 
@@ -76,8 +77,27 @@ function renderBlock(block: Block, key: number) {
     case "p":
       return (
         <p key={key} className="my-4 text-base leading-8 text-muted-foreground">
-          {block.text}
+          <InlineText text={block.text} />
         </p>
+      );
+    case "image":
+      // Рисунок в figure: подпись семантически связана с картинкой,
+      // а не просто висит под ней.
+      return (
+        <figure key={key} className="my-8">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={block.src}
+            alt={block.alt}
+            loading="lazy"
+            className="w-full rounded-2xl border border-border"
+          />
+          {block.caption && (
+            <figcaption className="mt-2 text-center text-xs text-muted-foreground">
+              <InlineText text={block.caption} />
+            </figcaption>
+          )}
+        </figure>
       );
     case "h2":
       return (
@@ -86,7 +106,7 @@ function renderBlock(block: Block, key: number) {
           id={slugifyHeading(block.text)}
           className="mt-12 scroll-mt-24 font-display text-2xl font-bold leading-tight text-foreground sm:text-3xl"
         >
-          {block.text}
+          <InlineText text={block.text} />
         </h2>
       );
     case "h3":
@@ -96,7 +116,7 @@ function renderBlock(block: Block, key: number) {
           id={slugifyHeading(block.text)}
           className="mt-8 scroll-mt-24 font-display text-lg font-bold text-foreground"
         >
-          {block.text}
+          <InlineText text={block.text} />
         </h3>
       );
     case "ul":
@@ -133,9 +153,9 @@ function renderBlock(block: Block, key: number) {
         >
           <p className="flex items-center gap-2 font-display text-sm font-bold text-foreground">
             <Icon className={`h-4 w-4 shrink-0 ${style.iconClass}`} />
-            {block.title}
+            <InlineText text={block.title} />
           </p>
-          <p className="mt-2 text-sm leading-6 text-muted-foreground">{block.text}</p>
+          <p className="mt-2 text-sm leading-6 text-muted-foreground"><InlineText text={block.text} /></p>
         </aside>
       );
     }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { ImageUpload } from "@/components/admin/ImageUpload";
 
 /**
  * Редактор кейсов и отзывов.
@@ -44,6 +45,8 @@ type ReviewForm = {
   text: string;
   result: string;
   niche: string;
+  /** Аватар отзыва: путь к картинке, например /media/имя.jpg */
+  photo: string;
 };
 
 const EMPTY_CASE: CaseForm = {
@@ -68,6 +71,7 @@ const EMPTY_REVIEW: ReviewForm = {
   text: "",
   result: "",
   niche: "",
+  photo: "",
 };
 
 /**
@@ -119,6 +123,7 @@ function reviewToMarkdown(f: ReviewForm): string {
     `result: ${f.result}`,
   ];
   if (f.niche.trim()) lines.push(`niche: ${f.niche.trim()}`);
+  if (f.photo.trim()) lines.push(`photo: ${f.photo.trim()}`);
   lines.push("---", "");
   return lines.join("\n");
 }
@@ -209,6 +214,7 @@ function reviewFromMarkdown(markdown: string): ReviewForm {
     text: readValue(markdown, "text"),
     result: readValue(markdown, "result"),
     niche: readValue(markdown, "niche"),
+    photo: readValue(markdown, "photo"),
   };
 }
 
@@ -645,6 +651,16 @@ export default function SimpleEditor({
                   onChange={(e) => setReview("niche", e.target.value)}
                 />
               </div>
+            </div>
+
+            <div className="rounded-xl border border-neutral-200 p-4">
+              <ImageUpload
+                token={token}
+                label="Фото автора"
+                value={reviewForm.photo}
+                onChange={(url) => setReview("photo", url)}
+                hint="Круглый аватар в карточке отзыва. Без фото показываются инициалы."
+              />
             </div>
 
             <p className="rounded-lg bg-amber-50 px-4 py-2 text-xs text-amber-900">

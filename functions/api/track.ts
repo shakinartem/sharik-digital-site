@@ -27,6 +27,10 @@ interface KVNamespace {
     value: string,
     options?: { expirationTtl?: number },
   ): Promise<void>;
+  list(options?: { prefix?: string; limit?: number }): Promise<{
+    keys: { name: string }[];
+  }>;
+  delete(key: string): Promise<void>;
 }
 
 interface Event {
@@ -51,6 +55,29 @@ const ALLOWED = new Set([
 const MAX_TEXT = 200;
 const MAX_BATCH_PER_MINUTE = 120;
 
+/**
+ * Удаляет дневные логи старше RETENTION_DAYS.
+ *
+ * Вызывается раз в сутки. Нужна потому, что у дневных ключей нет TTL:
+ * лимит expiration_ttl в Cloudflare KV — сутки, а хранить события
+ * нужно дольше, чем один день.
+ */
+async function pruneOldDays(kv: KVNamespace): Promise<void> {
+  const RETENTION_DAYS = 90;
+  const cutoff = new Date(Date.now() - RETENTION_DAYS * 86_400_000)
+    .toISOString()
+    .slice(0, 10);
+
+  const { keys } = await kv.list({ prefix: "analytics:log:" });
+  const stale = keys
+    .map((k) => k.name.replace("analytics:log:", ""))
+    .filter((day) => day < cutoff);
+
+  for (const day of stale) {
+    await kv.delete(`analytics:log:${day}`).catch(() => {});
+  }
+}
+
 export const onRequest = async (context: {
   request: Request;
   env: {
@@ -60,6 +87,7 @@ export const onRequest = async (context: {
   };
 }) => {
   const { request, env } = context;
+
   const noContent = new Response(null, { status: 204 });
 
   if (request.method !== "POST") {
@@ -113,13 +141,23 @@ export const onRequest = async (context: {
         expirationTtl: 120,
       });
 
-      // Пишем по дню, чтобы записи не смешивались
+      // Пишем по дню, чтобы записи не смешивались.
       const day = new Date(now).toISOString().slice(0, 10);
       const key = `analytics:log:${day}`;
       const existing = (await env.ANALYTICS.get(key)) || "";
-      await env.ANALYTICS.put(key, `${existing}${JSON.stringify(event)}\n`, {
-        expirationTtl: 60 * 60 * 24 * 90, // храним 90 дней
-      });
+      // Без expirationTtl намеренно: у Cloudflare KV максимум 86 400
+      // секунд (сутки), и попытка положить 90 дней отвергается с ошибкой.
+      // Раньше она глоталась в catch, и аналитика молча ничего не писала.
+      // Старые дни чистит pruneOldDays ниже.
+      await env.ANALYTICS.put(key, `${existing}${JSON.stringify(event)}\n`);
+      const check = await env.ANALYTICS.get(key);
+
+      // Раз в сутки на первый запрос — уборка старых дней.
+      const pruneKey = `analytics:pruned:${day}`;
+      if (!(await env.ANALYTICS.get(pruneKey))) {
+        await env.ANALYTICS.put(pruneKey, "1", { expirationTtl: 86_400 });
+        await pruneOldDays(env.ANALYTICS);
+      }
     } catch (error) {
       // Ошибка записи не должна ломать страницу — логируем и идём дальше
       console.error("analytics write failed:", error);

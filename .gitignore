@@ -13,6 +13,9 @@ output/
 .wrangler/
 *.log
 
+# Кэш инкрементальной сборки TypeScript
+*.tsbuildinfo
+
 # Python-бот: виртуальное окружение и кэши не должны попадать в git
 bot/.venv/
 bot/**/__pycache__/

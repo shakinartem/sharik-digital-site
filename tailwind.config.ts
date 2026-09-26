@@ -39,8 +39,8 @@ const config: Config = {
         container: "1200px",
       },
       fontFamily: {
-        display: ["var(--font-display)", "Manrope", "system-ui", "sans-serif"],
-        body: ["var(--font-body)", "system-ui", "sans-serif"],
+        display: ["var(--font-display)", "Montserrat", "system-ui", "sans-serif"],
+        body: ["var(--font-body)", "Manrope", "system-ui", "sans-serif"],
       },
     },
   },

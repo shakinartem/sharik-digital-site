@@ -61,9 +61,14 @@ https://t.me/sharik_digital_bot?start=case_<caseId>
 --color-text:        #061F3F;
 --color-text-muted:  #2A132D;
 
---font-display: 'Montserrat Rounded', sans-serif;
+--font-display: 'Montserrat', sans-serif;
 --font-body:    'Manrope', sans-serif;
 ```
+
+> В брендбуке display назван «Montserrat Rounded», но такой гарнитуры не
+> существует, поэтому используется обычный Montserrat (app/layout.tsx).
+> Оба шрифта подключены через `next/font/google` с кириллицей; Montserrat
+> — вариативный 100–900, поэтому `font-bold`/`font-black` не синтезируются.
 
 **Правила по стилю:**
 - Всегда используй CSS-переменные бренда, не хардкодь hex в компонентах без причины

@@ -1,41 +1,33 @@
 import type { Metadata } from "next";
-import localFont from "next/font/local";
-import { Manrope } from "next/font/google";
+import { Manrope, Montserrat } from "next/font/google";
 import "./globals.css";
 
 /**
- * Фирменный Sharik Rounded Display собран из растровых спецификаций
- * (шрифт/build_font_v2.py). Начертания 400/500/700 — честные, а не
- * синтетический bold: разница достигается толщиной штриха, поэтому
- * `font-black` в заголовках не «смазывается».
+ * Типографика по брендбуку (ВСЕ МАТЕРИАЛЫ/Брендовые материалы,
+ * раздел «ТИПОГРАФИКА»): Montserrat — заголовки, Manrope — текст.
+ *
+ * В брендбуке display назван «Montserrat Rounded», но такой гарнитуры нет
+ * ни в Google Fonts, ни в системных шрифтах, поэтому используется обычный
+ * Montserrat. Он подключён вариативным начертанием 100–900, так что
+ * `font-bold`/`font-black` в заголовках не синтезируются, а кириллица
+ * приходит тем же файлом, что и латиница.
  */
-const sharik = localFont({
-  src: [
-    {
-      path: "../public/fonts/SharikRoundedDisplay-Regular.woff2",
-      weight: "400",
-      style: "normal",
-    },
-    {
-      path: "../public/fonts/SharikRoundedDisplay-Medium.woff2",
-      weight: "500",
-      style: "normal",
-    },
-    {
-      path: "../public/fonts/SharikRoundedDisplay-Bold.woff2",
-      weight: "700",
-      style: "normal",
-    },
-  ],
+const montserrat = Montserrat({
+  subsets: ["latin", "cyrillic"],
   variable: "--font-display",
   display: "swap",
-  fallback: ["Manrope", "system-ui", "sans-serif"],
+  fallback: ["system-ui", "sans-serif"],
 });
 
+/**
+ * Manrope — основной текст по брендбуку. 800 добавлен не «про запас»:
+ * `font-black` (900) — самый частый класс в вёрстке, а у Manrope потолок 800,
+ * поэтому без него всё «жирное» молча зажималось до 700.
+ */
 const manrope = Manrope({
   subsets: ["latin", "cyrillic"],
   variable: "--font-body",
-  weight: ["400", "500", "600", "700"],
+  weight: ["400", "500", "600", "700", "800"],
   display: "swap",
 });
 
@@ -75,7 +67,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="ru" className={`${sharik.variable} ${manrope.variable}`}>
+    <html lang="ru" className={`${montserrat.variable} ${manrope.variable}`}>
       <body>{children}</body>
     </html>
   );

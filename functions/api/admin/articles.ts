@@ -78,7 +78,7 @@ function listKey(section: string, slug: string) {
   return `content:item:${section}:${slug}`;
 }
 
-const SECTIONS = new Set(["article", "case", "review"]);
+const SECTIONS = new Set(["article", "case", "review", "faq"]);
 
 async function handleList(env: Env, includeBodies: boolean) {
   const kv = env.CONTENT;
@@ -160,31 +160,42 @@ export const onRequest = async (context: { request: Request; env: Env }) => {
       return json({ error: "Статья слишком большая (максимум 200 КБ)" }, 413);
     }
 
-    // Минимальная валидация frontmatter: без slug и title сборка упадёт,
-    // но ловить это на публикации слишком поздно
     if (!/^---\r?\n/.test(markdown)) {
       return json({ error: "Файл должен начинаться с блока --- (frontmatter)" }, 400);
     }
-    if (!/^slug:\s*\S+/m.test(markdown)) {
-      return json({ error: "В frontmatter нет поля slug" }, 400);
-    }
-    if (!/^title:\s*\S+/m.test(markdown)) {
-      return json({ error: "В frontmatter нет поля title" }, 400);
-    }
 
-    // Раздел из запроса: статья, кейс или отзыв. Без него
+    // Раздел из запроса: статья, кейс, отзыв или вопрос FAQ. Без него
     // админка не сможет разложить записи по вкладкам.
     const section = SECTIONS.has(payload.section || "") ? payload.section! : "article";
 
-    // У статьи идентификатор лежит в frontmatter, у кейса и отзыва —
-    // в поле id. Проверяем нужное, иначе файл не соберётся.
+    // Обязательные поля зависят от типа записи. У статьи идентификатор
+    // и заголовок лежат в frontmatter, у кейса — id и title, у отзыва —
+    // id (его опознаёт автор), у FAQ — id и question. Универсальная
+    // проверка на slug+title запрещала бы два из четырёх форматов.
     const idField = section === "article" ? /^slug:\s*(\S+)/m : /^id:\s*(\S+)/m;
+    if (!idField.test(markdown)) {
+      return json(
+        { error: `В frontmatter нет поля ${section === "article" ? "slug" : "id"}` },
+        400,
+      );
+    }
+
     const declared = markdown.match(idField)?.[1];
     if (declared && declared !== target) {
       return json(
         { error: `Идентификатор в файле (${declared}) не совпадает с заданным (${target})` },
         400,
       );
+    }
+
+    if (section === "article" || section === "case") {
+      if (!/^title:\s*\S+/m.test(markdown)) {
+        return json({ error: "В frontmatter нет поля title" }, 400);
+      }
+    }
+
+    if (section === "faq" && !/^question:\s*\S+/m.test(markdown)) {
+      return json({ error: "В frontmatter нет поля question" }, 400);
     }
 
     const record = {

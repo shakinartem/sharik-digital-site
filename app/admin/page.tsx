@@ -147,9 +147,10 @@ export default function AdminPage() {
   const [articles, setArticles] = useState<Article[]>([]);
   // Дашборд стоит первым: после входа человек должен сразу увидеть
   // заявки и аналитику, а не форму редактора.
-  const [tab, setTab] = useState<"dashboard" | "articles" | "case" | "review">("dashboard");
+  const [tab, setTab] = useState<"dashboard" | "articles" | "case" | "review" | "faq">("dashboard");
   const [caseItems, setCaseItems] = useState<SimpleItem[]>([]);
   const [reviewItems, setReviewItems] = useState<SimpleItem[]>([]);
+  const [faqItems, setFaqItems] = useState<SimpleItem[]>([]);
   const [current, setCurrent] = useState<string | null>(null);
   const [form, setForm] = useState(EMPTY);
   const [status, setStatus] = useState<{ kind: "ok" | "error"; text: string } | null>(null);
@@ -189,6 +190,7 @@ export default function AdminPage() {
       setArticles(data.articles.filter((a) => !a.section || a.section === "article"));
       setCaseItems(data.articles.filter((a) => a.section === "case") as SimpleItem[]);
       setReviewItems(data.articles.filter((a) => a.section === "review") as SimpleItem[]);
+      setFaqItems(data.articles.filter((a) => a.section === "faq") as SimpleItem[]);
       return data.articles;
     },
     [authedRequest],
@@ -389,6 +391,7 @@ export default function AdminPage() {
               ["articles", `Статьи (${articles.length})`],
               ["case", `Кейсы (${caseItems.length})`],
               ["review", `Отзывы (${reviewItems.length})`],
+              ["faq", `FAQ (${faqItems.length})`],
             ] as const
           ).map(([key, label]) => (
             <button
@@ -682,10 +685,14 @@ export default function AdminPage() {
         ) : (
           <SimpleEditor
             kind={tab}
-            items={tab === "case" ? caseItems : reviewItems}
+            items={tab === "case" ? caseItems : tab === "faq" ? faqItems : reviewItems}
             token={token}
             onSaved={(list) =>
-              tab === "case" ? setCaseItems(list) : setReviewItems(list)
+              tab === "case"
+                ? setCaseItems(list)
+                : tab === "faq"
+                  ? setFaqItems(list)
+                  : setReviewItems(list)
             }
             onError={(message) => setStatus({ kind: "error", text: message })}
           />

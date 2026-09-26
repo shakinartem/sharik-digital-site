@@ -65,7 +65,7 @@ function toBase64(text: string): string {
 }
 
 /** Разделы контента, из которых собирается коммит. */
-const CONTENT_PATHS = ["content/articles", "content/cases", "content/reviews"];
+const CONTENT_PATHS = ["content/articles", "content/cases", "content/reviews", "content/faq"];
 
 /** Идентификатор материала: латиница в нижнем регистре, цифры, дефисы. */
 const SLUG_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;

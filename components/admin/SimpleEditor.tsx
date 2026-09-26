@@ -10,7 +10,7 @@ import { useState } from "react";
  * Логика входа, пароля и публикации остаётся на странице /admin.
  */
 
-type Kind = "case" | "review";
+type Kind = "case" | "review" | "faq";
 
 export type SimpleItem = {
   slug: string;
@@ -166,6 +166,41 @@ function caseFromMarkdown(markdown: string): CaseForm {
   };
 }
 
+
+/** Вопрос FAQ: порядок определяет позицию вопроса на странице. */
+type FaqForm = { id: string; order: string; question: string; answer: string };
+
+const EMPTY_FAQ: FaqForm = { id: "", order: "0", question: "", answer: "" };
+
+/** FaqForm -> markdown в формате статей: frontmatter + тело ответа. */
+function faqToMarkdown(f: FaqForm): string {
+  return [
+    "---",
+    "id: " + f.id,
+    "order: " + (Number(f.order) || 0),
+    "question: " + f.question,
+    "---",
+    "",
+    f.answer.trim(),
+    "",
+  ].join("\n");
+}
+
+/** Markdown -> FaqForm. */
+function faqFromMarkdown(markdown: string): FaqForm {
+  const block = markdown.replace(/^---\r?\n([\s\S]*?)\r?\n---\r?\n?/, "$1");
+  const val = (key: string) => {
+    const m = block.match(new RegExp("^" + key + ":\\s*(.*)$", "m"));
+    return m ? m[1].trim().replace(/^["']|["']$/g, "") : "";
+  };
+  const after = markdown.replace(/^---[\s\S]*?\r?\n---\r?\n?/, "");
+  return {
+    id: val("id"),
+    order: val("order") || "0",
+    question: val("question"),
+    answer: after.trim(),
+  };
+}
 function reviewFromMarkdown(markdown: string): ReviewForm {
   return {
     id: readValue(markdown, "id"),
@@ -193,9 +228,11 @@ export default function SimpleEditor({
   onError: (message: string) => void;
 }) {
   const isCase = kind === "case";
+  const isFaq = kind === "faq";
   const [current, setCurrent] = useState<string | null>(null);
   const [caseForm, setCaseForm] = useState<CaseForm>(EMPTY_CASE);
   const [reviewForm, setReviewForm] = useState<ReviewForm>(EMPTY_REVIEW);
+  const [faqForm, setFaqForm] = useState<FaqForm>(EMPTY_FAQ);
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
 
@@ -204,6 +241,8 @@ export default function SimpleEditor({
 
   const setCase = (key: keyof CaseForm, value: string) =>
     setCaseForm((prev) => ({ ...prev, [key]: value }));
+  const setFaq = (key: keyof FaqForm, value: string) =>
+    setFaqForm((prev) => ({ ...prev, [key]: value }));
   const setReview = (key: keyof ReviewForm, value: string) =>
     setReviewForm((prev) => ({ ...prev, [key]: value }));
 
@@ -213,6 +252,7 @@ export default function SimpleEditor({
     setCurrent(slug);
     setStatus(null);
     if (isCase) setCaseForm({ ...EMPTY_CASE, ...caseFromMarkdown(item.markdown) });
+    else if (isFaq) setFaqForm({ ...EMPTY_FAQ, ...faqFromMarkdown(item.markdown) });
     else setReviewForm({ ...EMPTY_REVIEW, ...reviewFromMarkdown(item.markdown) });
   }
 
@@ -220,11 +260,12 @@ export default function SimpleEditor({
     setCurrent(null);
     setStatus(null);
     if (isCase) setCaseForm({ ...EMPTY_CASE, id: "novyy-keys", title: "Новый кейс" });
+    else if (isFaq) setFaqForm({ ...EMPTY_FAQ, id: "novyy-vopros" });
     else setReviewForm({ ...EMPTY_REVIEW, id: "novyy-otzyv", author: "Новый отзыв" });
   }
 
   async function save() {
-    const id = (isCase ? caseForm.id : reviewForm.id).trim();
+    const id = (isCase ? caseForm.id : isFaq ? faqForm.id : reviewForm.id).trim();
     if (!id) {
       onError("Укажите идентификатор");
       return;
@@ -232,7 +273,11 @@ export default function SimpleEditor({
     setBusy(true);
     setStatus(null);
     try {
-      const markdown = isCase ? caseToMarkdown(caseForm) : reviewToMarkdown(reviewForm);
+      const markdown = isCase
+        ? caseToMarkdown(caseForm)
+        : isFaq
+          ? faqToMarkdown(faqForm)
+          : reviewToMarkdown(reviewForm);
       const response = await fetch("/api/admin/articles?slug=" + encodeURIComponent(id), {
         method: "PUT",
         headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
@@ -263,7 +308,7 @@ export default function SimpleEditor({
       const response = await fetch("/api/admin/publish", {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
-        body: JSON.stringify({ paths: [isCase ? "content/cases" : "content/reviews"] }),
+        body: JSON.stringify({ paths: [isCase ? "content/cases" : isFaq ? "content/faq" : "content/reviews"] }),
       });
       const data = (await response.json()) as { error?: string; message?: string };
       if (!response.ok) throw new Error(data.error || "Не удалось опубликовать");
@@ -472,6 +517,61 @@ export default function SimpleEditor({
         ) : (
           <>
             <div className="grid gap-4 md:grid-cols-3">
+        ) : isFaq ? (
+          <>
+            <div className="grid gap-4 md:grid-cols-2">
+              <div>
+                <label className={label} htmlFor="f-id">
+                  Идентификатор
+                </label>
+                <input
+                  id="f-id"
+                  className={field}
+                  value={faqForm.id}
+                  onChange={(e) => setFaq("id", e.target.value)}
+                />
+              </div>
+              <div>
+                <label className={label} htmlFor="f-order">
+                  Порядок на странице
+                </label>
+                <input
+                  id="f-order"
+                  type="number"
+                  className={field}
+                  value={faqForm.order}
+                  onChange={(e) => setFaq("order", e.target.value)}
+                />
+              </div>
+            </div>
+            <div>
+              <label className={label} htmlFor="f-question">
+                Вопрос
+              </label>
+              <input
+                id="f-question"
+                className={field}
+                value={faqForm.question}
+                onChange={(e) => setFaq("question", e.target.value)}
+              />
+            </div>
+            <div>
+              <label className={label} htmlFor="f-answer">
+                Ответ
+              </label>
+              <textarea
+                id="f-answer"
+                rows={6}
+                className={field}
+                value={faqForm.answer}
+                onChange={(e) => setFaq("answer", e.target.value)}
+              />
+            </div>
+            <p className="text-xs text-neutral-500">
+              Порядок задаёт позицию вопроса в блоке FAQ на главной: чем меньше число, тем
+              выше. При одинаковом порядке вопросы идут по идентификатору.
+            </p>
+          </>
               <div>
                 <label className={label} htmlFor="r-id">
                   Идентификатор

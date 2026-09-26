@@ -13,10 +13,19 @@ import { generatedFaq } from "./faq.generated";
 export type FaqItem = {
   id: string;
   order: number;
+  /**
+   * Хаб, к которому относится вопрос: `agency` — про студию,
+   * `kit` — про платформу. Разделение нужно, чтобы вопросы о KIT
+   * не выводились на страницах про клиники.
+   */
+  hub: string;
   /** Текст вопроса. */
   q: string;
   /** Текст ответа. */
   a: string;
 };
 
-export const agencyFaq: FaqItem[] = generatedFaq;
+export const agencyFaq: FaqItem[] = generatedFaq.filter((i) => i.hub === "agency");
+
+/** Вопросы о платформе — для хаба Яндекс KIT. */
+export const kitFaq: FaqItem[] = generatedFaq.filter((i) => i.hub === "kit");

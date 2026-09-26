@@ -377,6 +377,7 @@ export function serializeFaq(item) {
     "---",
     `id: ${item.id}`,
     `order: ${item.order ?? 0}`,
+    `hub: ${item.hub || "agency"}`,
     `question: ${yamlValue(item.q)}`,
     "---",
     "",
@@ -391,6 +392,7 @@ export function parseFaq(raw, fallbackId = "") {
   return {
     id: meta.id || fallbackId,
     order: Number(meta.order) || 0,
+    hub: meta.hub || "agency",
     q: meta.question || "",
     a: body
       .split(/\r?\n/)

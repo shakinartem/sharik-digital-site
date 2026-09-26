@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { sellerLinks } from "@/data/sellers";
 import { ArrowRight, ArrowLeft, Check } from "lucide-react";
+import { track } from "@/lib/analytics";
 
 /**
  * Заявка на расчёт для продавца.
@@ -35,6 +36,7 @@ export function SellerLeadForm() {
   const [turnover, setTurnover] = useState("");
   const [name, setName] = useState("");
   const [contact, setContact] = useState("");
+  const [formStarted, setFormStarted] = useState(false);
 
   const current = STEPS[step];
   const isLast = step === STEPS.length - 1;
@@ -42,6 +44,13 @@ export function SellerLeadForm() {
     (current.id === "shop" && shop.trim().length > 2) ||
     (current.id === "turnover" && turnover.trim().length > 0) ||
     (current.id === "contact" && name.trim().length > 1 && contact.trim().length > 4);
+
+  /** Первое действие в форме — момент, когда человек начал заполнять. */
+  function markFormStart() {
+    if (formStarted) return;
+    setFormStarted(true);
+    track("form_start", { form: "seller_lead" });
+  }
 
   /** Собираем ответ в сообщение для бота. */
   function buildMessage() {
@@ -56,6 +65,13 @@ export function SellerLeadForm() {
   }
 
   function submit() {
+    // Заявка уходит в Telegram-бот, поэтому фиксируем именно отправку,
+    // а не успех доставки: иначе в аналитике будут завышенные числа.
+    track("form_submit", {
+      form: "seller_lead",
+      step: STEPS.length,
+      hasShop: Boolean(shop),
+    });
     const url = `${sellerLinks.potential}&message=${encodeURIComponent(buildMessage())}`;
     window.open(url, "_blank", "noopener");
   }
@@ -111,7 +127,7 @@ export function SellerLeadForm() {
                   type="url"
                   inputMode="url"
                   value={shop}
-                  onChange={(e) => setShop(e.target.value)}
+                  onChange={(e) => { markFormStart(); setShop(e.target.value); }}
                   placeholder="https://www.wildberries.ru/seller/..."
                   className={inputClass}
                   autoFocus
@@ -124,7 +140,7 @@ export function SellerLeadForm() {
                     <button
                       key={v}
                       type="button"
-                      onClick={() => setTurnover(v)}
+                      onClick={() => { markFormStart(); setTurnover(v); }}
                       className={`rounded-2xl border px-4 py-3 text-sm font-bold transition ${
                         turnover === v
                           ? "border-primary bg-primary text-white"
@@ -138,7 +154,7 @@ export function SellerLeadForm() {
                     type="text"
                     inputMode="numeric"
                     value={TURNOVER_PRESETS.includes(turnover) ? "" : turnover}
-                    onChange={(e) => setTurnover(e.target.value)}
+                    onChange={(e) => { markFormStart(); setTurnover(e.target.value); }}
                     placeholder="Своя сумма"
                     className="min-w-[140px] flex-1 rounded-2xl border border-border bg-white px-4 py-3 text-sm text-foreground outline-none transition focus:border-primary"
                   />
@@ -150,7 +166,7 @@ export function SellerLeadForm() {
                   <input
                     type="text"
                     value={name}
-                    onChange={(e) => setName(e.target.value)}
+                    onChange={(e) => { markFormStart(); setName(e.target.value); }}
                     placeholder="Имя"
                     className={inputClass}
                     autoFocus
@@ -159,7 +175,7 @@ export function SellerLeadForm() {
                     type="text"
                     inputMode="tel"
                     value={contact}
-                    onChange={(e) => setContact(e.target.value)}
+                    onChange={(e) => { markFormStart(); setContact(e.target.value); }}
                     placeholder="Телефон или @telegram"
                     className={inputClass}
                   />

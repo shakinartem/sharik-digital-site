@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Manrope, Montserrat } from "next/font/google";
+import { AnalyticsBootstrap } from "@/components/AnalyticsBootstrap";
 import "./globals.css";
 
 /**
@@ -68,7 +69,10 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ru" className={`${montserrat.variable} ${manrope.variable}`}>
-      <body>{children}</body>
+      <body>
+        {children}
+        <AnalyticsBootstrap />
+      </body>
     </html>
   );
 }

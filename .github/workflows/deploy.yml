@@ -1,0 +1,60 @@
+name: Deploy content
+
+# Срабатывает, когда админка коммитит контент в content/.
+# Нужен потому, что проект создан через Direct Upload: deploy hooks
+# в Cloudflare Pages доступны только Git-интеграции, а переключиться
+# на неё Direct Upload-проект не может.
+on:
+  push:
+    branches: [feature/final-layout-funnel]
+    paths:
+      - "content/**"
+      - "data/*.generated.ts"
+      - "app/**"
+      - "components/**"
+      - "functions/**"
+      - "scripts/**"
+      - "package.json"
+      - "next.config.mjs"
+      - "wrangler.toml"
+  workflow_dispatch:
+
+concurrency:
+  # Новый пуш отменяет предыдущий: иначе при нескольких правках
+  # подряд собиралось бы несколько версий подряд.
+  group: pages-deploy
+  cancel-in-progress: true
+
+jobs:
+  build-and-deploy:
+    name: Build and deploy
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      # Генерация типизированных данных из content/*.md.
+      # Отдельным шагом, а не только в build, чтобы падение контента
+      # (битая related-ссылка, пустой title) было видно в логе сразу.
+      - name: Generate content
+        run: npm run content
+
+      - name: Build
+        run: npm run build
+
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          # Токен берётся из секретов репозитория, а не из переменных
+          # проекта Pages: здесь он нужен самому workflow.
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy out --project-name sharik-digital-site --branch feature/final-layout-funnel

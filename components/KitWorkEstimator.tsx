@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { ButtonLink } from "./ui";
 import { sellerLinks } from "@/data/sellers";
 import { Package, Check } from "lucide-react";
+import { track } from "@/lib/analytics";
 
 type KitInputs = {
   skus: number;
@@ -92,9 +93,20 @@ function Toggle({
 
 export function KitWorkEstimator() {
   const [inputs, setInputs] = useState<KitInputs>(DEFAULT_INPUTS);
+  const [started, setStarted] = useState(false);
 
-  const set = <K extends keyof KitInputs>(key: K, value: KitInputs[K]) =>
+  // Событие «калькулятор запущен» шлём один раз — при первом изменении
+  // любого параметра. Пустая форма сама по себе ещё не интерес.
+  const markStarted = () => {
+    if (started) return;
+    setStarted(true);
+    track("calculator_start", { tool: "kit_estimate" });
+  };
+
+  const set = <K extends keyof KitInputs>(key: K, value: KitInputs[K]) => {
+    markStarted();
     setInputs((prev) => ({ ...prev, [key]: value }));
+  };
 
   const result = useMemo(() => estimate(inputs), [inputs]);
 
@@ -232,7 +244,19 @@ export function KitWorkEstimator() {
               Пришлите ссылку на каталог — посмотрим, что можно перенести и что придётся
               делать заново.
             </p>
-            <div className="mt-4">
+            {/* Событие «калькулятор завершён» ловим на обёртке: ButtonLink
+                рендерит внешний <a>, и подменять его разметку ради
+                аналитики не нужно. */}
+            <div
+              className="mt-4"
+              onClick={() =>
+                track("calculator_complete", {
+                  tool: "kit_estimate",
+                  skus: inputs.skus,
+                  units: result.units,
+                })
+              }
+            >
               <ButtonLink href={sellerLinks.potential} className="w-full">
                 Получить точный расчёт
               </ButtonLink>

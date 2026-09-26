@@ -1,32 +1,27 @@
 /**
- * Загрузка изображений в R2.
+ * Загрузка изображений.
  *
- * Файлы кладутся в приватный бакет и отдаются через /media/<путь>.
- * Публичный домен r2.dev намеренно не используется: он даёт открытый
- * листинг всего бакета и домен вида r2.dev, который нельзя переименовать.
- * Раздача идёт через Pages Function — бакет остаётся закрытым.
+ * Файл кладётся в public/media/ репозитория через GitHub API, и уже
+ * существующий конвейер (коммит -> GitHub Actions -> деплой) выкладывает
+ * его на сайт. Отдельное объектное хранилище не требуется: фото
+ * версионируются вместе с контентом, поэтому откат статьи откатывает и
+ * её картинку.
  *
- * Ограничения заданы жёстко: без них можно залить в бакет что угодно
- * и занять его чужими файлами.
+ * Ограничения жёсткие: без них в репозиторий попадёт что угодно.
  */
 
-/** Минимальный интерфейс R2 без внешних зависимостей. */
-interface R2Bucket {
-  put(key: string, value: ArrayBuffer, options?: {
-    httpMetadata?: { contentType?: string; cacheControl?: string };
-  }): Promise<unknown>;
-}
-
 interface Env {
-  MEDIA?: R2Bucket;
   ADMIN_PASSWORD?: string;
+  GITHUB_TOKEN?: string;
+  GITHUB_REPO?: string;
+  GITHUB_BRANCH?: string;
 }
 
 const MAX_BYTES = 5 * 1024 * 1024; // 5 МБ
 
 /**
- * Разрешённые типы. Список закрыт: по расширению определять тип нельзя,
- * клиент присылает имя файла, которому ничего нельзя верить.
+ * Разрешённые типы. Список закрыт: имя файла приходит от клиента,
+ * доверять ему нельзя — сверяем MIME-тип заголовка.
  */
 const ALLOWED: Record<string, string> = {
   "image/jpeg": "jpg",
@@ -42,7 +37,7 @@ const json = (data: unknown, status = 200) =>
     headers: { "Content-Type": "application/json; charset=utf-8" },
   });
 
-/** Случайное имя: исходное имя файла не используем, чтобы исключить обход пути. */
+/** Случайное имя: исходное не используем, чтобы исключить обход пути. */
 function safeName(mime: string): string {
   const ext = ALLOWED[mime];
   const bytes = new Uint8Array(8);
@@ -52,6 +47,17 @@ function safeName(mime: string): string {
     .join("")
     .slice(0, 12);
   return `${Date.now()}-${suffix}.${ext}`;
+}
+
+function toBase64(buffer: ArrayBuffer): string {
+  const bytes = new Uint8Array(buffer);
+  const CHUNK = 0x8000;
+  let binary = "";
+  for (let i = 0; i < bytes.length; i += CHUNK) {
+    const part = bytes.subarray(i, i + CHUNK);
+    for (let j = 0; j < part.length; j++) binary += String.fromCharCode(part[j]);
+  }
+  return btoa(binary);
 }
 
 export const onRequest = async (context: { request: Request; env: Env }) => {
@@ -64,15 +70,11 @@ export const onRequest = async (context: { request: Request; env: Env }) => {
     return json({ error: "Требуется авторизация" }, 401);
   }
 
-  if (!env.MEDIA) {
-    return json(
-      {
-        error:
-          "Хранилище не подключено. Создайте бакет R2 и добавьте привязку MEDIA в wrangler.toml.",
-      },
-      500,
-    );
+  const [owner, name] = env.GITHUB_REPO?.split("/") || [];
+  if (!env.GITHUB_TOKEN || !owner || !name) {
+    return json({ error: "Не настроен доступ к репозиторию" }, 500);
   }
+  const branch = env.GITHUB_BRANCH || "main";
 
   const form = await request.formData().catch(() => null);
   const file = form?.get("file");
@@ -81,31 +83,49 @@ export const onRequest = async (context: { request: Request; env: Env }) => {
   const mime = file.type.toLowerCase();
   if (!ALLOWED[mime]) {
     return json(
-      { error: `Формат ${mime || "неизвестен"} не поддерживается. Допустимы: JPG, PNG, WebP, GIF, SVG` },
+      {
+        error: `Формат ${mime || "неизвестен"} не поддерживается. Допустимы: JPG, PNG, WebP, GIF, SVG`,
+      },
       400,
     );
   }
-  if (file.size > MAX_BYTES) {
-    return json({ error: "Файл больше 5 МБ" }, 413);
-  }
+  if (file.size > MAX_BYTES) return json({ error: "Файл больше 5 МБ" }, 413);
 
-  const key = safeName(mime);
+  const fileName = safeName(mime);
   const body = await file.arrayBuffer();
 
-  await env.MEDIA.put(key, body, {
-    httpMetadata: {
-      contentType: mime,
-      // Имена уникальны и не перезаписываются, поэтому кэш надолгий.
-      cacheControl: "public, max-age=31536000, immutable",
+  // Contents API принимает содержимое файла — для картинок это base64.
+  const response = await fetch(
+    `https://api.github.com/repos/${owner}/${name}/contents/public/media/${fileName}`,
+    {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${env.GITHUB_TOKEN}`,
+        Accept: "application/vnd.github+json",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        message: `Медиатека: ${fileName}`,
+        branch,
+        committer: { name: "ШАРиК CMS", email: "cms@sharik-digital.ru" },
+        content: toBase64(body),
+      }),
     },
-  });
+  ).catch(() => null);
+
+  if (!response || !response.ok) {
+    const detail = response
+      ? (await response.text().catch(() => "")).slice(0, 200)
+      : "нет связи с GitHub";
+    return json({ error: `Не удалось загрузить: ${detail}` }, 502);
+  }
 
   return json({
     ok: true,
-    key,
-    // Путь для вставки в markdown и в поле photo.
-    url: `/media/${key}`,
+    // public/media превращается в /media на сайте.
+    url: `/media/${fileName}`,
     size: file.size,
     type: mime,
+    message: "Файл загружен. Сайт обновится в течение 1–2 минут.",
   });
 };

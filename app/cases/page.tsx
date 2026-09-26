@@ -9,21 +9,29 @@ import { SectionTitle } from "@/components/ui";
 import { cases } from "@/data/cases";
 import { site } from "@/data/site";
 
-type Filter = "all" | "clinic" | "other";
+/**
+ * Страница кейсов. Фильтр ведётся по направлению (Селлерам / Клиникам),
+ * а не по нише. Категория «Селлерам» намеренно пустая: направление новое,
+ * и вместо выдуманных кейсов показывается честная плашка с переходом
+ * к расчёту потенциала.
+ */
+type Filter = "all" | "sellers" | "clinic" | "other";
 
 const FILTERS: { key: Filter; label: string }[] = [
   { key: "all", label: "Все" },
-  { key: "clinic", label: "Клиники" },
+  { key: "sellers", label: "Селлерам" },
+  { key: "clinic", label: "Клиникам" },
   { key: "other", label: "Другое" },
 ];
 
 export default function CasesPage() {
   const [filter, setFilter] = useState<Filter>("all");
 
-  const visible = useMemo(
-    () => (filter === "all" ? cases : cases.filter((item) => item.direction === filter)),
-    [filter],
-  );
+  const visible = useMemo(() => {
+    if (filter === "all") return cases;
+    if (filter === "sellers") return [];
+    return cases.filter((item) => item.direction === filter);
+  }, [filter]);
 
   return (
     <main className="overflow-x-hidden">
@@ -56,12 +64,27 @@ export default function CasesPage() {
           </div>
 
           <p className="mx-auto mt-4 max-w-2xl text-center text-sm text-muted-foreground">
-            Показано {visible.length} из {cases.length}. Кейсов по продавцам маркетплейсов пока нет — мы
-            не публикуем выдуманные истории ради красивого портфолио.
+            Показано {visible.length} из {cases.length}. Кейсов по продавцам маркетплейсов
+            пока нет — мы не публикуем выдуманные истории ради красивого портфолио.
           </p>
 
-          <div className="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {visible.map((item) => (
+          {filter === "sellers" ? (
+            <div className="mx-auto mt-10 max-w-3xl rounded-[1.75rem] border border-primary/25 bg-primary-soft p-8 text-center">
+              <h2 className="font-display text-2xl font-bold text-foreground">
+                Новое направление
+              </h2>
+              <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-muted-foreground">
+                Развиваем собственный канал продаж для селлеров. Первые проекты
+                формируются — кейсов на эту вертикаль пока нет. Как только появятся
+                первые клиенты и подтверждённая экономика, опубликуем их здесь.
+              </p>
+              <Link href="/sellers#potential" className="btn-primary mt-6">
+                Посмотреть, как считаем потенциал
+              </Link>
+            </div>
+          ) : (
+            <div className="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {visible.map((item) => (
               <article key={item.id} className="card-base card-lift flex flex-col p-6">
                 <div className="flex items-start justify-between gap-3">
                   <div>
@@ -104,6 +127,7 @@ export default function CasesPage() {
               </article>
             ))}
           </div>
+          )}
         </div>
       </section>
 

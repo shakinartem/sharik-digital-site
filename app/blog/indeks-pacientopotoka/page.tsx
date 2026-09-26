@@ -3,7 +3,7 @@ import { SiteFooter } from "@/components/SiteFooter";
 import { SectionTitle } from "@/components/ui";
 
 export const metadata = {
-  title: "Индекс пациентопотока — ШАРиК digital",
+  title: "Индекс пациентопотока",
   description: "Как измерять управляемость маршрута пациента и понимать, готова ли клиника к масштабированию.",
 };
 

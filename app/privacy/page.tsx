@@ -3,7 +3,7 @@ import { SiteFooter } from "@/components/SiteFooter";
 import { site } from "@/data/site";
 
 export const metadata = {
-  title: "Политика конфиденциальности ШАРиК digital",
+  title: "Политика конфиденциальности",
   description: "Информация об обработке персональных данных, которые мы собираем через Telegram-бот при диагностике пациентопотока.",
 };
 
@@ -14,7 +14,7 @@ export default function PrivacyPage() {
       <section className="section-pad">
         <div className="container-wide max-w-4xl">
           <div className="card-base p-8 md:p-12">
-            <h1 className="text-4xl font-black tracking-tight">Политика конфиденциальности ШАРиК digital</h1>
+            <h1 className="text-4xl font-black tracking-tight">Политика конфиденциальности</h1>
             <p className="mt-6 leading-8 text-muted">
               Эта страница — шаблон политики конфиденциальности для сайта ШАРиК digital. Перед публикацией рекомендуется адаптировать текст под юридические данные владельца сайта и фактические способы обработки персональных данных.
             </p>

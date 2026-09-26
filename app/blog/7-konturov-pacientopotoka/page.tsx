@@ -3,7 +3,7 @@ import { SiteFooter } from "@/components/SiteFooter";
 import { SectionTitle } from "@/components/ui";
 
 export const metadata = {
-  title: "7 контуров пациентопотока — ШАРиК digital",
+  title: "7 контуров пациентопотока",
   description: "Методология 7К: контакт, кредит доверия, выбор, действие, коммуникация, камбэк, контроль — как управлять пациентом от первого касания до записи.",
 };
 

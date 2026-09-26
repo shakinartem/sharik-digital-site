@@ -24,7 +24,7 @@ const posts = [
 ];
 
 export const metadata = {
-  title: "Блог — ШАРиК digital",
+  title: "Блог о пациентопотоке и 7К",
   description: "Статьи о пациентопотоке, методологии 7К и управлении digital-системами для стоматологий.",
 };
 

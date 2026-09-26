@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useState } from "react";
 import { SiteHeader } from "@/components/SiteHeader";
@@ -44,19 +44,19 @@ function useScrollReveal() {
 const contourIcons = [Eye, ShieldIcon, FileText, MessageCircle, PhoneCall, RotateCcw, BarChart3];
 
 const faq = [
-  { q: "Чем вы отличаетесь от digital-агентства?", a: "Digital-агентства продают услуги: сайты, рекламу, SMM. Мы продаём систему. Мы — Patient Flow Company. Наша задача — сделать так, чтобы пациент приходил, записывался, лечился, возвращался и приводил друзей." },
-  { q: "Что такое Индекс пациентопотока?", a: "Это наша собственная метрика, которая оценивает здоровье системы привлечения и удержания пациентов по шкале от 0 до 100. ИПП складывается из 7 параметров — от охвата касаний до прозрачности аналитики." },
+  { q: "Чем вы отличаетесь от digital-агентства?", a: "Digital-агентства продают услуги: сайты, рекламу, SMM. Мы продаём систему. Направление Patient Flow в ШАРиК digital: наша задача — сделать так, чтобы пациент приходил, записывался, лечился, возвращался и приводил друзей." },
+  { q: "Что такое Индекс пациентопотока?", a: "Это метрика, которая оценивает здоровье системы привлечения и удержания пациентов по шкале от 0 до 100. ИПП складывается из 7 параметров — от охвата касаний до прозрачности аналитики. Значение считается по вашим данным, а не сравнивается с отраслевым нормативом." },
   { q: "Можно ли заказать только сайт или только рекламу?", a: "Мы не рекомендуем заказывать услуги по отдельности. Сайт без контура доверия и конверсии — это красивый буклет, который не приводит пациентов." },
   { q: "Сколько стоит внедрение системы?", a: "Диагностика — бесплатно. Внедрение одного контура — фиксированная стоимость. Полное внедрение системы 7К — индивидуальный проект." },
-  { q: "Как быстро будет результат?", a: "Первые изменения видны через 2–4 недели. Устойчивый рост ИПП — от 2 до 6 месяцев в зависимости от формата." },
+  { q: "Как быстро будет результат?", a: "Первые изменения видны через 2–4 недели. Устойчивый эффект — от 2 до 6 месяцев в зависимости от формата. Точные сроки внутри кейсов — по фактическим внедрениям." },
   { q: "Вы работаете только со стоматологами?", a: "Да, мы специализируемся исключительно на стоматологических клиниках. Понимаем специфику цикла принятия решения, сезонности и юридических аспектов." },
 ];
 
 const founderPoints = [
-  "Patient Flow Company вместо digital-агентства",
+  "Направление Patient Flow внутри ШАРиК digital",
   "Методология 7К для стоматологий",
   "Измеряем результат индексом пациентопотока",
-  "90-дневные циклы роста вместо одиночных услуг",
+  "90-дневные циклы внедрения вместо одиночных услуг",
 ];
 
 export default function ClinicsPage() {
@@ -90,26 +90,27 @@ function Hero() {
       <div className="container-wide h-full flex flex-col lg:flex-row lg:items-center lg:justify-between">
         <div className="grid gap-12 lg:grid-cols-[1.12fr_0.88fr] lg:items-center w-full">
           <div className="reveal">
-            <div className="mb-5 inline-flex items-center rounded-full bg-muted px-4 py-1.5 text-xs font-black text-muted-foreground">
-              Patient Flow Company
+            <div className="mb-5 inline-flex items-center rounded-full bg-muted px-4 py-1.5 text-xs font-bold text-muted-foreground">
+              ШАРиК digital · Направление: Patient Flow
             </div>
             <h1
-              className="font-black leading-[0.92] text-foreground"
-              style={{ fontSize: "clamp(2rem, min(7cqi, 5rem), 5rem)" }}
+              className="font-display font-bold leading-[0.95] text-foreground"
+              style={{ fontSize: "clamp(1.9rem, min(7cqi, 5rem), 4.4rem)" }}
             >
-              Управляем <span className="text-primary">пациентопотоком</span> стоматологий
+              Помогаем клиникам <span className="text-primary">видеть и закрывать</span> потери пациентов
             </h1>
-            <p className="mt-6 max-w-xl text-base leading-7 text-muted-foreground">
-              Внедряем систему 7К: от первого касания до удержания. Не точечные услуги, а готовый контур управления потоком пациентов.
+            <p className="mt-6 max-w-xl text-base leading-7 text-muted-foreground sm:text-lg">
+              Методология 7К показывает, где пациент теряется — от первого касания до записи
+              и повторного визита.
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <ButtonLink href={site.links.audit}>Пройти пред-аудит</ButtonLink>
-              <ButtonLink href={site.links.checklist} variant="outline">
-                Забрать карту потерь
+              <ButtonLink href="#cases" variant="outline">
+                Посмотреть кейсы
               </ButtonLink>
             </div>
             <p className="mt-4 text-sm text-muted-foreground">
-              5 минут — и увидите, где ваша стоматология теряет пациентов. Бесплатно.
+              5 минут — и увидите, где ваша клиника теряет пациентов.
             </p>
           </div>
 
@@ -117,16 +118,18 @@ function Hero() {
             <SevenKDiagram />
             <div className="mt-6 grid gap-4 sm:grid-cols-3">
               <div className="card-sm p-4 shadow-card">
-                <div className="text-2xl font-black text-primary">25</div>
-                <p className="mt-1 text-xs text-muted-foreground">точек пациентопотока</p>
+                <div className="text-2xl font-display font-bold text-primary">25</div>
+                <p className="mt-1 text-xs text-muted-foreground">точек контроля</p>
               </div>
               <div className="card-sm p-4 shadow-card">
-                <div className="text-2xl font-black text-primary">7</div>
-                <p className="mt-1 text-xs text-muted-foreground">контуров системы</p>
+                <div className="text-2xl font-display font-bold text-primary">7</div>
+                <p className="mt-1 text-xs text-muted-foreground">контуров пациентопотока</p>
               </div>
               <div className="card-sm p-4 shadow-card">
-                <div className="text-2xl font-black text-primary">90</div>
-                <p className="mt-1 text-xs text-muted-foreground">дней до результата</p>
+                <div className="text-2xl font-display font-bold text-primary">90</div>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  дней — цикл внедрения
+                </p>
               </div>
             </div>
           </div>
@@ -273,12 +276,14 @@ function FlowIndex() {
             </div>
           </div>
         </div>
+        {/* Нормативы «средний индекс до внедрения 50–100» и «целевой 85+»
+            убраны: достаточной статистической базы, чтобы называть их
+            средним и целевым, у нас нет. Осталась только шкала и
+            методика расчёта. */}
         <div className="mt-10 grid gap-5 sm:grid-cols-2">
           {[
             { value: "0–100", label: "шкала ИПП" },
             { value: "7", label: "параметров оценки" },
-            { value: "50–100", label: "средний индекс до внедрения" },
-            { value: "85+", label: "целевой индекс после системы" },
           ].map((m) => (
             <div key={m.value} className="card-sm p-4 shadow-card reveal">
               <div
@@ -354,8 +359,8 @@ function RadarChart() {
 
 const flowMetrics = [
   { value: "7", label: "контуров пациентопотока" },
-  { value: "9", label: "реализованных кейсов" },
-  { value: "90", label: "дней до первых результатов" },
+  { value: "9+", label: "реализованных проектов" },
+  { value: "90", label: "дней — цикл внедрения" },
 ];
 
 function DarkStats() {
@@ -438,7 +443,7 @@ const implementGroups = [
   {
     title: "Конверсия + Курация",
     icon: BarChart3,
-    items: ["CRM и автоматизация", "Сквозная аналитика", "AI-инструменты", "Дашборды и отчёты"],
+    items: ["CRM и автоматизация", "Сквозная аналитика", "Дашборды и отчёты"],
     note: "Вся система управляется по цифрам, а не по ощущениям.",
   },
 ];
@@ -514,8 +519,8 @@ function Founder() {
         <div className="grid gap-10 lg:grid-cols-[0.82fr_1.18fr] lg:items-center">
           <div className="reveal">
             <div className="card-base overflow-hidden p-5 text-center sm:p-7">
-              <div className="mx-auto mb-4 inline-flex items-center rounded-full bg-primary px-4 py-1.5 text-xs font-black text-white">
-                Patient Flow Company
+              <div className="mx-auto mb-4 inline-flex items-center rounded-full bg-primary px-4 py-1.5 text-xs font-bold text-white">
+                Направление: Patient Flow
               </div>
               <div className="mx-auto aspect-square w-full max-w-sm overflow-hidden rounded-section bg-muted">
                 <img src="/brand/founder-artem.png" alt="Шакин Артём" className="h-full w-full object-cover object-center" />
@@ -532,7 +537,7 @@ function Founder() {
               className="font-black leading-[0.95] text-foreground"
               style={{ fontSize: "clamp(1.4rem, min(5cqi, 5rem), 3.6rem)" }}
             >
-              Patient Flow Company для стоматологий
+              ШАРиК digital для клиник
             </h2>
             <div className="mt-5 space-y-4 text-base leading-7 text-muted-foreground">
               <p>Я создаю digital-системы, где маркетинг, заявки и обработка работают как единый маршрут пациента.</p>
@@ -571,8 +576,8 @@ const formats = [
   {
     badge: "Масштабирование",
     title: "Полная система 7К",
-    desc: "Полный patient flow management + индекс потока + 90-дневные циклы + AI-автоматизация",
-    includes: ["Полный контур 1–7", "Индекс пациентопотока", "90-дневные циклы роста", "AI-автоматизация", "Глубокая аналитика"],
+    desc: "Полный контур 1–7, индекс потока и 90-дневные циклы внедрения",
+    includes: ["Полный контур 1–7", "Индекс пациентопотока", "90-дневные циклы внедрения", "Сквозная аналитика"],
     fullSystem: true,
   },
 ];

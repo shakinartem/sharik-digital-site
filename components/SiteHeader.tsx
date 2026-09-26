@@ -8,10 +8,22 @@ import { DIRECTIONS } from "@/data/agency";
 
 type NavItem = { label: string; href: string };
 
+/**
+ * Навигация в шапке.
+ *
+ * Блог убран: сейчас это не существенный канал трафика, а приоритет —
+ * конверсия, кейсы и заявки. Блог остался в футере, на отдельной
+ * странице и в sitemap.
+ *
+ * «Методология» ведёт на 7К — это ядро клинического направления,
+ * поэтому ссылка контекстная и указывает на якорь, а не на отдельный
+ * раздел sitemap.
+ */
 const NAV: NavItem[] = [
   { label: "Кейсы", href: "/cases" },
-  { label: "О нас", href: "/about" },
-  { label: "Блог", href: "/blog" },
+  { label: "Методология", href: "/clinics#methodology-7k" },
+  { label: "О компании", href: "/about" },
+  { label: "Контакты", href: "/contacts" },
 ];
 
 export function SiteHeader({
@@ -145,7 +157,7 @@ export function SiteHeader({
               </Link>
             ))}
             <div className="px-4 pb-1 pt-3 text-xs font-black uppercase tracking-wide text-muted-foreground">
-              Агентство
+              Компания
             </div>
             {NAV.map((item) => (
               <Link

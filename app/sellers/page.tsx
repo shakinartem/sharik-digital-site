@@ -9,7 +9,6 @@ import {
   sellerLinks,
   sellerProducts,
   sellerNotFit,
-  sellerObjections,
   sellerFaq,
   sellerProcess,
   sellerAnchors,
@@ -53,6 +52,19 @@ function useScrollReveal() {
   }, []);
 }
 
+/**
+ * Страница продавцов сокращена примерно на четверть.
+ *
+ * Порядок блоков и что изменилось:
+ *  - Objections удалён как отдельная секция: пять вопросов дублировали
+ *    FAQ. Самые сильные из них перенесены в FAQ ниже.
+ *  - На его месте появился блок «Новое направление» — он честно
+ *    показывает, что seller-кейсов ещё нет.
+ *  - Anchors сокращён до пяти пунктов, процесс до четырёх шагов,
+ *    продукты до трёх ступеней без жёстких цен.
+ *  - Схема «Модель» осталась единственной: раньше она дублировалась
+ *    полем «Процесс» из семи микро-этапов.
+ */
 export default function SellersPage() {
   useScrollReveal();
 
@@ -67,7 +79,7 @@ export default function SellersPage() {
       <Potential />
       <Products />
       <Process />
-      <Objections />
+      <NewDirection />
       <NotFit />
       <Faq />
       <FinalCta />
@@ -87,24 +99,24 @@ function Hero() {
       <div className="container-wide">
         <div className="grid gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-center lg:gap-14">
           <div className="reveal">
-            <div className="inline-flex items-center gap-2 rounded-full border border-border bg-white px-4 py-2 text-xs font-black text-foreground">
+            <div className="inline-flex items-center gap-2 rounded-full border border-border bg-white px-4 py-2 text-xs font-bold text-foreground">
               <span className="h-2 w-2 rounded-full bg-primary" />
               Направление для продавцов маркетплейсов
             </div>
 
             <h1
-              className="mt-6 font-black leading-[0.95] text-foreground"
+              className="mt-6 font-display font-bold leading-[0.95] text-foreground"
               style={{ fontSize: "clamp(2rem, 6cqi, 4rem)" }}
             >
-              Собственный канал
+              У маркетплейса есть продажи.
               <br />
-              продаж <span className="text-primary">поверх</span> маркетплейсов
+              У бренда может быть <span className="text-primary">собственный канал</span>
             </h1>
 
             <p className="mt-6 max-w-xl text-base leading-7 text-muted-foreground sm:text-lg">
-              Вы уже продаёте на Wildberries, Ozon или Яндекс Маркете. У вас есть товары, отзывы,
-              рейтинг и бренд. Мы поможем превратить это в собственный интернет-магазин — с
-              расчётом экономики, трафиком и повторными продажами.
+              Помогаем продавцам WB, Ozon и Яндекс Маркета запускать собственный
+              интернет-магазин и выстраивать вокруг него систему трафика, продаж и
+              повторных покупок.
             </p>
 
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
@@ -128,9 +140,9 @@ function Hero() {
               </p>
               <ul className="mt-5 space-y-4">
                 {[
-                  { icon: Database, text: "Свою клиентскую базу вместо аренды чужой" },
+                  { icon: Database, text: "Собственный канал коммуникации с покупателями" },
                   { icon: Search, text: "Спрос из поиска Яндекса, а не только из рекламы" },
-                  { icon: Repeat, text: "Повторные продажи без оплаты каждого заказа" },
+                  { icon: Repeat, text: "Больше возможностей для повторных продаж" },
                   { icon: TrendingUp, text: "Канал, который растёт вместе с ассортиментом" },
                 ].map(({ icon: Icon, text }) => (
                   <li key={text} className="flex items-start gap-3">
@@ -156,7 +168,7 @@ function Anchors() {
         <div className="reveal">
           <SectionTitle
             kicker="Узнаёте себя?"
-            title="Семь ситуаций, из-за которых селлеры застревают"
+            title="Пять ситуаций, из-за которых селлеры застревают"
             text="Если хотя бы три пункта про вас — это уже повод считать потенциал, а не просто работать."
           />
         </div>
@@ -247,66 +259,41 @@ function Model() {
   );
 }
 
+/**
+ * Блок сжат с трёх карточек «чего не продаём» до одного сильного
+ * блока. Смысл остался: KIT — инфраструктура, а не результат.
+ */
 function NotASite() {
-  const items = [
-    {
-      wrong: "«Сделаем вам сайт на Яндекс KIT»",
-      right:
-        "Мы не делаем сайты. Мы запускаем канал продаж и отвечаем за его экономику. Сайт — только один из элементов.",
-    },
-    {
-      wrong: "«Запустим рекламу в Директе»",
-      right:
-        "Реклама — один из четырёх каналов. Без поисковой оптимизации, товарных каналов и CRM реклама просто сжигает бюджет.",
-    },
-    {
-      wrong: "«Обещаем рост выручки в 3 раза»",
-      right:
-        "Мы считаем три сценария по вашим цифрам и показываем допущения. Потенциал зависит от ассортимента, спроса и конкуренции.",
-    },
-  ];
-
   return (
     <section className="section-pad" style={{ background: "var(--premium)" }}>
       <div className="container-wide">
-        <div className="reveal">
-          <div className="mx-auto mb-10 max-w-3xl text-center">
-            <div className="mb-5 inline-flex items-center rounded-full bg-white/10 px-4 py-1.5 text-xs font-black text-white/80">
-              Позиционирование
-            </div>
-            <h2
-              className="font-black leading-[0.95] text-white"
-              style={{ fontSize: "clamp(1.4rem, 5cqi, 3rem)" }}
-            >
-              Чего мы сознательно не продаём
-            </h2>
+        <div className="reveal mx-auto max-w-4xl text-center">
+          <div className="mb-5 inline-flex items-center rounded-full bg-white/10 px-4 py-1.5 text-xs font-bold text-white/80">
+            Позиционирование
           </div>
+          <h2
+            className="font-display font-bold leading-[0.95] text-white"
+            style={{ fontSize: "clamp(1.5rem, 5cqi, 3rem)" }}
+          >
+            Мы не делаем «ещё один сайт»
+          </h2>
+          <p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-white/80">
+            KIT — инфраструктура. Наша задача — сделать так, чтобы собственный магазин
+            получил трафик, заказы и повторные покупки.
+          </p>
         </div>
 
-        <div className="grid gap-5 lg:grid-cols-3">
-          {items.map((item, i) => (
-            <div
-              key={item.wrong}
-              className="reveal rounded-[1.75rem] border border-white/10 bg-white/5 p-6"
-              style={{ transitionDelay: `${i * 110}ms` }}
-            >
-              <p className="text-sm font-black text-white/45 line-through">{item.wrong}</p>
-              <p className="mt-4 text-sm leading-6 text-white/90">{item.right}</p>
-            </div>
-          ))}
-        </div>
-
-        <div className="reveal mt-10 rounded-[1.75rem] border border-white/10 bg-white/5 p-6 sm:p-8">
+        <div className="reveal mx-auto mt-10 max-w-3xl rounded-[1.75rem] border border-white/10 bg-white/5 p-6 sm:p-8">
           <div className="flex items-start gap-4">
             <ShieldCheck className="mt-1 h-6 w-6 shrink-0 text-white" />
             <div>
-              <p className="text-base font-black text-white">
+              <p className="font-display text-base font-bold text-white">
                 Вы получаете расчёт до того, как платите за запуск
               </p>
-              <p className="mt-2 max-w-3xl text-sm leading-6 text-white/75">
-                На старте мы считаем потенциал, срок окупаемости и риски. Если экономика не
-                сходится — говорим об этом прямо и не берём деньги за запуск. Считаем, а не
-                убеждаем.
+              <p className="mt-2 text-sm leading-6 text-white/75">
+                На старте считаем потенциал, сценарии экономики и риски. Если экономика не
+                сходится — говорим об этом прямо и не берём деньги за запуск. Считаем, а
+                не убеждаем.
               </p>
             </div>
           </div>
@@ -359,8 +346,8 @@ function Potential() {
         <div className="reveal">
           <SectionTitle
             kicker="Расчёт"
-            title="Посчитайте потенциал своего канала"
-            text="Подставьте свои цифры. Калькулятор покажет три сценария и напомнит, что это оценка, а не обещание."
+            title="Предварительный расчёт потенциала"
+            text="Подставьте свои цифры. Покажем диапазон по трём сценариям и сразу скажем, что учесть: маржу, количество SKU, стоимость привлечения и долю повторных покупок."
           />
         </div>
         <PotentialCalculator />
@@ -382,8 +369,8 @@ function Products() {
         <div className="reveal">
           <SectionTitle
             kicker="Продукты"
-            title="Лестница: от расчёта до внешнего e-commerce отдела"
-            text="Каждый следующий шаг — это надстройка над предыдущим. Начинаем с расчёта, а не с развёрнутого внедрения."
+            title="Три шага: от расчёта до развития канала"
+            text="Начинаем с оценки потенциала. Стоимость следующих шагов подтверждаем после неё — она зависит от объёма и состояния вашей экономики."
           />
         </div>
 
@@ -413,8 +400,9 @@ function Products() {
                 >
                   {p.title}
                 </h3>
-                <p className={`mt-2 text-sm font-black ${isDark ? "text-white/90" : "text-primary"}`}>
-                  {p.price} · {p.period}
+                <p className={`mt-2 text-sm font-bold ${isDark ? "text-white/90" : "text-primary"}`}>
+                  {p.price}
+                  {p.period ? ` · ${p.period}` : ""}
                 </p>
                 <p
                   className={`mt-3 text-sm leading-6 ${isDark ? "text-white/75" : "text-muted-foreground"}`}
@@ -451,7 +439,7 @@ function Process() {
         <div className="reveal">
           <SectionTitle
             kicker="Процесс"
-            title="Семь шагов от расчёта до повторных продаж"
+            title="Четыре шага: от диагностики до роста канала"
             text="Каждый этап заканчивается результатом, который можно проверить. Переходим дальше только после проверки гипотез."
           />
         </div>
@@ -518,18 +506,33 @@ function Accordion({ items }: { items: ReadonlyArray<{ q: string; a: string }> }
   );
 }
 
-function Objections() {
+/**
+ * Блок «Новое направление» сознательно показывает пустоту seller-кейсов
+ * вместо того, чтобы прятать её. Тактика из брифа: честное «направление
+ * формируется» работает лучше выдуманных цифр и лишних вопросов.
+ */
+function NewDirection() {
   return (
-    <section id="objections" className="section-pad bg-muted">
+    <section className="section-pad bg-muted">
       <div className="container-wide">
-        <div className="reveal">
-          <SectionTitle
-            kicker="Возражения"
-            title="Что обычно говорят продавцы — и что на это отвечаем"
-            text="Если вашего вопроса нет здесь, задайте его напрямую — ответим без презентации."
-          />
+        <div className="reveal mx-auto max-w-3xl rounded-[1.75rem] border border-primary/25 bg-white p-8 text-center sm:p-10">
+          <div className="mb-4 inline-flex items-center rounded-full bg-primary-soft px-4 py-1.5 text-xs font-bold text-primary">
+            Новое направление
+          </div>
+          <h2 className="font-display text-2xl font-bold leading-tight text-foreground">
+            По продавцам кейсов пока нет — и мы не будем их выдумывать
+          </h2>
+          <p className="mx-auto mt-4 max-w-2xl text-sm leading-6 text-muted-foreground">
+            Развиваем собственный канал продаж. Первые проекты формируются: нужны
+            первые клиенты, кейсы и подтверждённая экономика, прежде чем мы сможем
+            показать реальные цифры. До этого момента — считаем потенциал и объясняем
+            логику.
+          </p>
+          <a href="#potential" className="cta-link mt-6">
+            Посмотреть, как считаем потенциал
+            <ArrowDown className="h-4 w-4" />
+          </a>
         </div>
-        <Accordion items={sellerObjections} />
       </div>
     </section>
   );

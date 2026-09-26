@@ -3,7 +3,7 @@ import { SiteFooter } from "@/components/SiteFooter";
 import { SectionTitle } from "@/components/ui";
 
 export const metadata = {
-  title: "Карта потерь стоматологии — ШАРиК digital",
+  title: "Карта потерь стоматологии",
   description: "Пошаговое руководство по выявлению и закрытию потерь в маршруте пациента для стоматологических клиник.",
 };
 

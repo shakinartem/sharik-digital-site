@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import SimpleEditor, { type SimpleItem } from "@/components/admin/SimpleEditor";
+import Dashboard from "@/components/admin/Dashboard";
 
 type Category = "yandex-kit" | "patients" | "economy";
 
@@ -144,7 +145,9 @@ export default function AdminPage() {
   const [token, setToken] = useState("");
   const [authed, setAuthed] = useState(false);
   const [articles, setArticles] = useState<Article[]>([]);
-  const [tab, setTab] = useState<"articles" | "case" | "review">("articles");
+  // Дашборд стоит первым: после входа человек должен сразу увидеть
+  // заявки и аналитику, а не форму редактора.
+  const [tab, setTab] = useState<"dashboard" | "articles" | "case" | "review">("dashboard");
   const [caseItems, setCaseItems] = useState<SimpleItem[]>([]);
   const [reviewItems, setReviewItems] = useState<SimpleItem[]>([]);
   const [current, setCurrent] = useState<string | null>(null);
@@ -351,23 +354,26 @@ export default function AdminPage() {
     <main className="mx-auto max-w-7xl px-4 py-8">
       <header className="mb-6 flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold">Редактор статей</h1>
+          <h1 className="text-2xl font-bold">ШАРиК digital</h1>
           <p className="text-sm text-neutral-600">
-            Правьте текст и публикуйте — сайт обновится при следующем деплое.
+            Аналитика, заявки и контент сайта в одном месте.
           </p>
         </div>
-        <button
-          onClick={newArticle}
-          className="rounded-lg border border-neutral-300 px-4 py-2 text-sm font-medium"
-        >
-          + Новая статья
-        </button>
+        {tab === "articles" && (
+          <button
+            onClick={newArticle}
+            className="rounded-lg border border-neutral-300 px-4 py-2 text-sm font-medium"
+          >
+            + Новая статья
+          </button>
+        )}
       </header>
 
       <div>
         <div className="mb-6 flex flex-wrap gap-2 border-b border-neutral-200">
           {(
             [
+              ["dashboard", "Дашборд"],
               ["articles", `Статьи (${articles.length})`],
               ["case", `Кейсы (${caseItems.length})`],
               ["review", `Отзывы (${reviewItems.length})`],
@@ -388,7 +394,9 @@ export default function AdminPage() {
           ))}
         </div>
 
-        {tab === "articles" ? (
+        {tab === "dashboard" ? (
+          <Dashboard token={token} onError={(message) => setStatus({ kind: "error", text: message })} />
+        ) : tab === "articles" ? (
           <div className="grid gap-6 lg:grid-cols-[260px_1fr]">
         <aside>
           <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-neutral-500">

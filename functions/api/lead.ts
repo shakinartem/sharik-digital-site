@@ -1,3 +1,16 @@
+/** Ключ заявки в KV: время впереди нужно для сортировки при переборе. */
+function leadKey(ts: number) {
+  return `lead:${ts}:${Math.random().toString(36).slice(2, 8)}`;
+}
+
+/** Минимальное описание интерфейса KV. */
+interface KVNamespace {
+  put(key: string, value: string): Promise<void>;
+  list(options?: { prefix?: string; limit?: number }): Promise<{
+    keys: { name: string }[];
+  }>;
+}
+
 interface LeadPayload {
   name?: string;
   clinic?: string;
@@ -82,7 +95,10 @@ function isValidPayload(payload: LeadPayload): boolean {
   return !!(name || clinic || city || improvement || comment);
 }
 
-export const onRequest = async (context: { request: Request; env: { BOT_TOKEN?: string; ADMIN_CHAT_ID?: string } }) => {
+export const onRequest = async (context: {
+  request: Request;
+  env: { BOT_TOKEN?: string; ADMIN_CHAT_ID?: string; CONTENT?: KVNamespace };
+}) => {
   const { request, env } = context;
 
   // Only accept POST
@@ -140,6 +156,35 @@ export const onRequest = async (context: { request: Request; env: { BOT_TOKEN?: 
       status: 502,
       headers: { "Content-Type": "application/json" },
     });
+  }
+
+  // Сохраняем в KV, чтобы заявка была видна в админке. Telegram —
+  // только канал уведомления: он не хранит историю и не даёт
+  // фильтровать по источнику и странице.
+  if (env.CONTENT) {
+    const ts = Date.now();
+    try {
+      await env.CONTENT.put(
+        leadKey(ts),
+        JSON.stringify({
+          ...payload,
+          ts,
+          // Направление выводится из страницы: явного поля в форме нет,
+          // а по нему понятно, кто оставил заявку.
+          direction:
+            String(payload.page || "").includes("sellers")
+              ? "sellers"
+              : String(payload.page || "").includes("clinics")
+                ? "clinics"
+                : "other",
+          status: "new",
+        }),
+      );
+    } catch (error) {
+      // Заявка уже ушла в Telegram; потеря записи в KV не должна
+      // превращать успех в ошибку для посетителя.
+      console.error("lead store failed:", error);
+    }
   }
 
   return new Response(JSON.stringify({ ok: true } as ApiResponse), {

@@ -50,6 +50,14 @@ const ALLOWED = new Set([
   "calculator_complete",
   "article_scroll",
   "article_cta",
+  "article_view",
+  "case_view",
+  "seller_view",
+  "clinic_view",
+  "kit_view",
+  "phone_click",
+  "telegram_click",
+  "email_click",
 ]);
 
 const MAX_TEXT = 200;
@@ -112,6 +120,10 @@ export const onRequest = async (context: {
     source: String(payload.source || "direct").slice(0, MAX_TEXT),
     label: payload.label ? String(payload.label).slice(0, MAX_TEXT) : undefined,
     referrer: payload.referrer ? String(payload.referrer).slice(0, MAX_TEXT) : undefined,
+    // Идентификатор сессии: без него нельзя отличить посетителя от
+    // просмотра. UTM — чтобы связать источник трафика с заявкой.
+    sid: payload.sid ? String(payload.sid).slice(0, 32) : undefined,
+    utm: payload.utm && typeof payload.utm === "object" ? payload.utm : undefined,
     percent: payload.percent,
     ts: Date.now(),
   };

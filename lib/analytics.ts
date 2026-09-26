@@ -18,7 +18,15 @@ export type EventName =
   | "calculator_start"
   | "calculator_complete"
   | "article_scroll"
-  | "article_cta";
+  | "article_cta"
+  | "article_view"
+  | "case_view"
+  | "seller_view"
+  | "clinic_view"
+  | "kit_view"
+  | "phone_click"
+  | "telegram_click"
+  | "email_click";
 
 type Payload = Record<string, string | number | boolean | undefined>;
 
@@ -29,6 +37,51 @@ declare global {
 }
 
 const ENDPOINT = "/api/track";
+
+/**
+ * Анонимный идентификатор сессии.
+ *
+ * Живёт в sessionStorage: обнуляется при закрытии вкладки и не
+ * связывает человека между визитами. Персональных данных и полного
+ * IP не храним — этого достаточно, чтобы считать посетителей, а не
+ * людей.
+ */
+function sessionId(): string {
+  if (typeof window === "undefined") return "server";
+  const KEY = "sharik_sid";
+  let id = sessionStorage.getItem(KEY);
+  if (!id) {
+    id = Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
+    sessionStorage.setItem(KEY, id);
+  }
+  return id;
+}
+
+/** UTM-метки текущего визита. Запоминаются один раз на сессию. */
+function utm(): Record<string, string> {
+  const KEY = "sharik_utm";
+  if (typeof window === "undefined") return {};
+
+  const saved = sessionStorage.getItem(KEY);
+  if (saved) {
+    try {
+      return JSON.parse(saved) as Record<string, string>;
+    } catch {
+      /* повреждённое значение просто перезапишем ниже */
+    }
+  }
+
+  const params = new URLSearchParams(window.location.search);
+  const out: Record<string, string> = {};
+  for (const key of ["utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term"]) {
+    const value = params.get(key);
+    if (value) out[key] = value.slice(0, 100);
+  }
+  // Пустой объект тоже запоминаем: метки не должны «прилипать» к
+  // следующим страницам внутри одной сессии.
+  sessionStorage.setItem(KEY, JSON.stringify(out));
+  return out;
+}
 
 /** Определяем, откуда пришёл пользователь: поиск, соцсеть или переход. */
 function detectSource(): string {
@@ -55,6 +108,10 @@ export function track(name: EventName, payload: Payload = {}) {
     event: name,
     page: window.location.pathname,
     source: detectSource(),
+    // Идентификатор сессии и UTM нужны, чтобы считать посетителей,
+    // а не просмотры, и связывать источник трафика с заявкой.
+    sid: sessionId(),
+    utm: utm(),
     ts: Date.now(),
     ...payload,
   });

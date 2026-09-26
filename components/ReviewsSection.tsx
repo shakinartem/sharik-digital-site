@@ -1,6 +1,21 @@
 import { reviews } from "@/data/reviews";
 
 /**
+ * Инициалы для аватара-заглушки.
+ *
+ * Берём первые буквы слов: у «Елена Мария» получится «ЕМ», а не «Е» —
+ * так заглушка узнаётся и не путается между авторами.
+ */
+function initials(name: string): string {
+  return name
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((word) => word[0]?.toUpperCase() ?? "")
+    .join("");
+}
+
+/**
  * Отзывы клиентов.
  *
  * Пока отзывов нет, блок не выводится вообще. Это осознанно: пустая
@@ -34,11 +49,30 @@ export function ReviewsSection() {
                   {review.result}
                 </p>
               )}
-              <div className="mt-5 border-t border-border pt-4">
-                <p className="font-display text-sm font-bold text-foreground">{review.author}</p>
-                {review.role && (
-                  <p className="mt-0.5 text-xs text-muted-foreground">{review.role}</p>
-                )}
+              <div className="mt-5 flex items-center gap-3 border-t border-border pt-4">
+                {/* Аватар всегда круглый: без фото показываем инициалы,
+                    чтобы не оставлять пустое место. */}
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary-soft font-display text-sm font-bold text-primary">
+                  {review.photo ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={review.photo}
+                      alt={review.author}
+                      className="h-full w-full object-cover"
+                      loading="lazy"
+                    />
+                  ) : (
+                    initials(review.author)
+                  )}
+                </span>
+                <div className="min-w-0">
+                  <p className="font-display text-sm font-bold text-foreground">
+                    {review.author}
+                  </p>
+                  {review.role && (
+                    <p className="mt-0.5 text-xs text-muted-foreground">{review.role}</p>
+                  )}
+                </div>
               </div>
             </li>
           ))}

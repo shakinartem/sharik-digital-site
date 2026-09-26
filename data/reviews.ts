@@ -23,6 +23,12 @@ export type ReviewItem = {
   /** Короткий результат, который клиент связывает с работой. */
   result: string;
   niche?: string;
+  /**
+   * Аватар: путь к изображению в /public. Показывается круглым.
+   * Если фото нет, вместо картинки рисуются инициалы автора —
+   * пустой кружок смотрелся бы как недоделка.
+   */
+  photo?: string;
 };
 
 export const reviews: ReviewItem[] = generatedReviews;

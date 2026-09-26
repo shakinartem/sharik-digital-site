@@ -514,9 +514,6 @@ export default function SimpleEditor({
               />
             </div>
           </>
-        ) : (
-          <>
-            <div className="grid gap-4 md:grid-cols-3">
         ) : isFaq ? (
           <>
             <div className="grid gap-4 md:grid-cols-2">
@@ -572,6 +569,9 @@ export default function SimpleEditor({
               выше. При одинаковом порядке вопросы идут по идентификатору.
             </p>
           </>
+        ) : (
+          <>
+            <div className="grid gap-4 md:grid-cols-3">
               <div>
                 <label className={label} htmlFor="r-id">
                   Идентификатор

@@ -30,6 +30,9 @@ interface KVNamespace {
 interface Env {
   CONTENT?: KVNamespace;
   ADMIN_PASSWORD?: string;
+  GITHUB_TOKEN?: string;
+  GITHUB_REPO?: string;
+  GITHUB_BRANCH?: string;
 }
 
 const SLUG_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
@@ -80,6 +83,70 @@ function listKey(section: string, slug: string) {
 
 const SECTIONS = new Set(["article", "case", "review", "faq"]);
 
+/** Раздел контента -> папка в репозитории. */
+const SECTION_DIR: Record<string, string> = {
+  article: "content/articles",
+  case: "content/cases",
+  review: "content/reviews",
+  faq: "content/faq",
+};
+
+/**
+ * Читает контент, который уже лежит в репозитории.
+ *
+ * Зачем: KV — только черновик. Реальные 11 статей и 9 кейсов лежат в
+ * git, и без этого админка показывала «Статьи (0)» — то есть утверждала
+ * обратное. Пользователь должен видеть существующий контент и править
+ * его, а не начинать с нуля.
+ */
+async function readFromRepo(env: Env): Promise<Record<string, { slug: string; section: string; markdown: string }>> {
+  const out: Record<string, { slug: string; section: string; markdown: string }> = {};
+  const repoName = env.GITHUB_REPO;
+  const token = env.GITHUB_TOKEN;
+  if (!repoName || !token) return out;
+
+  const [owner, name] = repoName.split("/");
+  if (!owner || !name) return out;
+  const branch = env.GITHUB_BRANCH || "main";
+  const headers = {
+    Authorization: `Bearer ${token}`,
+    Accept: "application/vnd.github+json",
+  };
+
+  for (const [section, dir] of Object.entries(SECTION_DIR)) {
+    const listUrl = `https://api.github.com/repos/${owner}/${name}/contents/${dir}?ref=${encodeURIComponent(branch)}`;
+    const listResponse = await fetch(listUrl, { headers }).catch(() => null);
+    if (!listResponse || !listResponse.ok) continue;
+
+    const entries = (await listResponse.json().catch(() => [])) as {
+      name: string;
+      type: string;
+      path: string;
+    }[];
+
+    for (const entry of entries) {
+      if (entry.type !== "file" || !entry.name.endsWith(".md")) continue;
+      const fileResponse = await fetch(
+        `https://api.github.com/repos/${owner}/${name}/contents/${entry.path}?ref=${encodeURIComponent(branch)}`,
+        { headers },
+      ).catch(() => null);
+      if (!fileResponse || !fileResponse.ok) continue;
+      const file = (await fileResponse.json().catch(() => null)) as {
+        content?: string;
+      } | null;
+      if (!file?.content) continue;
+
+      const binary = atob(file.content.replace(/\n/g, ""));
+      const bytes = Uint8Array.from(binary, (c) => c.charCodeAt(0));
+      const markdown = new TextDecoder().decode(bytes);
+      const slug = entry.name.replace(/\.md$/, "");
+      out[`${section}:${slug}`] = { slug, section, markdown };
+    }
+  }
+
+  return out;
+}
+
 async function handleList(env: Env, includeBodies: boolean) {
   const kv = env.CONTENT;
   if (!kv) return json({ error: "CONTENT не настроен" }, 500);
@@ -111,11 +178,54 @@ async function handleList(env: Env, includeBodies: boolean) {
         updatedAt: parsed.updatedAt,
         published: parsed.published !== false,
         draft: parsed.draft === true,
+        // Отметка, что запись пока не опубликована и лежит только в KV.
+        fromDraft: true,
       };
     }),
   );
 
-  return json({ articles: entries.filter(Boolean) });
+  const fromDraft = entries.filter(Boolean) as Record<string, unknown>[];
+
+  // Соединяем с содержимым репозитория: черновик имеет приоритет,
+  // иначе на его месте стоял бы старый текст из git.
+  const repo = await readFromRepo(env);
+  const merged: Record<string, unknown>[] = [];
+  const seen = new Set<string>();
+
+  for (const item of fromDraft) {
+    merged.push(item);
+    seen.add(`${item.section}:${item.slug}`);
+  }
+
+  for (const [id, file] of Object.entries(repo)) {
+    if (seen.has(id)) continue;
+    const title =
+      file.markdown.match(/^title:\s*(.*)$/m)?.[1]?.trim() ||
+      file.markdown.match(/^question:\s*(.*)$/m)?.[1]?.trim() ||
+      file.markdown.match(/^author:\s*(.*)$/m)?.[1]?.trim() ||
+      file.slug;
+    merged.push({
+      slug: file.slug,
+      title,
+      markdown: file.markdown,
+      section: file.section,
+      published: true,
+      draft: false,
+      // Запись из репозитория: её можно править, она уже на сайте.
+      fromDraft: false,
+    });
+  }
+
+  // Стабильный порядок: сначала черновики, затем по разделу и имени.
+  merged.sort((a, b) => {
+    const sectionOrder = { article: 0, case: 1, review: 2, faq: 3 } as Record<string, number>;
+    const sa = sectionOrder[String(a.section)] ?? 9;
+    const sb = sectionOrder[String(b.section)] ?? 9;
+    if (sa !== sb) return sa - sb;
+    return String(a.slug).localeCompare(String(b.slug));
+  });
+
+  return json({ articles: merged, total: merged.length });
 }
 
 export const onRequest = async (context: { request: Request; env: Env }) => {

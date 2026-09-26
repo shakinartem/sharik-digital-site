@@ -330,6 +330,7 @@ export function serializeReview(item) {
     `result: ${yamlValue(item.result)}`,
   ];
   if (item.niche) lines.push(`niche: ${yamlValue(item.niche)}`);
+  if (item.photo) lines.push(`photo: ${yamlValue(item.photo)}`);
   lines.push("---", "");
   return lines.join("\n");
 }
@@ -344,6 +345,7 @@ export function parseReview(raw, fallbackId = "") {
     text: meta.text || "",
     result: meta.result || "",
     ...(meta.niche ? { niche: meta.niche } : {}),
+    ...(meta.photo ? { photo: meta.photo } : {}),
   };
 }
 

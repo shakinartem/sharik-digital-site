@@ -159,6 +159,18 @@ export default function AdminPage() {
   const set = <K extends keyof typeof EMPTY>(key: K, value: (typeof EMPTY)[K]) =>
     setForm((prev) => ({ ...prev, [key]: value }));
 
+  /**
+   * Стабильная ссылка на обработчик ошибок.
+   *
+   * Обязательно через useCallback: если передать inline-стрелку, она
+   * пересоздаётся при каждом рендере, меняет зависимости useEffect
+   * внутри дашборда, тот вызывает setState — и эффект зацикливается,
+   * отправляя бесконечный поток запросов статистики.
+   */
+  const handleError = useCallback((message: string) => {
+    setStatus({ kind: "error", text: message });
+  }, []);
+
   const authedRequest = useCallback((authToken: string) => {
     return fetch("/api/admin/articles", {
       headers: { Authorization: `Bearer ${authToken}` },
@@ -395,7 +407,7 @@ export default function AdminPage() {
         </div>
 
         {tab === "dashboard" ? (
-          <Dashboard token={token} onError={(message) => setStatus({ kind: "error", text: message })} />
+          <Dashboard token={token} onError={handleError} />
         ) : tab === "articles" ? (
           <div className="grid gap-6 lg:grid-cols-[260px_1fr]">
         <aside>

@@ -24,6 +24,7 @@ type Lead = {
 };
 
 type Stats = {
+  notes?: string[];
   totals: {
     visitors: number;
     views: number;
@@ -98,19 +99,34 @@ export default function Dashboard({
   const [days, setDays] = useState(30);
   const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
+  // Текст ошибки храним здесь же, а не только во внешнем состоянии:
+  // иначе причина сбоя остаётся невидимой и непонятно, что чинить.
+  const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(
     async (period: number) => {
       setLoading(true);
+      setError(null);
       try {
         const response = await fetch("/api/admin/stats?days=" + period, {
           headers: { Authorization: "Bearer " + token },
         });
-        if (!response.ok) throw new Error("Не удалось загрузить статистику");
+        if (!response.ok) {
+          // Тело ответа содержит конкретную причину — показываем её.
+          const detail = await response.text().catch(() => "");
+          throw new Error(
+            "Статистика недоступна (HTTP " +
+              response.status +
+              ")" +
+              (detail ? ": " + detail.slice(0, 200) : "")
+          );
+        }
         setStats((await response.json()) as Stats);
-      } catch (error) {
-        onError((error as Error).message);
+      } catch (loadError) {
+        const message = (loadError as Error).message;
+        setError(message);
         setStats(null);
+        onError(message);
       } finally {
         setLoading(false);
       }
@@ -132,10 +148,14 @@ export default function Dashboard({
 
   if (!stats) {
     return (
-      <p className="rounded-xl bg-red-50 p-6 text-sm text-red-800">
-        Статистика недоступна. Проверьте биндинги ANALYTICS и CONTENT — это видно на странице
-        /health.
-      </p>
+      <div className="rounded-xl bg-red-50 p-6 text-sm text-red-800">
+        <p className="font-medium">Статистика недоступна</p>
+        <p className="mt-1 text-red-700">{error || "Причина неизвестна"}</p>
+        <p className="mt-3 text-xs text-red-600">
+          Состав настроек виден на странице /health — там же проверяются биндинги ANALYTICS и
+          CONTENT.
+        </p>
+      </div>
     );
   }
 
@@ -191,6 +211,12 @@ export default function Dashboard({
           <p className={cardValue}>{totals.kitViews}</p>
         </div>
       </div>
+
+      {stats.notes && stats.notes.length > 0 && (
+        <p className="rounded-xl bg-amber-50 p-4 text-sm text-amber-900">
+          Показатели могут быть неполными: {stats.notes.join("; ")}
+        </p>
+      )}
 
       {totals.views === 0 && (
         <p className="rounded-xl bg-amber-50 p-4 text-sm text-amber-900">

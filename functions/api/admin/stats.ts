@@ -52,9 +52,8 @@ export const onRequest = async (context: { request: Request; env: Env }) => {
   if (!env.ADMIN_PASSWORD || token !== env.ADMIN_PASSWORD) {
     return json({ error: "Требуется авторизация" }, 401);
   }
-  if (!env.ANALYTICS || !env.CONTENT) {
-    return json({ error: "ANALYTICS или CONTENT не настроены" }, 500);
-  }
+  // Дальше не падаем: отсутствие биндинга — это нули и подсказка
+  // в notes, а не ошибка доступа. Так админка остаётся рабочей.
 
   const url = new URL(request.url);
   const days = Math.min(Math.max(Number(url.searchParams.get("days")) || 30, 1), 90);
@@ -62,13 +61,20 @@ export const onRequest = async (context: { request: Request; env: Env }) => {
   const to = Date.now();
   const from = to - days * 86_400_000;
 
+  // Отдельные ошибки по разделам: аналитика не должна отдавать 500
+  // из-за одного непрочитанного дня — лучше показать то, что есть.
+  const notes: string[] = [];
+
+  if (!env.ANALYTICS) notes.push("Нет биндинга ANALYTICS");
+  if (!env.CONTENT) notes.push("Нет биндинга CONTENT");
+
   // Читаем дневные логи за период параллельно: так быстрее, чем по одному.
   const keys: string[] = [];
   for (let i = 0; i < days; i++) keys.push(dayKey(new Date(to - i * 86_400_000)));
 
-  const chunks = await Promise.all(
-    keys.map((key) => env.ANALYTICS!.get(key).catch(() => null)),
-  );
+  const chunks = env.ANALYTICS
+    ? await Promise.all(keys.map((key) => env.ANALYTICS!.get(key).catch(() => null)))
+    : [];
 
   const events: StoredEvent[] = [];
   for (const chunk of chunks) {
@@ -79,6 +85,10 @@ export const onRequest = async (context: { request: Request; env: Env }) => {
         const parsed = JSON.parse(line) as StoredEvent;
         if (parsed.ts >= from && parsed.ts < to) events.push(parsed);
       } catch {
+        // Одна битая строка не должна ломать всю выгрузку
+      }
+    }
+  }
 
   // --- Счётчики -------------------------------------------------------
   const sessions = new Set<string>();
@@ -102,15 +112,22 @@ export const onRequest = async (context: { request: Request; env: Env }) => {
   }
 
   // --- Заявки ---------------------------------------------------------
-  const { keys: leadKeys } = await env.CONTENT.list({ prefix: "lead:", limit: 1000 });
-  const leadNames = leadKeys
-    .map((k) => k.name)
-    .sort()
-    .reverse()
-    .slice(0, 200);
-  const leadChunks = await Promise.all(
-    leadNames.map((name) => env.CONTENT!.get(name).catch(() => null)),
-  );
+  const leadNames = env.CONTENT
+    ? (
+        await env.CONTENT.list({ prefix: "lead:", limit: 1000 }).catch(() => {
+          notes.push("Не удалось прочитать список заявок");
+          return { keys: [] as { name: string }[] };
+        })
+      )
+        .keys.map((k) => k.name)
+        .sort()
+        .reverse()
+        .slice(0, 200)
+    : [];
+
+  const leadChunks = env.CONTENT
+    ? await Promise.all(leadNames.map((name) => env.CONTENT!.get(name).catch(() => null)))
+    : [];
 
   const leads: Record<string, unknown>[] = [];
   for (const chunk of leadChunks) {
@@ -145,6 +162,9 @@ export const onRequest = async (context: { request: Request; env: Env }) => {
 
   return json({
     period: { days, from, to },
+    // Предупреждения видны в интерфейсе: вместо тихих нулей
+    // пользователь должен понимать, чего именно не хватает.
+    notes,
     totals: {
       visitors,
       views,
@@ -173,8 +193,3 @@ export const onRequest = async (context: { request: Request; env: Env }) => {
     leads: leads.slice(0, 50),
   });
 };
-
-        // Одна битая строка не должна ломать всю выгрузку
-      }
-    }
-  }

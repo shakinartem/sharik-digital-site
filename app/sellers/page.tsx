@@ -5,6 +5,7 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { ButtonLink, SectionTitle, NumberBadge } from "@/components/ui";
 import { PotentialCalculator } from "@/components/PotentialCalculator";
+import { SellerLeadForm } from "@/components/SellerLeadForm";
 import {
   sellerLinks,
   sellerProducts,
@@ -82,6 +83,7 @@ export default function SellersPage() {
       <NewDirection />
       <NotFit />
       <Faq />
+      <SellerLeadForm />
       <FinalCta />
       <SiteFooter />
     </main>

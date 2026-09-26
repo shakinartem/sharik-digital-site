@@ -1,53 +1,130 @@
+import type { Metadata } from "next";
+import Link from "next/link";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
-import { SectionTitle, ButtonLink } from "@/components/ui";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
+import { articles, getReadingTime, CATEGORY_LABELS } from "@/data/articles";
+import { ArrowRight, Clock, Calendar } from "lucide-react";
 
-const posts = [
-  {
-    slug: "7-konturov-pacientopotoka",
-    title: "7 контуров пациентопотока",
-    description: "Методология, которая меняет подход к digital в стоматологии. Как управлять пациентом от первого касания до записи.",
-    date: "2025-01-15",
-  },
-  {
-    slug: "karta-poter-stomatologii",
-    title: "Карта потерь стоматологии",
-    description: "Пошаговое руководство по выявлению и закрытию потерь в маршруте пациента.",
-    date: "2025-01-10",
-  },
-  {
-    slug: "indeks-pacientopotoka",
-    title: "Индекс пациентопотока",
-    description: "Как измерять управляемость маршрута и понимать, готова ли клиника к росту.",
-    date: "2025-01-05",
-  },
-];
-
-export const metadata = {
-  title: "Блог о пациентопотоке и 7К",
-  description: "Статьи о пациентопотоке, методологии 7К и управлении digital-системами для стоматологий.",
+export const metadata: Metadata = {
+  title: "Полезное о Яндекс KIT и пациентопотоке",
+  description:
+    "Практические статьи о запуске интернет-магазина на Яндекс KIT, переносе товаров, SEO и о пациентопотоке клиник. Без воды и общих слов.",
+  alternates: { canonical: "/blog" },
 };
 
+function formatDate(iso: string) {
+  return new Date(iso).toLocaleDateString("ru-RU", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+}
+
+const kitCount = articles.filter((a) => a.category === "yandex-kit").length;
+const clinicCount = articles.filter((a) => a.category === "patients").length;
+
 export default function BlogPage() {
+  const sorted = [...articles].sort(
+    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
+  );
+
   return (
     <main>
-      <SiteHeader solidBg />
-      <section className="section-pad">
+      <SiteHeader />
+      <section className="section-pad pt-8 sm:pt-10">
         <div className="container-wide">
-          <SectionTitle kicker="Блог" title="Пациентопоток и 7К" />
-          <div className="mx-auto mt-8 max-w-3xl space-y-6">
-            {posts.map((post) => (
-              <article key={post.slug} className="card-base card-lift p-6 sm:p-7">
-                <h3 className="font-black text-foreground" style={{ fontSize: "clamp(1.2rem, min(4cqi, 5rem), 1.75rem)", lineHeight: 1.05 }}>
-                  {post.title}
-                </h3>
-                <p className="mt-2 text-sm text-muted-foreground">{post.description}</p>
-                <div className="mt-4 text-xs text-muted-foreground">{new Date(post.date).toLocaleDateString("ru-RU")}</div>
-                <div className="mt-4">
-                  <ButtonLink href={`/blog/${post.slug}`} variant="outline" className="text-xs">Читать статью</ButtonLink>
-                </div>
-              </article>
-            ))}
+          <Breadcrumbs items={[{ label: "Главная", href: "/" }, { label: "Полезное" }]} />
+
+          <div className="mx-auto max-w-3xl text-center">
+            <h1
+              className="font-display font-bold leading-[0.98] text-foreground"
+              style={{ fontSize: "clamp(1.9rem, 5cqi, 3.4rem)" }}
+            >
+              Полезное о Яндекс KIT и пациентопотоке
+            </h1>
+            <p className="mt-5 text-base leading-7 text-muted-foreground">
+              Практические материалы: что делать, где спотыкаются и когда это имеет
+              экономический смысл. Без пересказа справки и без обещаний процентов.
+            </p>
+          </div>
+
+          {/* Хабы ведут вглубь темы. Блог — не новостная лента, а вход
+              в два кластера знаний, поэтому он вынесен наверх. */}
+          <div className="mx-auto mt-10 grid max-w-4xl gap-4 sm:grid-cols-2">
+            <Link
+              href="/blog/yandex-kit"
+              className="card-base card-lift group p-6"
+            >
+              <p className="text-xs font-bold text-primary">
+                База знаний · {kitCount} материалов
+              </p>
+              <p className="mt-2 font-display text-lg font-bold text-foreground">
+                Яндекс KIT: от первого шага до запуска
+              </p>
+              <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                Что умеет платформа, как перенести каталог, какие у неё ограничения и
+                когда магазин не окупится.
+              </p>
+              <span className="mt-4 inline-flex items-center gap-1.5 text-sm font-bold text-primary">
+                Открыть базу знаний
+                <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" />
+              </span>
+            </Link>
+
+            <Link href="/clinics" className="card-base card-lift group p-6">
+              <p className="text-xs font-bold text-primary">
+                Направление для клиник · {clinicCount} материала
+              </p>
+              <p className="mt-2 font-display text-lg font-bold text-foreground">
+                Пациентопоток и методология 7К
+              </p>
+              <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                Где теряются пациенты, как считать индекс пациентопотока и что делать с
+                картой потерь.
+              </p>
+              <span className="mt-4 inline-flex items-center gap-1.5 text-sm font-bold text-primary">
+                Перейти в направление
+                <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" />
+              </span>
+            </Link>
+          </div>
+
+          <div className="mx-auto mt-14 max-w-3xl">
+            <h2 className="font-display text-xl font-bold text-foreground">Все материалы</h2>
+            <div className="mt-6 space-y-3">
+              {sorted.map((article) => (
+                <Link
+                  key={article.slug}
+                  href={`/blog/${article.slug}`}
+                  className="card-base card-lift group block p-5 sm:p-6"
+                >
+                  <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+                    <span className="pill-sm bg-primary-soft text-primary">
+                      {CATEGORY_LABELS[article.category]}
+                    </span>
+                    <span className="inline-flex items-center gap-1.5">
+                      <Calendar className="h-3.5 w-3.5" />
+                      {formatDate(article.date)}
+                    </span>
+                    <span className="inline-flex items-center gap-1.5">
+                      <Clock className="h-3.5 w-3.5" />
+                      {getReadingTime(article)} мин
+                    </span>
+                  </div>
+                  <p className="mt-3 font-display text-lg font-bold leading-tight text-foreground">
+                    {article.title}
+                  </p>
+                  <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                    {article.description}
+                  </p>
+                  <span className="mt-4 inline-flex items-center gap-1.5 text-sm font-bold text-primary">
+                    Читать
+                    <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" />
+                  </span>
+                </Link>
+              ))}
+            </div>
           </div>
         </div>
       </section>

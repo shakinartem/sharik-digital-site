@@ -6,6 +6,7 @@ import { SiteFooter } from "@/components/SiteFooter";
 import { CasesSection } from "@/components/CasesSection";
 import { PreAuditForm } from "@/components/PreAuditForm";
 import { ButtonLink, SectionTitle, NumberBadge } from "@/components/ui";
+import { JourneyMap } from "@/components/JourneyMap";
 import {
   ChartIcon,
   ArrowIcon,
@@ -71,6 +72,7 @@ export default function ClinicsPage() {
       />
       <Hero />
       <Methodology7K />
+      <PatientLossMap />
       <FlowIndex />
       <DarkStats />
       <CasesSection />
@@ -236,6 +238,64 @@ function Methodology7K() {
         </div>
         <div className="mt-8 text-center reveal reveal-delay-4">
           <ButtonLink href={site.links.audit}>Начать с диагностики</ButtonLink>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/**
+ * Где клиника теряет пациентов.
+ *
+ * Показывает путь от карт до повторного визита и типовые утечки на
+ * каждом переходе. Проценты — масштаб этапов, а не результат по
+ * конкретной клинике: без замеров это было бы выдуманным обещанием.
+ */
+function PatientLossMap() {
+  const stages = [
+    { label: "Поиск клиники", share: 100, hint: "Карты, поиск, рекомендации" },
+    {
+      label: "Выбор клиники",
+      share: 35,
+      loss: "Нет понятного ответа: чем лечат, сколько стоит и когда есть свободное окно",
+      hint: "Решение пациента почти всегда сводится к этим трём вопросам",
+    },
+    {
+      label: "Обращение",
+      share: 45,
+      loss: "Заявка ушла в мессенджер и потерялась: нет подтверждения и напоминания",
+      hint: "Здесь нужен быстрый ответ администратора",
+    },
+    {
+      label: "Запись",
+      share: 55,
+      loss: "Не дозвонились или не перезвонили — пациент уходит к другой клинике",
+      hint: "Скорость ответа влияет на конверсию сильнее рекламы",
+    },
+    {
+      label: "Лечение",
+      share: 85,
+      hint: "Пациент дошёл до кресла" },
+    {
+      label: "Повторный визит",
+      share: 40,
+      loss: "Нет напоминаний и профилактики: пациент не возвращается сам",
+      hint: "Повторный визит стоит в разы дешевле привлечения",
+    },
+  ];
+
+  return (
+    <section id="losses" className="section-pad">
+      <div className="container-wide">
+        <div className="reveal">
+          <SectionTitle
+            kicker="Путь пациента"
+            title="Где теряются пациенты"
+            text="Разбираем путь от первого поиска до повторного визита и показываем типовые утечки. Проценты — масштаб для сравнения этапов, а не обещание результата."
+          />
+        </div>
+        <div className="reveal reveal-delay-1 mt-8">
+          <JourneyMap stages={stages} legend="Схема типовых потерь, а не данные по клинике" />
         </div>
       </div>
     </section>

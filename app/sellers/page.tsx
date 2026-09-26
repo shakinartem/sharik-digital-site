@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { ButtonLink, SectionTitle, NumberBadge } from "@/components/ui";
+import { JourneyMap } from "@/components/JourneyMap";
 import { PotentialCalculator } from "@/components/PotentialCalculator";
 import { SellerLeadForm } from "@/components/SellerLeadForm";
 import {
@@ -76,6 +77,7 @@ export default function SellersPage() {
       <Anchors />
       <Model />
       <NotASite />
+      <LossMap />
       <Channels />
       <Potential />
       <Products />
@@ -299,6 +301,62 @@ function NotASite() {
               </p>
             </div>
           </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/**
+ * Где селлер теряет деньги.
+ *
+ * Схема намеренно показывает не «как надо», а типовые места утечек на
+ * пути от маркетплейса к повторной покупке. Проценты — это не факты по
+ * конкретному проекту: они служат масштабом и убраны из подписей, где
+ * их приняли бы за обещание результата.
+ */
+function LossMap() {
+  const stages = [
+    { label: "Трафик на маркетплейс", share: 100, hint: "Платный и поисковый трафик площадки" },
+    {
+      label: "Карточка товара",
+      share: 42,
+      loss: "Низкая конверсия карточки: нет ответов на частые вопросы, слабые фото, нет гарантий",
+      hint: "Здесь теряется больше всего — и это самая дешёвая точка для роста",
+    },
+    {
+      label: "Заказ на площадке",
+      share: 38,
+      hint: "Покупка без контакта с продавцом",
+    },
+    {
+      label: "Заказ в своём магазине",
+      share: 12,
+      loss: "Нет собственного канала: покупатель не может вернуться напрямую",
+      hint: "Здесь появляется Яндекс KIT",
+    },
+    {
+      label: "Повторная покупка",
+      share: 30,
+      loss: "Нет связи с покупателем: рассылки, бонусы и возврат недоступны",
+      hint: "Средний чек растёт не за счёт цены, а за счёт частоты",
+    },
+  ];
+
+  return (
+    // Фон намеренно без заливки: соседние секции на этой странице уже
+    // используют bg-muted, и третья подряд слилась бы в одну полосу.
+    <section id="losses" className="section-pad">
+      <div className="container-wide">
+        <div className="reveal">
+          <SectionTitle
+            kicker="Путь денег"
+            title="Где теряются продажи"
+            text="Разбираем путь от маркетплейса до повторной покупки и показываем типовые утечки. Проценты — масштаб для сравнения этапов, а не обещание результата."
+          />
+        </div>
+        <div className="reveal reveal-delay-1 mt-8">
+          <JourneyMap stages={stages} legend="Схема типовых потерь, а не данные по проекту" />
         </div>
       </div>
     </section>

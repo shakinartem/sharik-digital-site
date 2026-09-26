@@ -22,6 +22,9 @@ const config: Config = {
         accent: "#9B002F",
         "accent-hover": "#7D0025",
         premium: "#2A132D",
+        // Маркер потерь на схемах пути клиента
+        destructive: "#B3261E",
+        "destructive-soft": "rgba(179, 38, 30, 0.07)",
       },
       borderRadius: {
         section: "2rem",

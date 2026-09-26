@@ -6,6 +6,7 @@
                     "dev":  "node scripts/generate-content.mjs \u0026\u0026 node scripts/generate-sitemap.mjs \u0026\u0026 next dev",
                     "content":  "node scripts/generate-content.mjs \u0026\u0026 node scripts/generate-sitemap.mjs",
                     "build":  "node scripts/generate-content.mjs \u0026\u0026 node scripts/generate-sitemap.mjs \u0026\u0026 next build \u0026\u0026 node scripts/postbuild.mjs",
+                    "ping":  "node scripts/ping-indexing.mjs",
                     "start":  "next start",
                     "lint":  "next lint",
                     "deploy":  "npm run build \u0026\u0026 wrangler pages deploy out --project-name sharik-digital-site --branch feature/final-layout-funnel"

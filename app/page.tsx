@@ -8,16 +8,18 @@ import { SiteFooter } from "@/components/SiteFooter";
 import { SectionTitle } from "@/components/ui";
 import { CasesSection } from "@/components/CasesSection";
 import { FlowScheme } from "@/components/FlowScheme";
+import { SystemDashboard } from "@/components/SystemDashboard";
 import {
   agencyHero,
   agencyDirections,
+  agencyPersonas,
+  agencyStages,
   agencyApproach,
   agencyFlows,
   agencyStats,
   agencyWhy,
   agencyFaq,
 } from "@/data/agency";
-import { site } from "@/data/site";
 
 function useScrollReveal() {
   useEffect(() => {
@@ -37,23 +39,18 @@ function useScrollReveal() {
 const directionIcons = { sellers: Store, clinics: Stethoscope } as const;
 
 /**
- * Главная сокращена примерно на треть и перестроена по принципу
- * «заинтересовать → объяснить → дать выбор».
+ * Главная перестроена так, чтобы за 5 секунд читалось, кто мы, за 10 —
+ * для кого работаем, за 20 — что именно предлагаем, за 30 — куда нажать.
  *
- * Что изменилось и почему:
- *  - Плашка «Маркетинговое агентство» из Hero убрана: формулировка
- *    слишком общая и противоречит позиционированию. В Hero теперь
- *    стоит главная мысль бренда.
- *  - Отдельная секция «Две разные воронки» удалена. Она дословно
- *    повторяла то, что уже сказано в Hero, из-за чего страница
- *    рассказывала про направления дважды подряд. Выбор направления
- *    теперь встроен в Hero.
- *  - Секция «Результаты в цифрах» удалена: цифры переехали в блок
- *    «Почему ШАРиК», где они уместны как доказательство, а не
- *    как самоцель.
- *  - Добавлена секция «Система» с двумя схемами потоков — это
- *    отвечает на вопрос «что вы такое» без перечисления услуг.
- *  - Кейсы ограничены четырьмя избранными вместо всех девяти.
+ * Второй этап переработки, что изменилось:
+ *  - Hero стал двухколоночным: слева обещание, справа схема digital-системы.
+ *    Раньше это был текстовый блок с плашкой.
+ *  - Карточки направления переформулированы на языке задачи: «Я селлер —
+ *    хочу свой интернет-магазин» вместо «Селлерам — собственный канал».
+ *    Владелец бизнеса узнаёт себя, а не читает название услуги.
+ *  - Добавлена секция «Как это работает»: пять стадий с вопросом к каждой.
+ *  - Блок основателя удалён полностью. Страница стала продуктовой:
+ *    на её месте теперь система, кейсы и понятный маршрут.
  */
 export default function Home() {
   useScrollReveal();
@@ -62,11 +59,10 @@ export default function Home() {
     <main id="top" className="overflow-x-hidden">
       <SiteHeader />
       <Hero />
-      <Approach />
-      <System />
+      <HowWeWork />
+      <TwoSystems />
       <CasesSection limit={4} showAllLink />
       <WhySharik />
-      <Founder />
       <FAQ />
       <FinalCta />
       <SiteFooter />
@@ -76,55 +72,77 @@ export default function Home() {
 
 function Hero() {
   return (
-    <section className="relative overflow-hidden pb-16 pt-12 sm:pb-20 sm:pt-16 lg:pb-24 lg:pt-20">
+    <section className="relative overflow-hidden pb-16 pt-10 sm:pb-20 sm:pt-14 lg:pb-24 lg:pt-16">
       <div
         className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full opacity-20 blur-3xl"
         style={{ background: "var(--primary)" }}
         aria-hidden="true"
       />
       <div className="container-wide">
-        <div className="reveal mx-auto max-w-4xl text-center">
-          <div className="inline-flex items-center gap-2 rounded-full border border-border bg-white px-4 py-2 text-xs font-bold text-foreground">
-            <span className="h-1.5 w-1.5 rounded-full bg-primary" aria-hidden="true" />
-            {agencyHero.name}
+        <div className="grid items-center gap-10 lg:grid-cols-[1.05fr_0.95fr] lg:gap-14">
+          <div className="reveal">
+            <div className="inline-flex items-center gap-2 rounded-full border border-border bg-white px-4 py-2 text-xs font-bold text-foreground">
+              <span className="h-1.5 w-1.5 rounded-full bg-primary" aria-hidden="true" />
+              {agencyHero.name}
+            </div>
+            <h1
+              className="mt-6 font-display font-bold leading-[0.95] tracking-[-0.02em] text-foreground"
+              style={{ fontSize: "clamp(2rem, 5.6cqi, 4rem)" }}
+            >
+              Строим digital-системы,
+              <br />
+              которые <span className="text-primary">превращают трафик</span> в продажи
+            </h1>
+            <p className="mt-6 max-w-xl text-base leading-7 text-muted-foreground sm:text-lg">
+              Для селлеров — собственный канал продаж на базе Яндекс KIT.
+              <br />
+              Для клиник — система управления пациентопотоком.
+            </p>
+            <p className="mt-4 max-w-xl text-sm leading-6 text-muted-foreground">
+              Сначала считаем, где теряются деньги. Потом собираем систему вокруг
+              конкретного результата.
+            </p>
           </div>
-          <h1
-            className="mt-6 font-display font-bold leading-[0.95] tracking-[-0.02em] text-foreground"
-            style={{ fontSize: "clamp(2.1rem, 6.5cqi, 4.5rem)" }}
-          >
-            Строим digital-системы,
-            <br />
-            которые <span className="text-primary">превращают трафик</span> в продажи
-          </h1>
-          <p className="mx-auto mt-6 max-w-2xl text-base leading-7 text-muted-foreground sm:text-lg">
-            {agencyHero.sub}
-          </p>
+
+          <div className="reveal reveal-delay-2">
+            <SystemDashboard />
+          </div>
         </div>
 
-        {/* Выбор направления встроен в Hero: пользователь ещё не выбрал
-            направление, поэтому единственный CTA здесь был бы преждевременным. */}
-        <div className="mx-auto mt-12 grid max-w-4xl gap-4 sm:grid-cols-2">
-          {agencyDirections.map((d, i) => {
-            const Icon = directionIcons[d.id];
+        {/* Выбор направления — на языке задачи, а не услуги. Человек должен
+            узнать себя: «я селлер, хочу магазин» или «я клиника, хочу записи». */}
+        <div className="mt-14 grid gap-4 sm:grid-cols-2">
+          {agencyPersonas.map((p, i) => {
+            const Icon = directionIcons[p.id];
             return (
               <Link
-                key={d.id}
-                href={d.href}
+                key={p.id}
+                href={p.href}
                 className="group reveal flex flex-col rounded-[1.75rem] border border-border bg-white p-6 transition duration-200 hover:-translate-y-1 hover:border-primary/30 hover:shadow-xl hover:shadow-black/5 sm:p-7"
                 style={{ transitionDelay: `${i * 120}ms` }}
               >
-                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary-soft text-primary">
-                  <Icon className="h-5 w-5" />
+                <div className="flex items-center gap-3">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary-soft text-primary">
+                    <Icon className="h-5 w-5" />
+                  </div>
+                  <span className="rounded-full bg-muted px-3 py-1 text-xs font-bold text-muted-foreground">
+                    {p.eyebrow}
+                  </span>
                 </div>
-                <h2 className="mt-5 font-display text-sm font-bold uppercase tracking-[0.08em] text-primary">
-                  {d.title}
+                <h2 className="mt-5 font-display text-xl font-bold leading-tight text-foreground sm:text-2xl">
+                  {p.want}
                 </h2>
-                <p className="mt-2 font-display text-xl font-bold leading-tight text-foreground">
-                  {d.subtitle}
-                </p>
-                <p className="mt-2 text-sm text-muted-foreground">{d.meta}</p>
-                <span className="mt-6 inline-flex items-center gap-2 text-sm font-black text-primary">
-                  {d.cta}
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">{p.stack}</p>
+                <ul className="mt-4 space-y-1.5">
+                  {p.points.map((point) => (
+                    <li key={point} className="flex items-start gap-2 text-xs text-muted-foreground">
+                      <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-primary" />
+                      {point}
+                    </li>
+                  ))}
+                </ul>
+                <span className="mt-6 inline-flex items-center gap-2 font-display text-sm font-bold text-primary">
+                  {p.cta}
                   <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" />
                 </span>
               </Link>
@@ -136,51 +154,65 @@ function Hero() {
   );
 }
 
-function Approach() {
+/**
+ * «От задачи до результата» — пять стадий. Прежний блок «Не начинаем с
+ * набора услуг» объяснял принцип словами; этот показывает его как
+ * маршрут, по которому проходит каждый проект.
+ */
+function HowWeWork() {
   return (
-    <section id="approach" className="section-pad bg-muted">
+    <section id="how" className="section-pad bg-muted">
       <div className="container-wide">
         <div className="reveal">
           <SectionTitle
-            kicker="Подход"
-            title="Не начинаем с набора услуг"
-            text="Большинство агентств начинают с инструмента: сайт, реклама, SMM, SEO. Мы начинаем с точки потери — и только потом решаем, какие инструменты нужны."
+            kicker="Как это работает"
+            title="От задачи до результата"
+            text="Пять стадий одинаковых для обоих направлений. Каждая заканчивается результатом, который можно проверить."
           />
         </div>
 
         <ol className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-          {agencyApproach.map((step, i) => (
+          {agencyStages.map((stage, i) => (
             <li
-              key={step.step}
-              className="card-base card-lift reveal p-5"
+              key={stage.step}
+              className="card-base card-lift reveal flex flex-col p-5"
               style={{ transitionDelay: `${(i % 3) * 90}ms` }}
             >
-              <div className="flex items-center justify-between gap-3">
-                <span className="font-black text-primary" style={{ fontSize: "1.5rem" }}>
-                  {step.step}
-                </span>
-              </div>
+              <span className="font-display text-2xl font-bold leading-none text-primary">
+                {stage.step}
+              </span>
               <h3 className="mt-3 font-display text-base font-bold text-foreground">
-                {step.title}
+                {stage.title}
               </h3>
-              <p className="mt-2 text-sm leading-6 text-muted-foreground">{step.detail}</p>
+              <p className="mt-1 text-xs font-bold text-primary">{stage.question}</p>
+              <p className="mt-2.5 text-sm leading-6 text-muted-foreground">{stage.detail}</p>
             </li>
           ))}
         </ol>
+
+        {/* Принцип остался, но теперь он следствие, а не лозунг. */}
+        <div className="reveal mt-8 rounded-[1.75rem] border border-border bg-white p-6 sm:p-7">
+          <p className="text-sm leading-6 text-foreground">
+            <span className="font-bold">Большинство агентств начинают с инструмента:</span>{" "}
+            сайт, реклама, SMM, SEO. Мы начинаем с точки потери — и только потом
+            решаем, какие инструменты нужны. Если инструмент не закрывает найденную
+            потерю, мы его не предлагаем.
+          </p>
+        </div>
       </div>
     </section>
   );
 }
 
-function System() {
+function TwoSystems() {
   return (
     <section id="system" className="section-pad">
       <div className="container-wide">
         <div className="reveal">
           <SectionTitle
             kicker="Система"
-            title="Два направления — две специализированные системы"
-            text="Инструменты живут внутри системы, а не продаются по отдельности. KIT — инфраструктура seller-канала, 7К — методология работы с пациентопотоком."
+            title="Две задачи. Две системы."
+            text="Инструменты живут внутри системы, а не продаются по отдельности. Яндекс KIT — инфраструктура магазина, 7К — методология работы с пациентопотоком."
           />
         </div>
 
@@ -240,39 +272,6 @@ function WhySharik() {
               <p className="mt-2 text-sm leading-5 text-white/85">{m.label}</p>
             </div>
           ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function Founder() {
-  return (
-    <section id="founder" className="section-pad">
-      <div className="container-wide">
-        <div className="card-base reveal grid gap-8 p-7 sm:p-10 lg:grid-cols-[auto,1fr] lg:items-center">
-          <div className="flex h-20 w-20 items-center justify-center rounded-3xl bg-primary font-display text-3xl font-bold text-white">
-            АШ
-          </div>
-          <div>
-            <p className="text-sm font-semibold text-primary">{site.directorRole}</p>
-            <h2 className="mt-1 font-display text-3xl font-bold leading-tight text-foreground">
-              {site.directorName}
-            </h2>
-            <p className="mt-4 max-w-3xl text-sm leading-7 text-muted-foreground sm:text-base">
-              В ШАРиК digital два направления: собственные каналы продаж для селлеров
-              и пациентопоток для клиник. Методология 7К работает во втором.
-            </p>
-            <p className="mt-3 max-w-3xl text-sm leading-7 text-muted-foreground">
-              Сначала считаю, где именно теряются деньги, и только потом предлагаю, что
-              с этим делать. Если потенциала нет — говорю об этом прямо и не беру деньги
-              за запуск.
-            </p>
-            <Link href="/about" className="cta-link mt-6">
-              Подробнее о нас
-              <ArrowRight className="h-5 w-5" />
-            </Link>
-          </div>
         </div>
       </div>
     </section>

@@ -11,20 +11,24 @@ type NavItem = { label: string; href: string };
 /**
  * Навигация в шапке.
  *
- * Блог убран: сейчас это не существенный канал трафика, а приоритет —
- * конверсия, кейсы и заявки. Блог остался в футере, на отдельной
- * странице и в sitemap.
+ * Структура выстроена от задачи пользователя, а не от структуры компании:
+ * «Направления» (кому помогаем), «Кейсы» (доказательства), «Полезное»
+ * (статьи и гайды), «О компании», «Контакты».
  *
- * «Методология» ведёт на 7К — это ядро клинического направления,
- * поэтому ссылка контекстная и указывает на якорь, а не на отдельный
- * раздел sitemap.
+ * «Методология» из прошлой версии заменена на «Полезное»: ссылка
+ * вела на якорь клинической страницы и выглядела как служебный пункт.
+ * Теперь там блог и база знаний — то, что человек действительно открывает
+ * до обращения.
  */
 const NAV: NavItem[] = [
   { label: "Кейсы", href: "/cases" },
-  { label: "Методология", href: "/clinics#methodology-7k" },
+  { label: "Полезное", href: "/blog" },
   { label: "О компании", href: "/about" },
   { label: "Контакты", href: "/contacts" },
 ];
+
+/** Пункт, который ведёт в коммерческую страницу по Яндекс KIT. */
+const SERVICES: NavItem[] = [{ label: "Запуск магазина на Яндекс KIT", href: "/yandex-kit" }];
 
 export function SiteHeader({
   ctaLabel = "Обсудить задачу",
@@ -99,10 +103,21 @@ export function SiteHeader({
                         onClick={() => setDirOpen(false)}
                         className="block rounded-xl px-4 py-3 transition hover:bg-primary-soft"
                       >
-                        <span className="block text-sm font-black text-foreground">{d.label}</span>
+                        <span className="block text-sm font-bold text-foreground">{d.label}</span>
                         <span className="mt-0.5 block text-xs text-muted-foreground">
                           {d.description}
                         </span>
+                      </Link>
+                    ))}
+                    <div className="my-2 border-t border-border" />
+                    {SERVICES.map((s) => (
+                      <Link
+                        key={s.href}
+                        href={s.href}
+                        onClick={() => setDirOpen(false)}
+                        className="block rounded-xl px-4 py-3 transition hover:bg-primary-soft"
+                      >
+                        <span className="block text-sm font-bold text-foreground">{s.label}</span>
                       </Link>
                     ))}
                   </div>
@@ -151,9 +166,19 @@ export function SiteHeader({
                 key={d.href}
                 href={d.href}
                 onClick={() => setIsOpen(false)}
-                className="block rounded-xl px-4 py-3 text-sm font-black text-foreground transition hover:bg-primary-soft hover:text-primary"
+                className="block rounded-xl px-4 py-3 text-sm font-bold text-foreground transition hover:bg-primary-soft hover:text-primary"
               >
                 {d.label}
+              </Link>
+            ))}
+            {SERVICES.map((s) => (
+              <Link
+                key={s.href}
+                href={s.href}
+                onClick={() => setIsOpen(false)}
+                className="block rounded-xl px-4 py-3 text-sm font-bold text-foreground transition hover:bg-primary-soft hover:text-primary"
+              >
+                {s.label}
               </Link>
             ))}
             <div className="px-4 pb-1 pt-3 text-xs font-black uppercase tracking-wide text-muted-foreground">

@@ -6,8 +6,9 @@ import { TelegramSocialIcon, VkSocialIcon, DzenSocialIcon } from "./icons";
 
 const PAGES = [
   { label: "Кейсы", href: "/cases" },
-  { label: "О нас", href: "/about" },
-  { label: "Блог", href: "/blog" },
+  { label: "Запуск магазина на Яндекс KIT", href: "/yandex-kit" },
+  { label: "О компании", href: "/about" },
+  { label: "Статьи", href: "/blog" },
   { label: "Контакты", href: "/contacts" },
 ];
 

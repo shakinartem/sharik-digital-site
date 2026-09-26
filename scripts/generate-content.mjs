@@ -34,7 +34,9 @@ function check(items, kind) {
 
   for (const item of items) {
     const id = kind === "article" ? item.slug : item.id;
-    if (!item.title) errors.push(`${id}: пустой title`);
+    // У отзыва поля title нет по замыслу: его опознаёт автор, а не
+    // заголовок. Требовать его здесь — значит запретить сам формат.
+    if (kind !== "review" && !item.title) errors.push(`${id}: пустой title`);
     if (ids.has(id)) errors.push(`${id}: дубль идентификатора`);
     ids.add(id);
   }

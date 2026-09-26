@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Manrope, Montserrat } from "next/font/google";
 import { AnalyticsBootstrap } from "@/components/AnalyticsBootstrap";
+import { MetricaCounter } from "@/components/MetricaCounter";
+import { site } from "@/data/site";
 import "./globals.css";
 
 /**
@@ -72,6 +74,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         {children}
         <AnalyticsBootstrap />
+        <MetricaCounter id={site.metricaId} />
       </body>
     </html>
   );

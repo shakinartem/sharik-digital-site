@@ -346,3 +346,41 @@ export function parseReview(raw, fallbackId = "") {
     ...(meta.niche ? { niche: meta.niche } : {}),
   };
 }
+
+/**
+ * Вопрос FAQ -> markdown.
+ *
+ * Формат совпадает со статьями: frontmatter (id, order, question),
+ * закрывающий `---`, затем текст ответа в теле. Так один и тот же
+ * парсер читает все типы контента, а ответ остаётся обычным текстом,
+ * который можно писать в несколько строк.
+ */
+export function serializeFaq(item) {
+  return [
+    "---",
+    `id: ${item.id}`,
+    `order: ${item.order ?? 0}`,
+    `question: ${yamlValue(item.q)}`,
+    "---",
+    "",
+    String(item.a || "").trim(),
+    "",
+  ].join("\n");
+}
+
+/** Markdown -> вопрос FAQ. */
+export function parseFaq(raw, fallbackId = "") {
+  const { meta, body } = parseFrontmatter(raw);
+  return {
+    id: meta.id || fallbackId,
+    order: Number(meta.order) || 0,
+    q: meta.question || "",
+    a: body
+      .split(/\r?\n/)
+      .map((line) => line.trim())
+      .filter(Boolean)
+      .join(" ")
+      .trim(),
+  };
+}
+

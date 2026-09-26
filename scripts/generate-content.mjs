@@ -10,7 +10,7 @@
 import { readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { parseArticle, parseCase, parseReview } from "./lib/content.mjs";
+import { parseArticle, parseCase, parseReview, parseFaq } from "./lib/content.mjs";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const contentDir = join(root, "content");
@@ -34,9 +34,12 @@ function check(items, kind) {
 
   for (const item of items) {
     const id = kind === "article" ? item.slug : item.id;
-    // У отзыва поля title нет по замыслу: его опознаёт автор, а не
-    // заголовок. Требовать его здесь — значит запретить сам формат.
-    if (kind !== "review" && !item.title) errors.push(`${id}: пустой title`);
+    // У отзыва и вопроса FAQ поля title нет по замыслу: их опознаёт
+    // автор и текст вопроса. Требовать title здесь — значит запретить
+    // сами форматы.
+    if (kind !== "review" && kind !== "faq" && !item.title) {
+      errors.push(`${id}: пустой title`);
+    }
     if (ids.has(id)) errors.push(`${id}: дубль идентификатора`);
     ids.add(id);
   }
@@ -64,6 +67,13 @@ function check(items, kind) {
     for (const item of items) {
       if (!item.text) errors.push(`${item.id}: пустой text`);
       if (!item.author) errors.push(`${item.id}: пустой author`);
+    }
+  }
+
+  if (kind === "faq") {
+    for (const item of items) {
+      if (!item.q) errors.push(`${item.id}: пустой question`);
+      if (!item.a) errors.push(`${item.id}: пустой answer`);
     }
   }
 
@@ -112,10 +122,18 @@ const reviews = readDir(join(contentDir, "reviews")).map((file) =>
   parseReview(readFileSync(join(contentDir, "reviews", file), "utf8"), file.replace(/\.md$/, "")),
 );
 
+const faq = readDir(join(contentDir, "faq")).map((file) =>
+  parseFaq(readFileSync(join(contentDir, "faq", file), "utf8"), file.replace(/\.md$/, "")),
+);
+// Порядок задан полем order: он определяет, в каком виде вопросы
+// идут на странице, поэтому сортировка обязательна.
+faq.sort((a, b) => a.order - b.order || a.id.localeCompare(b.id));
+
 const errors = [
   ...check(articles, "article"),
   ...check(cases, "case"),
   ...check(reviews, "review"),
+  ...check(faq, "faq"),
 ];
 
 if (errors.length) {
@@ -142,7 +160,17 @@ emit(
   reviews,
 );
 
+emit(
+  "data/faq.generated.ts",
+  "FaqItem",
+  "./faq",
+  "FaqItem",
+  "generatedFaq",
+  faq,
+);
+
 console.log(
-  `✓ Контент сгенерирован: ${articles.length} статей, ${cases.length} кейсов, ${reviews.length} отзывов`,
+  `✓ Контент сгенерирован: ${articles.length} статей, ${cases.length} кейсов, ` +
+    `${reviews.length} отзывов, ${faq.length} вопросов FAQ`,
 );
 

@@ -5,3 +5,17 @@ out
 .env
 .DS_Store
 .vercel
+
+# Артефакты локальной сборки и отладки
+output/
+.playwright-mcp/
+.playwright-cli/
+.wrangler/
+*.log
+
+# Python-бот: виртуальное окружение и кэши не должны попадать в git
+bot/.venv/
+bot/**/__pycache__/
+bot/.pytest_cache/
+bot/**/*.egg-info/
+bot/pytest-cache-files-*/

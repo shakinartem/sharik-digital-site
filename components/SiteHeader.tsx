@@ -1,24 +1,23 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { Menu, X, ChevronDown } from "lucide-react";
 import { DIRECTIONS } from "@/data/agency";
 
 type NavItem = { label: string; href: string };
 
-const ANCHORS: NavItem[] = [
-  { label: "Направления", href: "/#directions" },
-  { label: "Кейсы", href: "/#cases" },
-  { label: "Подход", href: "/#approach" },
-  { label: "О нас", href: "/#founder" },
-  { label: "FAQ", href: "/#faq" },
+const NAV: NavItem[] = [
+  { label: "Кейсы", href: "/cases" },
+  { label: "О нас", href: "/about" },
+  { label: "Блог", href: "/blog" },
 ];
 
 export function SiteHeader({
-  ctaLabel = "Рассчитать потенциал",
-  ctaHref = "/sellers#potential",
-  solidBg = false,
+  ctaLabel = "Обсудить задачу",
+  ctaHref = "/contacts",
+  solidBg = true,
 }: {
   ctaLabel?: string;
   ctaHref?: string;
@@ -27,22 +26,40 @@ export function SiteHeader({
   const [isOpen, setIsOpen] = useState(false);
   const [dirOpen, setDirOpen] = useState(false);
 
+  // После поворота телефона мобильное меню не должно оставаться раскрытым.
+  useEffect(() => {
+    const media = window.matchMedia("(min-width: 1024px)");
+    const close = () => {
+      if (media.matches) {
+        setIsOpen(false);
+        setDirOpen(false);
+      }
+    };
+    media.addEventListener("change", close);
+    return () => media.removeEventListener("change", close);
+  }, []);
+
   return (
     <header
       className={`sticky top-0 z-40 w-full border-b transition ${
-        solidBg ? "border-border bg-white/90 backdrop-blur-xl" : "border-transparent bg-transparent"
+        solidBg ? "border-border bg-background/85 backdrop-blur-xl" : "border-transparent bg-transparent"
       }`}
     >
       <div className="container-wide">
-        <div className="flex h-16 items-center justify-between gap-4 lg:h-20">
+        <div className="flex h-[68px] items-center justify-between gap-4 lg:h-20">
           <Link
             href="/"
-            className="flex shrink-0 items-center gap-2.5 rounded-xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary"
+            className="flex shrink-0 items-center rounded-xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary"
             onClick={() => setIsOpen(false)}
           >
-            <span className="text-lg font-black text-foreground">
-              ШАРиК<span className="text-primary">.</span>digital
-            </span>
+            <Image
+              src="/brand/logo-header-480.webp"
+              alt="ШАРиК digital"
+              width={480}
+              height={165}
+              priority
+              className="h-9 w-auto lg:h-11"
+            />
           </Link>
 
           <nav className="hidden items-center gap-7 text-sm font-bold text-foreground lg:flex">
@@ -81,21 +98,21 @@ export function SiteHeader({
               )}
             </div>
 
-            {ANCHORS.map((item) => (
-              <a
+            {NAV.map((item) => (
+              <Link
                 key={item.href}
                 href={item.href}
                 className="rounded-lg py-2 transition hover:text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary"
               >
                 {item.label}
-              </a>
+              </Link>
             ))}
           </nav>
 
           <div className="hidden shrink-0 lg:block">
-            <a href={ctaHref} className="btn-primary min-h-11 px-5 text-sm">
+            <Link href={ctaHref} className="btn-primary min-h-11 px-5 text-sm">
               {ctaLabel}
-            </a>
+            </Link>
           </div>
 
           <button
@@ -112,7 +129,7 @@ export function SiteHeader({
       </div>
 
       {isOpen && (
-        <nav id="mobile-nav" className="border-t border-border bg-white lg:hidden">
+        <nav id="mobile-nav" className="border-t border-border bg-background lg:hidden">
           <div className="container-wide space-y-1 py-4">
             <p className="px-4 pb-1 pt-2 text-xs font-black uppercase tracking-wide text-muted-foreground">
               Направления
@@ -130,20 +147,20 @@ export function SiteHeader({
             <div className="px-4 pb-1 pt-3 text-xs font-black uppercase tracking-wide text-muted-foreground">
               Агентство
             </div>
-            {ANCHORS.map((item) => (
-              <a
+            {NAV.map((item) => (
+              <Link
                 key={item.href}
                 href={item.href}
                 onClick={() => setIsOpen(false)}
                 className="block rounded-xl px-4 py-3 text-sm font-bold text-foreground transition hover:bg-primary-soft hover:text-primary"
               >
                 {item.label}
-              </a>
+              </Link>
             ))}
             <div className="px-4 pt-3">
-              <a href={ctaHref} onClick={() => setIsOpen(false)} className="btn-primary w-full">
+              <Link href={ctaHref} onClick={() => setIsOpen(false)} className="btn-primary w-full">
                 {ctaLabel}
-              </a>
+              </Link>
             </div>
           </div>
         </nav>

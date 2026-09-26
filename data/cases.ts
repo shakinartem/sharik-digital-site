@@ -12,11 +12,19 @@ export type CaseItem = {
   images: string[];
   tags: string[];
   contourClosed?: string; // Какой контур был закрыт
+  /**
+   * Направление для фильтра на /cases.
+   * Продавцов (seller) в портфолио пока нет: кейсы по маркетплейсам
+   * не выдумываются. Arximed Security — не клинический кейс, поэтому
+   * показан отдельно и не приписывается к методологии 7К.
+   */
+  direction: "clinic" | "other";
 };
 
 export const cases: CaseItem[] = [
   {
     id: "eurodent",
+    direction: "clinic",
     title: "Eurodent",
     niche: "Стоматология",
     mainResult: "1,5 млн охват · 450 лидов · запись на 6 месяцев вперёд",
@@ -34,12 +42,13 @@ export const cases: CaseItem[] = [
     results: ["1,5 млн охват", "450 лидов", "300 подписчиков на старте", "Запись вперёд на 6 месяцев"],
     conclusion:
       "Контент от врачей может работать как система доверия, если он связан с понятным маршрутом пациента до записи.",
-    images: ["/cases/eurodent-1.png", "/cases/eurodent-2.png", "/cases/eurodent-3.png"],
+    images: ["/cases/eurodent-1.webp", "/cases/eurodent-2.webp", "/cases/eurodent-3.webp"],
     tags: ["Стоматология", "Контент", "Дзен", "Лиды"],
     contourClosed: "Доверие",
   },
   {
     id: "biomed",
+    direction: "clinic",
     title: "Биомед",
     niche: "Стоматология",
     city: "Салават",
@@ -55,12 +64,13 @@ export const cases: CaseItem[] = [
     ],
     results: ["146 обращений за 3 месяца", "+68% действий в картах", "39 записей из VK", "Рейтинг 4.9"],
     conclusion: "Для локальной стоматологии карты, отзывы и соцсети должны работать вместе, а не отдельно.",
-    images: ["/cases/biomed-1.png", "/cases/biomed-2.png", "/cases/biomed-3.png"],
+    images: ["/cases/biomed-1.webp", "/cases/biomed-2.webp", "/cases/biomed-3.webp"],
     tags: ["Стоматология", "Карты", "VK", "Отзывы"],
     contourClosed: "Контакт + Доверие",
   },
   {
     id: "interdent",
+    direction: "clinic",
     title: "Интердент",
     niche: "Стоматология",
     city: "Нефтекамск",
@@ -77,12 +87,13 @@ export const cases: CaseItem[] = [
     ],
     results: ["118 обращений", "+57% построений маршрута", "31 заявка из VK", "94 000 просмотров карточки"],
     conclusion: "Когда клиника становится заметнее в локальном поиске, растёт не только охват, но и реальные обращения.",
-    images: ["/cases/interdent-1.png", "/cases/interdent-2.png", "/cases/interdent-3.png"],
+    images: ["/cases/interdent-1.webp", "/cases/interdent-2.webp", "/cases/interdent-3.webp"],
     tags: ["Стоматология", "Локальный поиск", "Карты", "Заявки"],
     contourClosed: "Контакт",
   },
   {
     id: "dental-pro",
+    direction: "clinic",
     title: "Дентал-про",
     niche: "Стоматология",
     mainResult: "+41% обращений · 18% конверсия в запись · 52 новых отзыва",
@@ -98,12 +109,13 @@ export const cases: CaseItem[] = [
     ],
     results: ["+41% обращений", "18% конверсия в запись", "133 000 охват", "52 новых отзыва"],
     conclusion: "Понятная подача клиники усиливает доверие и запись.",
-    images: ["/cases/dental-pro-1.png", "/cases/dental-pro-2.png", "/cases/dental-pro-3.png"],
+    images: ["/cases/dental-pro-1.webp", "/cases/dental-pro-2.webp", "/cases/dental-pro-3.webp"],
     tags: ["Стоматология", "Отзывы", "Упаковка", "Конверсия"],
     contourClosed: "Доверие + Выбор",
   },
   {
     id: "ibradent",
+    direction: "clinic",
     title: "IbraDent",
     niche: "Премиальная стоматология",
     mainResult: "97 лидов · +49% действий в профиле · 24% повторных обращений",
@@ -119,12 +131,13 @@ export const cases: CaseItem[] = [
     ],
     results: ["97 лидов", "+49% действий в профиле", "121 000 средний охват", "24% повторные обращения"],
     conclusion: "Премиальная подача начинается с системности: пациент должен чувствовать доверие на каждом касании.",
-    images: ["/cases/ibradent-1.png", "/cases/ibradent-2.png", "/cases/ibradent-3.png"],
+    images: ["/cases/ibradent-1.webp", "/cases/ibradent-2.webp", "/cases/ibradent-3.webp"],
     tags: ["Премиум", "Стоматология", "Повторные обращения", "Визуал"],
     contourClosed: "Доверие + Выбор + Коммуникация",
   },
   {
     id: "divina-podology",
+    direction: "clinic",
     title: "Divina Podology",
     niche: "Подология",
     mainResult: "Запуск с нуля · первые клиенты за 2 недели · 1 000+ аудитория",
@@ -140,12 +153,13 @@ export const cases: CaseItem[] = [
     ],
     results: ["Первые клиенты за 2 недели", "1 000+ аудитория каналов", "Запуск системы за 14 дней"],
     conclusion: "Быстрый запуск может выглядеть системно, если сразу собрать путь от контента до записи.",
-    images: ["/cases/divina-podology-1.png", "/cases/divina-podology-2.png", "/cases/divina-podology-3.png"],
+    images: ["/cases/divina-podology-1.webp", "/cases/divina-podology-2.webp", "/cases/divina-podology-3.webp"],
     tags: ["Подология", "Запуск", "Telegram", "Дзен"],
     contourClosed: "Контакт + Доверие",
   },
   {
     id: "kerala",
+    direction: "clinic",
     title: "Kerala",
     niche: "Аюрведа и wellness",
     mainResult: "500 000 охват · 300 лидов · CPL 230 ₽",
@@ -160,12 +174,13 @@ export const cases: CaseItem[] = [
     ],
     results: ["500 000 охват", "300 лидов", "3 000 подписчиков", "CPL 230 ₽"],
     conclusion: "Wellness-проекту не нужен шумный маркетинг, если собрана правильная система доверия.",
-    images: ["/cases/kerala-1.png", "/cases/kerala-2.png", "/cases/kerala-3.png"],
+    images: ["/cases/kerala-1.webp", "/cases/kerala-2.webp", "/cases/kerala-3.webp"],
     tags: ["Wellness", "Дзен", "Лид-формы", "CPL"],
     contourClosed: "Доверие + Выбор",
   },
   {
     id: "arximed-security",
+    direction: "other",
     title: "Arximed Security",
     niche: "MedTech и медицинское оборудование",
     mainResult: "Ошибки заказа снижены с 3,5% до 0,4% · 0 мошеннических оплат",
@@ -180,12 +195,13 @@ export const cases: CaseItem[] = [
     ],
     results: ["Ошибки заказа снижены с 3,5% до 0,4%", "40 целевых обращений", "0 мошеннических оплат", "180 000 охват проекта"],
     conclusion: "Рост бессмысленен, если цифровая инфраструктура протекает. Безопасность digital-системы — это тоже рост бизнеса.",
-    images: ["/cases/arximed-security-1.png", "/cases/arximed-security-2.png", "/cases/arximed-security-3.png"],
+    images: ["/cases/arximed-security-1.webp", "/cases/arximed-security-2.webp", "/cases/arximed-security-3.webp"],
     tags: ["MedTech", "Безопасность", "Техаудит", "Автоматизация"],
     contourClosed: "Контроль",
   },
   {
     id: "po-pyatam",
+    direction: "clinic",
     title: "По Пятам",
     niche: "Подология",
     mainResult: "100 000+ просмотров в неделю · 10% конверсия в запись",
@@ -201,7 +217,7 @@ export const cases: CaseItem[] = [
     ],
     results: ["100 000+ просмотров за неделю", "500+ подписчиков", "10% конверсия в запись"],
     conclusion: "Контент должен не просто охватывать, а приводить пациента к записи без давления и агрессивных продаж.",
-    images: ["/cases/po-pyatam-1.png", "/cases/po-pyatam-2.png", "/cases/po-pyatam-3.png"],
+    images: ["/cases/po-pyatam-1.webp", "/cases/po-pyatam-2.webp", "/cases/po-pyatam-3.webp"],
     tags: ["Подология", "Контент", "CTA", "Конверсия"],
     contourClosed: "Действие",
   },

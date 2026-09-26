@@ -2,12 +2,12 @@
 export const DIRECTIONS = [
   {
     href: "/sellers",
-    label: "Продавцам на маркетплейсах",
+    label: "Продавцам",
     description: "Собственный канал продаж и Яндекс KIT",
   },
   {
-    href: "/stomatologiya",
-    label: "Стоматологиям",
+    href: "/clinics",
+    label: "Клиникам",
     description: "Пациентопоток клиники по методологии 7К",
   },
 ] as const;
@@ -31,10 +31,10 @@ export const agencyDirections = [
     cta: "Рассчитать потенциал",
   },
   {
-    id: "stomatologiya",
-    href: "/stomatologiya",
+    id: "clinics",
+    href: "/clinics",
     badge: "Patient Flow Company",
-    title: "Стоматологиям и клиникам",
+    title: "Клиникам",
     subtitle: "Управление пациентопотоком",
     lead:
       "Находим, где клиника теряет пациентов, и собираем digital-систему, которая доводит человека от первого касания до записи и лечения. Методология 7К и измеримый индекс пациентопотока.",

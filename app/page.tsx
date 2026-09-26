@@ -2,13 +2,13 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { ArrowRight, Plus, Minus, Store, Stethoscope } from "lucide-react";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
-import { ButtonLink, SectionTitle, NumberBadge } from "@/components/ui";
+import { SectionTitle } from "@/components/ui";
 import { CasesSection } from "@/components/CasesSection";
 import { agencyDirections, agencyApproach, agencyStats, agencyFaq } from "@/data/agency";
 import { site } from "@/data/site";
-import { ArrowRight, Plus, Minus, Store, Stethoscope } from "lucide-react";
 
 function useScrollReveal() {
   useEffect(() => {
@@ -25,7 +25,7 @@ function useScrollReveal() {
   }, []);
 }
 
-const directionIcons = { sellers: Store, stomatologiya: Stethoscope } as const;
+const directionIcons = { sellers: Store, clinics: Stethoscope } as const;
 
 export default function Home() {
   useScrollReveal();
@@ -56,29 +56,30 @@ function Hero() {
       />
       <div className="container-wide">
         <div className="reveal mx-auto max-w-4xl text-center">
-          <div className="inline-flex items-center rounded-full border border-border bg-white px-4 py-2 text-xs font-black text-foreground">
-            Маркетинговое агентство полного цикла
+          <div className="inline-flex items-center gap-2 rounded-full border border-border bg-white px-4 py-2 text-xs font-bold text-foreground">
+            <span className="h-1.5 w-1.5 rounded-full bg-primary" aria-hidden="true" />
+            Маркетинговое агентство
           </div>
           <h1
-            className="mt-6 font-black leading-[0.95] text-foreground"
-            style={{ fontSize: "clamp(2rem, 6.5cqi, 4.5rem)" }}
+            className="mt-6 font-display font-bold leading-[0.95] tracking-[-0.02em] text-foreground"
+            style={{ fontSize: "clamp(2.1rem, 6.5cqi, 4.5rem)" }}
           >
             Строим системы,
             <br />
             которые <span className="text-primary">приносят деньги</span>
           </h1>
           <p className="mx-auto mt-6 max-w-2xl text-base leading-7 text-muted-foreground sm:text-lg">
-            Два специализированных направления: собственные каналы продаж для селлеров
-            маркетплейсов и управление пациентопотоком для стоматологий. Работаем не с набором
-            услуг, а с измеримым результатом.
+            Два специализированных направления: собственные каналы продаж для селлеров маркетплейсов
+            и управление пациентопотоком для клиник. Работаем не с набором услуг, а с измеримым
+            результатом.
           </p>
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <ButtonLink href="/sellers#potential" className="w-full sm:w-auto">
-              Рассчитать потенциал канала
-            </ButtonLink>
-            <ButtonLink href="#directions" variant="outline" className="w-full sm:w-auto">
-              Смотреть направления
-            </ButtonLink>
+            <Link href="/sellers#potential" className="btn-primary w-full sm:w-auto">
+              Селлерам
+            </Link>
+            <Link href="/clinics#audit" className="btn-outline w-full sm:w-auto">
+              Клиникам
+            </Link>
           </div>
         </div>
       </div>
@@ -94,50 +95,41 @@ function Directions() {
           <SectionTitle
             kicker="Направления"
             title="Две разные воронки — два разных подхода"
-            text="Маркетплейс и стоматологическая клиника — это разные циклы сделки, разные сроки и разные критерии выбора. Поэтому у каждого направления своя методика."
+            text="Мы не делаем «маркетинг вообще». У каждого направления своя методика, свои метрики и своя логика расчёта."
           />
         </div>
-
-        <div className="grid gap-6 lg:grid-cols-2">
-          {agencyDirections.map((d, i) => {
-            const Icon = directionIcons[d.id as keyof typeof directionIcons];
+        <div className="mt-12 grid gap-6 lg:grid-cols-2">
+          {agencyDirections.map((direction, index) => {
+            const Icon = directionIcons[direction.id as keyof typeof directionIcons];
             return (
               <article
-                key={d.id}
-                className="card-base card-lift reveal flex flex-col p-6 sm:p-8"
-                style={{ transitionDelay: `${i * 120}ms` }}
+                key={direction.id}
+                className="card-base card-lift reveal flex flex-col p-7 sm:p-9"
+                style={{ transitionDelay: `${index * 120}ms` }}
               >
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary-soft text-primary">
-                    <Icon className="h-6 w-6" />
-                  </div>
-                  <span className="pill-primary">{d.badge}</span>
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary-soft text-primary">
+                  <Icon className="h-6 w-6" />
                 </div>
-
-                <h3
-                  className="mt-5 font-black leading-tight text-foreground"
-                  style={{ fontSize: "clamp(1.25rem, 2.6vw, 1.75rem)" }}
-                >
-                  {d.title}
+                <p className="mt-6 text-xs font-bold uppercase tracking-wide text-muted-foreground">
+                  {direction.badge}
+                </p>
+                <h3 className="mt-2 font-display text-2xl font-bold leading-tight text-foreground">
+                  {direction.title}
                 </h3>
-                <p className="mt-1 text-sm font-black text-primary">{d.subtitle}</p>
-                <p className="mt-4 text-sm leading-6 text-muted-foreground">{d.lead}</p>
-
-                <ul className="mt-5 space-y-2.5">
-                  {d.points.map((p) => (
-                    <li key={p} className="flex items-start gap-2.5 text-sm text-foreground">
+                <p className="mt-1 text-sm font-semibold text-primary">{direction.subtitle}</p>
+                <p className="mt-4 text-sm leading-6 text-muted-foreground">{direction.lead}</p>
+                <ul className="mt-6 space-y-3">
+                  {direction.points.map((point) => (
+                    <li key={point} className="flex items-start gap-3 text-sm text-foreground">
                       <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
-                      {p}
+                      {point}
                     </li>
                   ))}
                 </ul>
-
-                <div className="mt-auto pt-7">
-                  <Link href={d.href} className="cta-link text-sm">
-                    {d.cta}
-                    <ArrowRight className="h-4 w-4" />
-                  </Link>
-                </div>
+                <Link href={direction.href} className="cta-link mt-8">
+                  {direction.cta}
+                  <ArrowRight className="h-5 w-5" />
+                </Link>
               </article>
             );
           })}
@@ -147,6 +139,7 @@ function Directions() {
   );
 }
 
+
 function Approach() {
   return (
     <section id="approach" className="section-pad">
@@ -154,21 +147,18 @@ function Approach() {
         <div className="reveal">
           <SectionTitle
             kicker="Подход"
-            title="Как мы работаем в любом направлении"
-            text="Один и тот же процесс. Различается только предметная область внутри каждого этапа."
+            title="Сначала считаем, потом делаем"
+            text="Один и тот же порядок работ для обоих направлений: мы не начинаем с продажи услуг."
           />
         </div>
-
-        <ol className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-          {agencyApproach.map((item, i) => (
-            <li
-              key={item.step}
-              className="card-base card-lift reveal p-5"
-              style={{ transitionDelay: `${i * 90}ms` }}
-            >
-              <NumberBadge>{item.step}</NumberBadge>
-              <h3 className="mt-4 text-base font-black text-foreground">{item.title}</h3>
-              <p className="mt-2 text-sm leading-6 text-muted-foreground">{item.detail}</p>
+        <ol className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-5">
+          {agencyApproach.map((step) => (
+            <li key={step.step} className="reveal h-full">
+              <div className="h-full rounded-card-sm border border-border bg-white p-5">
+                <p className="font-display text-sm font-bold text-primary">{step.step}</p>
+                <h3 className="mt-2 text-base font-black text-foreground">{step.title}</h3>
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">{step.detail}</p>
+              </div>
             </li>
           ))}
         </ol>
@@ -179,18 +169,15 @@ function Approach() {
 
 function Stats() {
   return (
-    <section className="section-pad" style={{ background: "var(--premium)" }}>
+    <section className="section-pad bg-muted">
       <div className="container-wide">
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {agencyStats.map((s, i) => (
-            <div key={s.label} className="reveal" style={{ transitionDelay: `${i * 90}ms` }}>
-              <p
-                className="font-black leading-none text-white"
-                style={{ fontSize: "clamp(2rem, 5vw, 3rem)" }}
-              >
-                {s.value}
+          {agencyStats.map((stat) => (
+            <div key={stat.label} className="reveal text-center">
+              <p className="font-display text-5xl font-bold text-primary">{stat.value}</p>
+              <p className="mx-auto mt-3 max-w-[15rem] text-sm leading-6 text-muted-foreground">
+                {stat.label}
               </p>
-              <p className="mt-3 text-sm leading-6 text-white/75">{s.label}</p>
             </div>
           ))}
         </div>
@@ -200,45 +187,25 @@ function Stats() {
 }
 
 function Founder() {
-  const points = [
-    "Два отдельных направления вместо одного универсального",
-    "Методология 7К для клиник и расчёт потенциала для селлеров",
-    "Работаем на цифрах: юнит-экономика до старта работ",
-    "Передаём процессы и документацию, а не держим клиента в зависимости",
-  ];
-
   return (
     <section id="founder" className="section-pad">
       <div className="container-wide">
-        <div className="grid gap-8 lg:grid-cols-[0.85fr_1.15fr] lg:items-center lg:gap-12">
-          <div className="reveal">
-            <div className="card-base overflow-hidden">
-              <img
-                src="/brand/founder-artem.png"
-                alt={`${site.directorName} — основатель ШАРиК digital`}
-                className="h-full w-full object-cover"
-                loading="lazy"
-              />
-            </div>
+        <div className="card-base reveal grid gap-8 p-7 sm:p-10 lg:grid-cols-[auto,1fr] lg:items-center">
+          <div className="flex h-20 w-20 items-center justify-center rounded-3xl bg-primary font-display text-3xl font-bold text-white">
+            АШ
           </div>
-
-          <div className="reveal reveal-delay-1">
-            <SectionTitle kicker="Основатель" title={site.directorName} />
-            <p className="-mt-6 text-sm font-black text-primary">{site.directorRole}</p>
-            <p className="mt-5 text-base leading-7 text-muted-foreground">
-              Я создаю ШАРиК digital как маркетинговое агентство, где у каждого направления есть
-              собственная методика и измеримый результат. Для клиник это пациентопоток по
-              методологии 7К, для продавцов — расчёт потенциала, запуск канала и рост повторных
-              продаж. Мы не обещаем рост цифрами. Мы показываем, откуда эти цифры берутся.
+          <div>
+            <p className="text-sm font-semibold text-primary">{site.directorRole}</p>
+            <h2 className="mt-1 font-display text-3xl font-bold leading-tight text-foreground">
+              {site.directorName}
+            </h2>
+            <p className="mt-4 max-w-3xl text-sm leading-7 text-muted-foreground sm:text-base">
+              {site.directorSummary}
             </p>
-            <ul className="mt-6 space-y-3">
-              {points.map((p) => (
-                <li key={p} className="flex items-start gap-3 text-sm text-foreground">
-                  <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
-                  {p}
-                </li>
-              ))}
-            </ul>
+            <Link href="/about" className="cta-link mt-6">
+              Подробнее о нас
+              <ArrowRight className="h-5 w-5" />
+            </Link>
           </div>
         </div>
       </div>
@@ -291,25 +258,25 @@ function FinalCta() {
       <div className="container-wide">
         <div className="reveal mx-auto max-w-3xl text-center">
           <h2
-            className="font-black leading-[0.95] text-white"
-            style={{ fontSize: "clamp(1.6rem, 5cqi, 3rem)" }}
+            className="font-display font-bold leading-[0.95] tracking-[-0.02em] text-white"
+            style={{ fontSize: "clamp(1.7rem, 5cqi, 3rem)" }}
           >
             Начните с расчёта, а не с покупки
           </h2>
           <p className="mx-auto mt-5 max-w-xl text-base leading-7 text-white/80">
-            Выберите направление — покажем, где именно в вашей воронке теряются деньги, и
-            посчитаем, что можно улучшить в первую очередь.
+            Выберите направление — покажем, где именно в вашей воронке теряются деньги, и посчитаем,
+            что можно улучшить в первую очередь.
           </p>
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <ButtonLink href="/sellers#potential" className="w-full sm:w-auto">
-              Рассчитать потенциал канала
-            </ButtonLink>
-            <a
-              href={site.links.audit}
+            <Link href="/sellers" className="btn-primary w-full sm:w-auto">
+              Селлерам
+            </Link>
+            <Link
+              href="/clinics"
               className="inline-flex min-h-12 w-full items-center justify-center rounded-full border border-white/30 px-6 py-3 text-sm font-black text-white transition hover:border-white hover:bg-white/10 sm:w-auto"
             >
-              Пройти пред-аудит клиники
-            </a>
+              Клиникам
+            </Link>
           </div>
         </div>
       </div>

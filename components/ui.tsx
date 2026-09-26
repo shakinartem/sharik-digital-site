@@ -37,7 +37,7 @@ export function SectionTitle({ kicker, title, text }: { kicker?: string; title: 
         </div>
       )}
       <h2
-        className="font-black leading-[0.95] text-foreground"
+        className="font-display font-bold leading-[0.95] tracking-[-0.01em] text-foreground"
         style={{
           fontSize: "clamp(1.4rem, min(5cqi, 5rem), 3.6rem)",
         }}

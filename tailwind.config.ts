@@ -39,8 +39,8 @@ const config: Config = {
         container: "1200px",
       },
       fontFamily: {
-        display: ["Inter", "sans-serif"],
-        body: ["Inter", "sans-serif"],
+        display: ["var(--font-display)", "Manrope", "system-ui", "sans-serif"],
+        body: ["var(--font-body)", "system-ui", "sans-serif"],
       },
     },
   },

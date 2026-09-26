@@ -1,6 +1,0 @@
-# Чистые URL без .html
-/sellers          /sellers.html          200
-/stomatologiya    /stomatologiya.html    200
-/privacy          /privacy.html          200
-/blog             /blog.html             200
-/blog/*           /blog/:splat.html      200

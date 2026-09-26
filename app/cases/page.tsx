@@ -40,6 +40,7 @@ export default function CasesPage() {
       <section className="section-pad pt-12 sm:pt-16">
         <div className="container-wide">
           <SectionTitle
+            as="h1"
             kicker="Кейсы"
             title="Что получилось у клиник"
             text="Каждый кейс — это конкретная задача, конкретные действия и измеримый результат. Мы не приписываем кейсам то, чего не делали."

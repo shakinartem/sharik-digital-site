@@ -28,7 +28,23 @@ export function ButtonLink({
   );
 }
 
-export function SectionTitle({ kicker, title, text }: { kicker?: string; title: string; text?: string }) {
+export function SectionTitle({
+  kicker,
+  title,
+  text,
+  as: Tag = "h2",
+}: {
+  kicker?: string;
+  title: string;
+  text?: string;
+  /**
+   * Уровень заголовка. На страницах, где SectionTitle играет роль
+   * главного заголовка, передаётся as="h1": без единственного h1
+   * поисковик не понимает, о чём страница, и структура документа
+   * рассыпается начиная со второго уровня.
+   */
+  as?: "h1" | "h2";
+}) {
   return (
     <div className="mx-auto mb-10 max-w-3xl text-center">
       {kicker && (
@@ -36,14 +52,14 @@ export function SectionTitle({ kicker, title, text }: { kicker?: string; title: 
           {kicker}
         </div>
       )}
-      <h2
+      <Tag
         className="font-display font-bold leading-[0.95] tracking-[-0.01em] text-foreground"
         style={{
           fontSize: "clamp(1.4rem, min(5cqi, 5rem), 3.6rem)",
         }}
       >
         {title}
-      </h2>
+      </Tag>
       {text && <p className="mt-5 text-base leading-7 text-muted-foreground">{text}</p>}
     </div>
   );

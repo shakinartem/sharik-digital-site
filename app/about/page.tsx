@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SectionTitle } from "@/components/ui";
@@ -19,14 +20,22 @@ export default function AboutPage() {
       <section className="section-pad pt-12 sm:pt-16">
         <div className="container-wide">
           <SectionTitle
+            as="h1"
             kicker="О нас"
             title="Не универсальное агентство, а две специализации"
             text="Мы не пытаемся одинаково работать со всеми. Воронка пациента клиники и воронка покупателя маркетплейса устроены по-разному — значит, и подходы должны быть разными."
           />
 
           <div className="card-base mx-auto mt-12 grid max-w-4xl gap-8 p-7 sm:p-10 lg:grid-cols-[auto,1fr] lg:items-center">
-            <div className="flex h-24 w-24 items-center justify-center rounded-3xl bg-primary font-display text-4xl font-bold text-white">
-              АШ
+            <div className="relative h-32 w-32 shrink-0 overflow-hidden rounded-3xl ring-1 ring-border sm:h-40 sm:w-40">
+              <Image
+                src="/team/shakin-720.webp"
+                alt={`${site.directorName} — ${site.directorRole.toLowerCase()} ШАРиК digital`}
+                fill
+                sizes="160px"
+                priority
+                className="object-cover"
+              />
             </div>
             <div>
               <p className="text-sm font-semibold text-primary">{site.directorRole}</p>

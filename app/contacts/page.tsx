@@ -46,6 +46,7 @@ export default function ContactsPage() {
       <section className="section-pad pt-12 sm:pt-16">
         <div className="container-wide">
           <SectionTitle
+            as="h1"
             kicker="Контакты"
             title="Давайте сначала посчитаем"
             text="Не обещаем результат до того, как увидели цифры. Опишите задачу — разберём, где теряются деньги, и скажем, есть ли смысл двигаться дальше."

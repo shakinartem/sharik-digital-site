@@ -1,0 +1,10 @@
+name = "sharik-digital-site"
+compatibility_date = "2026-09-26"
+
+# Cloudflare Pages: статический экспорт Next.js из папки out/
+pages_build_output_dir = "out"
+
+# Сборка для дашборда Cloudflare Pages:
+#   Build command:            npm run build
+#   Build output directory:   out
+#   Node version:             22

@@ -1,4 +1,5 @@
-import { Header } from "@/components/Header";
+import { SiteHeader } from "@/components/SiteHeader";
+import { SiteFooter } from "@/components/SiteFooter";
 import { SectionTitle, ButtonLink } from "@/components/ui";
 
 const posts = [
@@ -30,7 +31,7 @@ export const metadata = {
 export default function BlogPage() {
   return (
     <main>
-      <Header />
+      <SiteHeader solidBg />
       <section className="section-pad">
         <div className="container-wide">
           <SectionTitle kicker="Блог" title="Пациентопоток и 7К" />
@@ -50,6 +51,7 @@ export default function BlogPage() {
           </div>
         </div>
       </section>
+      <SiteFooter />
     </main>
   );
 }

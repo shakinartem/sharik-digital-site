@@ -6,8 +6,6 @@ import { site } from "@/data/site";
 import { SectionTitle, ButtonLink } from "./ui";
 import { ArrowUpRight } from "lucide-react";
 
-const basePath = "/sharik-digital-site";
-
 const filters = [
   ["all", "Все"],
   ["dentistry", "Стоматологии"],
@@ -34,6 +32,10 @@ export function CasesSection() {
     .slice()
     .sort((a, b) => getCaseOrder(a) - getCaseOrder(b))
     .filter((item) => filter === "all" || getCaseFilter(item) === filter);
+
+  // Чередование: длинная-короткая, короткая-длинная на больших экранах
+  // Eurodent(0), Dental-pro(3), IbraDent(4), Arximed(7) - длинные, остальные - короткие
+  const wideIndices = [0, 3, 4, 7]; // индексы для широких карточек
 
   return (
     <section id="cases" className="section-pad bg-muted">
@@ -63,7 +65,7 @@ export function CasesSection() {
 
         <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
           {visibleCases.map((item, idx) => {
-            const isWide = idx < 2;
+            const isWide = wideIndices.includes(idx);
             return (
               <button
                 type="button"
@@ -74,7 +76,7 @@ export function CasesSection() {
                 }`}
               >
                 <div className={`h-44 overflow-hidden ${isWide ? 'lg:w-2/5 lg:h-auto' : ''}`}>
-                  <img src={`${basePath}${item.images[0]}`} alt={item.title} className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
+                  <img src={item.images[0]} alt={item.title} className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
                 </div>
                 <div className={`p-5 sm:p-6 ${isWide ? 'lg:w-3/5' : ''}`}>
                   <div className="mb-2 inline-flex items-center rounded-full bg-muted px-3 py-1 text-xs font-black text-muted-foreground">
@@ -128,7 +130,7 @@ function CaseModal({ item, onClose }: { item: CaseItem; onClose: () => void }) {
         role="dialog"
         aria-modal="true"
         aria-labelledby={`case-title-${item.id}`}
-        className="modal-pop mx-auto my-4 max-w-5xl overflow-hidden rounded-[2rem] bg-white shadow-2xl sm:my-8"
+        className="modal-pop mx-auto my-4 max-w-5xl overflow-hidden rounded-[2rem] bg-white shadow-2xl sm:my-8 max-h-[90vh] flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex flex-col gap-5 border-b border-border p-5 sm:flex-row sm:items-start sm:justify-between md:p-8">
@@ -154,7 +156,7 @@ function CaseModal({ item, onClose }: { item: CaseItem; onClose: () => void }) {
             Закрыть
           </button>
         </div>
-        <div className="grid gap-8 p-5 md:p-8 lg:grid-cols-[1.05fr_0.95fr]">
+        <div className="grid gap-8 p-5 md:p-8 lg:grid-cols-[1.05fr_0.95fr] overflow-y-auto">
           <div>
             <div className="space-y-6">
               <div>
@@ -188,7 +190,7 @@ function CaseModal({ item, onClose }: { item: CaseItem; onClose: () => void }) {
           </div>
           <div className="space-y-4">
             {item.images.map((image, i) => (
-              <img key={image} src={`${basePath}${image}`} alt={`${item.title}, слайд ${i + 1}`} className="w-full rounded-card border border-border" />
+              <img key={image} src={image} alt={`${item.title}, слайд ${i + 1}`} className="w-full rounded-card border border-border max-h-48 object-contain" />
             ))}
           </div>
         </div>

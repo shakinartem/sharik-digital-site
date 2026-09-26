@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Manrope, Montserrat } from "next/font/google";
 import { AnalyticsBootstrap } from "@/components/AnalyticsBootstrap";
 import { MetricaCounter } from "@/components/MetricaCounter";
+import { CookieConsent } from "@/components/CookieConsent";
 import { site } from "@/data/site";
 import "./globals.css";
 
@@ -75,6 +76,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {children}
         <AnalyticsBootstrap />
         <MetricaCounter id={site.metricaId} />
+        <CookieConsent />
       </body>
     </html>
   );

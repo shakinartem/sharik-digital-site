@@ -3,6 +3,7 @@ import Link from "next/link";
 import { site } from "@/data/site";
 import { DIRECTIONS } from "@/data/agency";
 import { TelegramSocialIcon, VkSocialIcon, DzenSocialIcon } from "./icons";
+import { CookieSettingsButton } from "./CookieConsent";
 
 const PAGES = [
   { label: "Кейсы", href: "/cases" },
@@ -113,6 +114,9 @@ export function SiteFooter() {
             >
               Политика конфиденциальности
             </Link>
+            {/* Ссылка нужна, чтобы решение по cookie можно было изменить:
+                иначе отказ остаётся необратимым до очистки кэша. */}
+            <CookieSettingsButton />
           </div>
         </div>
       </div>

@@ -1,4 +1,10 @@
 User-agent: *
 Allow: /
 
+# Служебные страницы. Закрыты дважды: здесь, чтобы не тратить краулинг,
+# и заголовком X-Robots-Tag со страницы — он работает даже для тех, кто
+# правила robots не читает.
+Disallow: /admin
+Disallow: /sellers/request
+
 Sitemap: https://sharik-digital.ru/sitemap.xml

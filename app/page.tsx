@@ -104,7 +104,12 @@ function Hero() {
       />
       <div className="container-wide">
         <div className="grid items-center gap-10 lg:grid-cols-[1.05fr_0.95fr] lg:gap-14">
-          <div className="reveal">
+          {/* Без `reveal`: этот блок — LCP-элемент главной. Пока
+              IntersectionObserver не отработает после гидрации,
+              `.reveal` держит opacity: 0, и на медленном телефоне
+              заголовок появлялся на 3.9 с вместо 2.8 с. Первый экран
+              и так не нуждается в анимации появления. */}
+          <div>
             <div className="inline-flex items-center gap-2 rounded-full border border-border bg-white px-4 py-2 text-xs font-bold text-foreground">
               <span className="h-1.5 w-1.5 rounded-full bg-primary" aria-hidden="true" />
               {agencyHero.name}
@@ -128,7 +133,7 @@ function Hero() {
             </p>
           </div>
 
-          <div className="reveal reveal-delay-2">
+          <div>
             <SystemDashboard />
           </div>
         </div>

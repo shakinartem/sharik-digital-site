@@ -30,7 +30,15 @@ const STEPS: { id: StepId; title: string; hint: string }[] = [
 
 const TURNOVER_PRESETS = ["300 000 ₽", "1 000 000 ₽", "3 000 000 ₽", "10 000 000 ₽"];
 
-export function SellerLeadForm() {
+/**
+ * Показать ли заголовок внутри формы.
+ *
+ * На /sellers/request заголовок страницы уже есть, и второй H2
+ * «Начнём с расчёта» повторял бы его. Если компонент вернут на
+ * страницу без собственного заголовка, дефолт оставляет блок на
+ * месте.
+ */
+export function SellerLeadForm({ showHeading = true }: { showHeading?: boolean } = {}) {
   const [step, setStep] = useState(0);
   const [shop, setShop] = useState("");
   const [turnover, setTurnover] = useState("");
@@ -80,25 +88,29 @@ export function SellerLeadForm() {
     "w-full rounded-2xl border border-border bg-white px-4 py-3.5 text-sm text-foreground outline-none transition focus:border-primary";
 
   return (
-    <section id="lead" className="section-pad" style={{ background: "var(--premium)" }}>
+    // Отступ сверху меньше обычного: заголовок страницы уже стоит
+    // над формой, и между ними не нужна целая секция.
+    <section id="lead" className="section-pad pt-6 sm:pt-8" style={{ background: "var(--premium)" }}>
       <div className="container-wide">
         <div className="mx-auto max-w-2xl">
-          <div className="reveal text-center">
-            <h2
-              className="font-display font-bold leading-[0.98] text-white"
-              style={{ fontSize: "clamp(1.5rem, 5cqi, 2.5rem)" }}
-            >
-              Начнём с расчёта
-            </h2>
-            <p className="mx-auto mt-4 max-w-lg text-sm leading-6 text-white/80">
-              Четыре поля — этого достаточно, чтобы посмотреть ваш каталог и сказать,
-              есть ли смысл запускать свой магазин.
-            </p>
-          </div>
+          {showHeading && (
+            <div className="reveal text-center">
+              <h2
+                className="font-display font-bold leading-[0.98] text-white"
+                style={{ fontSize: "clamp(1.5rem, 5cqi, 2.5rem)" }}
+              >
+                Начнём с расчёта
+              </h2>
+              <p className="mx-auto mt-4 max-w-lg text-sm leading-6 text-white/80">
+                Четыре поля — этого достаточно, чтобы посмотреть ваш каталог и сказать,
+                есть ли смысл запускать свой магазин.
+              </p>
+            </div>
+          )}
 
           {/* Прогресс: подсказывает, сколько осталось, и снимает
               ощущение «я застрял в форме». */}
-          <div className="reveal mt-8">
+          <div className={`reveal ${showHeading ? "mt-8" : ""}`}>
             <div className="flex items-center justify-between text-xs font-bold text-white/70">
               <span>
                 Шаг {step + 1} из {STEPS.length}

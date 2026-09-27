@@ -2,6 +2,7 @@
 id: kit-15
 order: 102
 hub: kit
+group: "Сайт и документы"
 question: "Нужен ли свой домен?"
 ---
 

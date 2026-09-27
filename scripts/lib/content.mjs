@@ -41,8 +41,17 @@ function toInlineList(items) {
   return `\n${list.map((s) => `  - ${String(s).replace(/[\r\n]+/g, " ").trim()}`).join("\n")}`;
 }
 
-/** Разбор frontmatter. Возвращает { meta, body }. */
+/**
+ * Разбор frontmatter. Возвращает { meta, body }.
+ *
+ * Тип meta задан явно: без аннотации TypeScript выводит `{}` по
+ * пустому литералу, и любой потребитель (например форма FAQ в
+ * админке) получает ошибки вида "Property 'hub' does not exist".
+ *
+ * @returns {{ meta: Record<string, any>, body: string }}
+ */
 export function parseFrontmatter(raw) {
+  /** @type {Record<string, any>} */
   const meta = {};
   const body = raw.replace(/^---\r?\n([\s\S]*?)\r?\n---\r?\n?/, (_, block) => {
     // Ключ верхнего уровня, если встретился отступ — это вложенный блок cta
@@ -378,6 +387,9 @@ export function serializeFaq(item) {
     `id: ${item.id}`,
     `order: ${item.order ?? 0}`,
     `hub: ${item.hub || "agency"}`,
+    // Подраздел пишем только когда он задан: пустой group: в
+    // frontmatter превратился бы в пустой список при разборе.
+    ...(item.group ? [`group: ${yamlValue(item.group)}`] : []),
     `question: ${yamlValue(item.q)}`,
     "---",
     "",
@@ -389,10 +401,15 @@ export function serializeFaq(item) {
 /** Markdown -> вопрос FAQ. */
 export function parseFaq(raw, fallbackId = "") {
   const { meta, body } = parseFrontmatter(raw);
+  // Ключ без значения разбирается как пустой список, поэтому группу
+  // берём только когда это строка. Иначе group: без значения тихо
+  // превратился бы в [] и вопрос не попал ни в один подраздел.
+  const group = typeof meta.group === "string" ? meta.group : "";
   return {
     id: meta.id || fallbackId,
     order: Number(meta.order) || 0,
     hub: meta.hub || "agency",
+    ...(group ? { group } : {}),
     q: meta.question || "",
     a: body
       .split(/\r?\n/)

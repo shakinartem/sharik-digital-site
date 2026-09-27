@@ -137,7 +137,7 @@ export function track(name: EventName, payload: Payload = {}) {
 const CTA_LABELS: Record<string, string> = {
   "Рассчитать потенциал": "seller_potential",
   "Помочь с запуском": "kit_launch_help",
-  "Оценить объём работ": "kit_estimate",
+  "Посчитать стоимость": "kit_estimate",
   "Получить точный расчёт": "kit_exact_estimate",
   "Пройти пред-аудит": "clinic_audit",
   "Получить расчёт": "get_quote",

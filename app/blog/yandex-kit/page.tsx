@@ -129,7 +129,7 @@ export default function YandexKitHub() {
               </p>
               <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
                 <ButtonLink href="/yandex-kit#estimate" className="w-full sm:w-auto">
-                  Оценить объём работ
+                  Посчитать стоимость
                 </ButtonLink>
                 <Link
                   href="/yandex-kit"

@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { ButtonLink, SectionTitle, NumberBadge } from "@/components/ui";
 import { JourneyMap } from "@/components/JourneyMap";
 import { PotentialCalculator } from "@/components/PotentialCalculator";
-import { SellerLeadForm } from "@/components/SellerLeadForm";
+import { GroupedFaq } from "@/components/GroupedFaq";
 import {
   sellerLinks,
   sellerProducts,
@@ -16,6 +16,7 @@ import {
   sellerAnchors,
   sellerModel,
   trafficChannels,
+  parallelSalesSteps,
 } from "@/data/sellers";
 import { site } from "@/data/site";
 import {
@@ -28,8 +29,6 @@ import {
   Layers,
   Package,
   Megaphone,
-  Plus,
-  Minus,
 } from "lucide-react";
 
 const channelIcons = {
@@ -72,8 +71,13 @@ export default function SellersPage() {
 
   return (
     <main id="top" className="overflow-x-hidden">
-      <SiteHeader ctaLabel="Рассчитать потенциал" ctaHref="#potential" solidBg />
+      {/* Кнопка в шапке возвращает наверх страницы, а не ведёт на
+          форму: человек нажал её, потому что хочет разобраться в
+          подходе, а не потому что уже решил оставить заявку.
+          К форме ведут блоки внизу — там, где решение принято. */}
+      <SiteHeader ctaLabel="В начало страницы" ctaHref="#top" solidBg />
       <Hero />
+      <HowTo />
       <Anchors />
       <Model />
       <NotASite />
@@ -85,7 +89,7 @@ export default function SellersPage() {
       <NewDirection />
       <NotFit />
       <Faq />
-      <SellerLeadForm />
+      <NextStep />
       <FinalCta />
       <SiteFooter />
     </main>
@@ -124,8 +128,8 @@ function Hero() {
             </p>
 
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <ButtonLink href="#potential" className="w-full sm:w-auto">
-                Рассчитать потенциал
+              <ButtonLink href="#how-to" className="w-full sm:w-auto">
+                Как это устроено
               </ButtonLink>
               <ButtonLink href={sellerLinks.launch} variant="outline" className="w-full sm:w-auto">
                 Запустить KIT
@@ -160,6 +164,52 @@ function Hero() {
             </div>
           </div>
         </div>
+      </div>
+    </section>
+  );
+}
+
+/**
+ * Как построить параллельные продажи.
+ *
+ * Поставлен сразу после первого экрана: человек приходит с вопросом
+ * «как это вообще устроено», и ответ должен быть до расчёта и формы,
+ * а не после.
+ */
+function HowTo() {
+  return (
+    <section id="how-to" className="section-pad bg-muted">
+      <div className="container-wide">
+        <div className="reveal">
+          <SectionTitle
+            kicker="Как это устроено"
+            title="Пять шагов к параллельным продажам"
+            text="Маркетплейс остаётся и продолжает приносить продажи. Параллельно рядом с ним выстраивается канал, которым владеете вы — и он окупает вложения."
+          />
+        </div>
+
+        <ol className="mt-12 space-y-4">
+          {parallelSalesSteps.map((item, i) => (
+            <li
+              key={item.step}
+              className="card-base card-lift reveal flex flex-col gap-4 p-6 sm:flex-row sm:items-start sm:gap-6"
+              style={{ transitionDelay: `${i * 80}ms` }}
+            >
+              <span className="font-display text-2xl font-black leading-none text-primary sm:text-3xl">
+                {item.step}
+              </span>
+              <div className="min-w-0 flex-1">
+                <h3 className="text-base font-black leading-snug text-foreground sm:text-lg">
+                  {item.title}
+                </h3>
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">{item.detail}</p>
+              </div>
+              <p className="flex shrink-0 items-start gap-2 rounded-2xl bg-primary-soft px-4 py-3 text-xs font-bold leading-5 text-primary sm:max-w-[220px]">
+                {item.result}
+              </p>
+            </li>
+          ))}
+        </ol>
       </div>
     </section>
   );
@@ -434,7 +484,13 @@ function Products() {
           />
         </div>
 
-        <div className="grid gap-5 sm:grid-cols-2">
+        {/* Три карточки в две колонки: третья занимает вторую строку
+            и по умолчанию прижималась бы влево, оставляя дыру справа.
+            last:col-start-2 ставит её по центру относительно двух
+            верхних — ряд из трёх читается как лестница, а не как
+            таблица с дырой. На мобильном (одна колонка) правило
+            не действует, и карточки идут друг за другом. */}
+        <div className="grid gap-5 sm:grid-cols-2 [&>*:last-child]:sm:col-start-2">
           {sellerProducts.map((p, i) => {
             const isDark = p.tone === "dark";
             return (
@@ -534,38 +590,6 @@ function Process() {
   );
 }
 
-function Accordion({ items }: { items: ReadonlyArray<{ q: string; a: string }> }) {
-  const [openIndex, setOpenIndex] = useState<number | null>(null);
-
-  return (
-    <div className="mx-auto max-w-3xl">
-      {items.map((item, i) => (
-        <div
-          key={item.q}
-          className={`border-t border-border/60 transition-all duration-300 ${openIndex === i ? "bg-primary/5" : ""}`}
-        >
-          <button
-            type="button"
-            onClick={() => setOpenIndex(openIndex === i ? null : i)}
-            className="flex w-full items-center justify-between gap-4 py-4 text-left text-base font-black text-foreground transition hover:text-primary"
-            aria-expanded={openIndex === i}
-          >
-            {item.q}
-            <span className="shrink-0 text-primary">
-              {openIndex === i ? <Minus className="h-5 w-5" /> : <Plus className="h-5 w-5" />}
-            </span>
-          </button>
-          <div
-            className={`overflow-hidden transition-all duration-300 ${openIndex === i ? "max-h-96 pb-4" : "max-h-0"}`}
-          >
-            <p className="text-base leading-7 text-muted-foreground">{item.a}</p>
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
-
 /**
  * Блок «Новое направление» сознательно показывает пустоту seller-кейсов
  * вместо того, чтобы прятать её. Тактика из брифа: честное «направление
@@ -633,13 +657,45 @@ function NotFit() {
 }
 
 function Faq() {
+  return <GroupedFaq items={sellerFaq} title="Частые вопросы по направлению" />;
+}
+
+/**
+ * Переход к заявке.
+ *
+ * Формы здесь намеренно нет: страница объясняет, как устроены
+ * параллельные продажи, и человек приходит с вопросом, а не с
+ * готовностью заполнить три поля. Заявка живёт на отдельной
+ * странице /sellers/request — туда ведут и этот блок, и финальный
+ * CTA. Так путь выглядит как чтение, а не как продажа с первого экрана.
+ */
+function NextStep() {
   return (
-    <section id="faq" className="section-pad bg-muted">
+    <section id="next" className="section-pad" style={{ background: "var(--premium)" }}>
       <div className="container-wide">
-        <div className="reveal">
-          <SectionTitle kicker="FAQ" title="Частые вопросы по направлению" />
+        <div className="reveal mx-auto max-w-3xl text-center">
+          <h2
+            className="font-display font-bold leading-[0.98] text-white"
+            style={{ fontSize: "clamp(1.5rem, 5cqi, 2.5rem)" }}
+          >
+            Посчитаем ваш канал
+          </h2>
+          <p className="mx-auto mt-5 max-w-xl text-base leading-7 text-white/80">
+            Оставьте ссылку на каталог и примерный оборот — покажем, сколько заказов
+            канал может дать в осторожном, базовом и оптимистичном сценариях.
+          </p>
+          <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
+            <ButtonLink href="/sellers/request" className="w-full sm:w-auto">
+              Оставить заявку на расчёт
+            </ButtonLink>
+            <a
+              href={sellerLinks.question}
+              className="inline-flex min-h-12 w-full items-center justify-center rounded-full border border-white/30 px-6 py-3 text-sm font-bold text-white transition hover:border-white hover:bg-white/10 sm:w-auto"
+            >
+              Сначала задать вопрос
+            </a>
+          </div>
         </div>
-        <Accordion items={sellerFaq} />
       </div>
     </section>
   );
@@ -663,7 +719,7 @@ function FinalCta() {
             </p>
 
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <ButtonLink href={sellerLinks.potential} className="w-full sm:w-auto">
+              <ButtonLink href="/sellers/request" className="w-full sm:w-auto">
                 Рассчитать потенциал
               </ButtonLink>
               <a

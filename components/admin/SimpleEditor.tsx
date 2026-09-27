@@ -2,6 +2,11 @@
 
 import { useState } from "react";
 import { ImageUpload } from "@/components/admin/ImageUpload";
+import { FAQ_HUBS } from "@/data/faq";
+// Импорт из scripts/, а не из @/lib: генератор контента — единственное
+// место, где формат frontmatter FAQ определён. Копия алгоритма в
+// компоненте рано или поздно разошлась бы с ним.
+import { parseFrontmatter, serializeFaq } from "../../scripts/lib/content.mjs";
 
 /**
  * Редактор кейсов и отзывов.
@@ -172,40 +177,86 @@ function caseFromMarkdown(markdown: string): CaseForm {
 }
 
 
-/** Вопрос FAQ: порядок определяет позицию вопроса на странице. */
-type FaqForm = { id: string; order: string; question: string; answer: string };
+/**
+ * Вопрос FAQ: порядок определяет позицию вопроса на странице.
+ *
+ * hub — на какой странице вопрос живёт, group — подраздел внутри
+ * неё. Оба поля редактируются здесь, а не в коде: иначе перенести
+ * вопрос между страницами или разложить длинный список по темам
+ * можно было бы только правкой исходников.
+ */
+type FaqForm = {
+  id: string;
+  order: string;
+  hub: string;
+  group: string;
+  question: string;
+  answer: string;
+};
 
-const EMPTY_FAQ: FaqForm = { id: "", order: "0", question: "", answer: "" };
+const EMPTY_FAQ: FaqForm = {
+  id: "",
+  order: "0",
+  hub: "agency",
+  group: "",
+  question: "",
+  answer: "",
+};
 
-/** FaqForm -> markdown в формате статей: frontmatter + тело ответа. */
+/**
+ * FaqForm -> markdown.
+ *
+ * Сериализация отдана scripts/lib/content.mjs — тем же кодом, что
+ * пишет файлы при сборке. Своя сборка строк здесь создала бы второй
+ * источник правды: поправили формат в генераторе, а админка
+ * продолжила бы писать по-старому.
+ */
 function faqToMarkdown(f: FaqForm): string {
-  return [
-    "---",
-    "id: " + f.id,
-    "order: " + (Number(f.order) || 0),
-    "question: " + f.question,
-    "---",
-    "",
-    f.answer.trim(),
-    "",
-  ].join("\n");
+  return serializeFaq({
+    id: f.id,
+    order: Number(f.order) || 0,
+    hub: f.hub,
+    group: f.group.trim() || undefined,
+    q: f.question,
+    a: f.answer,
+  });
 }
 
-/** Markdown -> FaqForm. */
+/** Значение одного поля frontmatter без кавычек. */
+function fmValue(markdown: string, key: string): string {
+  const match = markdown.match(new RegExp(`^${key}:\\s*(.*)$`, "m"));
+  return match ? match[1].trim().replace(/^["']|["']$/g, "") : "";
+}
+
+/** Страница вопроса: нужна списку в админке и подсказке подразделов. */
+function hubOf(markdown: string): string {
+  return fmValue(markdown, "hub") || "agency";
+}
+
+/** Подраздел вопроса; пустая строка — вопрос без группы. */
+function groupOf(markdown: string): string {
+  return fmValue(markdown, "group");
+}
+
+/**
+ * Markdown -> FaqForm.
+ *
+ * Разбор идёт через parseFrontmatter из scripts/lib/content.mjs —
+ * тем же кодом, что читает файлы при сборке. Свой разбор здесь
+ * означал бы второй источник правды для одного и того же формата.
+ */
 function faqFromMarkdown(markdown: string): FaqForm {
-  const block = markdown.replace(/^---\r?\n([\s\S]*?)\r?\n---\r?\n?/, "$1");
-  const val = (key: string) => {
-    const m = block.match(new RegExp("^" + key + ":\\s*(.*)$", "m"));
-    return m ? m[1].trim().replace(/^["']|["']$/g, "") : "";
-  };
-  const after = markdown.replace(/^---[\s\S]*?\r?\n---\r?\n?/, "");
+  const { meta, body } = parseFrontmatter(markdown);
   return {
-    id: val("id"),
-    order: val("order") || "0",
-    question: val("question"),
-    answer: after.trim(),
+    id: meta.id || "",
+    order: String(Number(meta.order) || 0),
+    hub: meta.hub || "agency",
+    group: typeof meta.group === "string" ? meta.group : "",
+    question: meta.question || "",
+    answer: body.trim(),
   };
 }
+
 function reviewFromMarkdown(markdown: string): ReviewForm {
   return {
     id: readValue(markdown, "id"),
@@ -244,6 +295,29 @@ export default function SimpleEditor({
 
   const field = "w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm";
   const label = "mb-1 block text-sm font-medium text-neutral-700";
+
+  /**
+   * Подразделы, которые уже заняты на выбранной странице.
+   *
+   * Нужны, чтобы новый вопрос не оказался в блоке «Другие вопросы»
+   * только из-за опечатки в названии: кнопки под полем показывают
+   * точные значения, которые используются на сайте.
+   */
+  const groupOptions = isFaq
+    ? items
+        // Вопросы со всех страниц, но подразделы берём только со
+        // страницы, выбранной в форме: иначе в подсказку попадут
+        // «Стоимость и сроки» со страницы KIT.
+        .filter((i) => hubOf(i.markdown) === faqForm.hub)
+        .map((i) => groupOf(i.markdown))
+        .filter((g): g is string => Boolean(g))
+        // Уникальные значения без Set: проект собирается под es5,
+        // где итерация по Set требует downlevelIteration.
+        .filter((g, index, all) => all.indexOf(g) === index)
+    : [];
+
+  const sectionTitle = isCase ? "Кейсы" : isFaq ? "Вопросы FAQ" : "Отзывы";
+  const newItemLabel = isCase ? "Новый кейс" : isFaq ? "Новый вопрос" : "Новый отзыв";
 
   const setCase = (key: keyof CaseForm, value: string) =>
     setCaseForm((prev) => ({ ...prev, [key]: value }));
@@ -335,29 +409,67 @@ export default function SimpleEditor({
           onClick={create}
           className="mb-3 w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm font-medium"
         >
-          + {isCase ? "Новый кейс" : "Новый отзыв"}
+          + {newItemLabel}
         </button>
         <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-neutral-500">
-          {isCase ? "Кейсы" : "Отзывы"} ({items.length})
+          {sectionTitle} ({items.length})
         </h2>
-        <ul className="space-y-1">
-          {items.map((item) => (
-            <li key={item.slug}>
-              <button
-                onClick={() => open(item.slug)}
-                className={
-                  "w-full rounded-lg px-3 py-2 text-left text-sm " +
-                  (current === item.slug
-                    ? "bg-neutral-900 text-white"
-                    : "hover:bg-neutral-100")
-                }
-              >
-                <span className="block truncate font-medium">{item.title || item.slug}</span>
-                <span className="block truncate text-xs opacity-70">{item.slug}</span>
-              </button>
-            </li>
-          ))}
-        </ul>
+        {isFaq ? (
+          <div className="space-y-4">
+            {FAQ_HUBS.map((hub) => {
+              const group = items.filter((i) => hubOf(i.markdown) === hub.value);
+              if (!group.length) return null;
+              return (
+                <div key={hub.value}>
+                  <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-neutral-500">
+                    {hub.label} ({group.length})
+                  </p>
+                  <ul className="space-y-1">
+                    {group.map((item) => (
+                      <li key={item.slug}>
+                        <button
+                          onClick={() => open(item.slug)}
+                          className={
+                            "w-full rounded-lg px-3 py-2 text-left text-sm " +
+                            (current === item.slug
+                              ? "bg-neutral-900 text-white"
+                              : "hover:bg-neutral-100")
+                          }
+                        >
+                          <span className="block truncate font-medium">
+                            {item.title || item.slug}
+                          </span>
+                          <span className="block truncate text-xs opacity-70">
+                            {groupOf(item.markdown) || "Без подраздела"}
+                          </span>
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <ul className="space-y-1">
+            {items.map((item) => (
+              <li key={item.slug}>
+                <button
+                  onClick={() => open(item.slug)}
+                  className={
+                    "w-full rounded-lg px-3 py-2 text-left text-sm " +
+                    (current === item.slug
+                      ? "bg-neutral-900 text-white"
+                      : "hover:bg-neutral-100")
+                  }
+                >
+                  <span className="block truncate font-medium">{item.title || item.slug}</span>
+                  <span className="block truncate text-xs opacity-70">{item.slug}</span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
       </aside>
 
       <section className="space-y-4">
@@ -547,6 +659,56 @@ export default function SimpleEditor({
                 />
               </div>
             </div>
+            <div className="grid gap-4 md:grid-cols-2">
+              <div>
+                <label className={label} htmlFor="f-hub">
+                  Страница
+                </label>
+                <select
+                  id="f-hub"
+                  className={field}
+                  value={faqForm.hub}
+                  onChange={(e) => setFaq("hub", e.target.value)}
+                >
+                  {FAQ_HUBS.map((h) => (
+                    <option key={h.value} value={h.value}>
+                      {h.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className={label} htmlFor="f-group">
+                  Подраздел
+                </label>
+                <input
+                  id="f-group"
+                  className={field}
+                  value={faqForm.group}
+                  onChange={(e) => setFaq("group", e.target.value)}
+                  placeholder="Оплата и заказ"
+                />
+              </div>
+            </div>
+            {groupOptions.length > 0 && (
+              <div>
+                <p className="mb-1 text-xs text-neutral-500">
+                  Уже есть на этой странице: {groupOptions.join(", ")}
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {groupOptions.map((g) => (
+                    <button
+                      key={g}
+                      type="button"
+                      onClick={() => setFaq("group", g)}
+                      className="rounded-full border border-neutral-300 px-3 py-1 text-xs hover:bg-neutral-100"
+                    >
+                      {g}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
             <div>
               <label className={label} htmlFor="f-question">
                 Вопрос
@@ -571,8 +733,10 @@ export default function SimpleEditor({
               />
             </div>
             <p className="text-xs text-neutral-500">
-              Порядок задаёт позицию вопроса в блоке FAQ на главной: чем меньше число, тем
-              выше. При одинаковом порядке вопросы идут по идентификатору.
+              Страница определяет, где вопрос выводится. Подраздел группирует вопросы
+              внутри страницы: пустое поле отправит вопрос в блок «Другие вопросы».
+              Порядок задаёт позицию — чем меньше число, тем выше; он же определяет
+              порядок подразделов.
             </p>
           </>
         ) : (

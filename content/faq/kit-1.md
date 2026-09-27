@@ -2,6 +2,7 @@
 id: kit-1
 order: 0
 hub: kit
+group: "Начало работы"
 question: "Кому доступен Яндекс KIT?"
 ---
 

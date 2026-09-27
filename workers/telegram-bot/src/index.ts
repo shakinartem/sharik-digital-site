@@ -269,13 +269,13 @@ async function handleCases(env: Env, parsed: ReturnType<typeof parseUpdate>, tra
   }
   buttons.push([{ text: "Мини-диагностика", callback_data: track === KIT ? "audit:kit" : "audit" }]);
 
-  await sendMessage(env.BOT_TOKEN, chatId, buildCasesMenuText(), { inline_keyboard: buttons });
+  await sendMessage(env.BOT_TOKEN, chatId, buildCasesMenuText(track), { inline_keyboard: buttons });
 }
 
 async function handleQuestion(env: Env, parsed: ReturnType<typeof parseUpdate>, state: UserState | null, track: TrackKey) {
   const chatId = parsed.chatId as number;
   await setUserState(env.DB, parsed.userId, { kind: "question", question_kind: "free_text", track });
-  await sendMessage(env.BOT_TOKEN, chatId, buildQuestionIntroText(), contactRequestKeyboard());
+  await sendMessage(env.BOT_TOKEN, chatId, buildQuestionIntroText(track), contactRequestKeyboard());
 }
 /**
  * Разбор callback_data вида "действие:трек".
@@ -318,12 +318,12 @@ async function handleCallbackOrContact(env: Env, parsed: ReturnType<typeof parse
     if (cb.action === "question") return handleQuestion(env, parsed, state, cb.track);
     if (cb.action === "contact_request") {
       await setUserState(env.DB, parsed.userId, { kind: "contact_request" });
-      await sendMessage(env.BOT_TOKEN, chatId, buildContactRequestText(), contactRequestKeyboard());
+      await sendMessage(env.BOT_TOKEN, chatId, buildContactRequestText(track), contactRequestKeyboard());
       return;
     }
     if (cb.action === "telegram_contact_allowed") {
       await saveContact(env.DB, userId, "Telegram");
-      await sendMessage(env.BOT_TOKEN, chatId, buildContactSavedText());
+      await sendMessage(env.BOT_TOKEN, chatId, buildContactSavedText(track));
       await sendAdminContactAfterDiagnostic(env, userId, "Telegram", true, null, track);
       await setUserState(env.DB, userId, null);
       await sendMessage(env.BOT_TOKEN, chatId, buildMainMenuText(track), mainMenuKeyboard(track));
@@ -353,7 +353,7 @@ async function handleCallbackOrContact(env: Env, parsed: ReturnType<typeof parse
     const contactText = resolveContactText(text, contact);
 
     if (!contactText) {
-      await sendMessage(env.BOT_TOKEN, chatId, buildContactRequestText(), contactRequestKeyboard());
+      await sendMessage(env.BOT_TOKEN, chatId, buildContactRequestText(track), contactRequestKeyboard());
       return;
     }
     if (contact && contact.user_id && contact.user_id !== userId) {
@@ -362,7 +362,7 @@ async function handleCallbackOrContact(env: Env, parsed: ReturnType<typeof parse
     }
 
     await saveContact(env.DB, userId, contactText);
-    await sendMessage(env.BOT_TOKEN, chatId, buildContactSavedText());
+    await sendMessage(env.BOT_TOKEN, chatId, buildContactSavedText(track));
     await sendAdminContactAfterDiagnostic(env, userId, contactText, allowed, null, track);
     await setUserState(env.DB, userId, null);
     await sendMessage(env.BOT_TOKEN, chatId, buildMainMenuText(track), mainMenuKeyboard(track));
@@ -371,7 +371,7 @@ async function handleCallbackOrContact(env: Env, parsed: ReturnType<typeof parse
 
   if (state.kind === "question") {
     if (!text) {
-      await sendMessage(env.BOT_TOKEN, chatId, buildQuestionIntroText(), contactRequestKeyboard());
+      await sendMessage(env.BOT_TOKEN, chatId, buildQuestionIntroText(track), contactRequestKeyboard());
       return;
     }
     if (["в меню", "/menu", "/cancel"].includes(text.toLowerCase())) {
@@ -435,7 +435,7 @@ async function handleDiagnosticCallback(
   if (nextStep >= questions.length) {
     await setUserState(env.DB, parsed.userId, null);
     await saveDiagnosticLead(env, parsed.user as any, { ...state, answers });
-    await sendMessage(env.BOT_TOKEN, chatId, buildAuditFinishedText(), diagnosticResultKeyboard(state.track));
+    await sendMessage(env.BOT_TOKEN, chatId, buildAuditFinishedText(state.track), diagnosticResultKeyboard(state.track));
     return;
   }
 
@@ -469,7 +469,7 @@ async function handleDiagnosticText(env: Env, parsed: ReturnType<typeof parseUpd
   if (nextStep >= questions.length) {
     await setUserState(env.DB, parsed.userId, null);
     await saveDiagnosticLead(env, parsed.user as any, { ...state, answers });
-    await sendMessage(env.BOT_TOKEN, chatId, buildAuditFinishedText(), diagnosticResultKeyboard(state.track));
+    await sendMessage(env.BOT_TOKEN, chatId, buildAuditFinishedText(state.track), diagnosticResultKeyboard(state.track));
     return;
   }
 
@@ -570,7 +570,7 @@ async function finishDiagnostic(env: Env, parsed: ReturnType<typeof parseUpdate>
   const stateDiagnostic = state as Extract<UserState, { kind: "diagnostic" }>;
   await saveDiagnosticLead(env, user, stateDiagnostic);
   await setUserState(env.DB, parsed.userId, null);
-  await sendMessage(env.BOT_TOKEN, parsed.chatId as number, buildAuditFinishedText(), diagnosticResultKeyboard(stateDiagnostic.track));
+  await sendMessage(env.BOT_TOKEN, parsed.chatId as number, buildAuditFinishedText(stateDiagnostic.track), diagnosticResultKeyboard(stateDiagnostic.track));
 }
 
 async function sendAdminContactAfterDiagnostic(

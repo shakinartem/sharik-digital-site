@@ -2,6 +2,7 @@
 id: kit-13
 order: 100
 hub: kit
+group: "Стоимость и сроки"
 question: "Яндекс KIT — это бесплатно?"
 ---
 

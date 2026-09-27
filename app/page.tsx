@@ -9,7 +9,6 @@ import { SectionTitle } from "@/components/ui";
 import { CasesSection } from "@/components/CasesSection";
 import { FlowScheme } from "@/components/FlowScheme";
 import { SystemDashboard } from "@/components/SystemDashboard";
-import { CommercialRoute } from "@/components/CommercialRoute";
 import { ReviewsSection } from "@/components/ReviewsSection";
 import {
   agencyHero,
@@ -63,7 +62,6 @@ export default function Home() {
       <Hero />
       <HowWeWork />
       <TwoSystems />
-      <Routes />
       <CasesSection limit={4} showAllLink />
       <ReviewsSection />
       <WhySharik />
@@ -244,32 +242,6 @@ function TwoSystems() {
   );
 }
 
-
-/**
- * Маршрут до заявки.
- *
- * Ставится сразу после выбора направления: человек уже понял, кому
- * он пришёл, и следующий вопрос — «что дальше и сколько шагов». Ответ
- * показан прямо на странице, а не спрятан в подвале.
- */
-function Routes() {
-  return (
-    <section className="section-pad">
-      <div className="container-wide">
-        <div className="reveal">
-          <SectionTitle
-            kicker="Маршрут"
-            title="Как устроен путь до заявки"
-            text="Из поиска и с главной — два входа в один результат. На каждом шаге видно, что происходит и зачем."
-          />
-        </div>
-        <div className="reveal reveal-delay-1 mt-8">
-          <CommercialRoute />
-        </div>
-      </div>
-    </section>
-  );
-}
 
 function WhySharik() {
   return (

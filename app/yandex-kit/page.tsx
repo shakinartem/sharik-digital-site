@@ -6,6 +6,7 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SectionTitle, ButtonLink } from "@/components/ui";
 import { KitWorkEstimator } from "@/components/KitWorkEstimator";
+import { GroupedFaq } from "@/components/GroupedFaq";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { site } from "@/data/site";
 import { sellerLinks } from "@/data/sellers";
@@ -356,45 +357,10 @@ function Estimate() {
           <SectionTitle
             kicker="Оценка"
             title="Сколько стоит запуск собственного магазина?"
-            text="Посчитайте объём работ по своему каталогу. Точную сумму считаем после разбора — она зависит от состояния товаров, а не от названия платформы."
+            text="Отметьте, что уже есть, и получите нижнюю границу стоимости. Точную сумму считаем после разбора каталога: она зависит от состояния товаров, а не от названия платформы."
           />
         </div>
         <KitWorkEstimator />
-      </div>
-    </section>
-  );
-}
-
-function FaqBlock({ items }: { items: ReadonlyArray<{ q: string; a: string }> }) {
-  const [open, setOpen] = useState<number | null>(0);
-  return (
-    <section id="faq" className="section-pad">
-      <div className="container-wide">
-        <div className="reveal">
-          <SectionTitle kicker="FAQ" title="Частые вопросы про Яндекс KIT" />
-        </div>
-        <div className="mx-auto max-w-3xl">
-          {items.map((item, i) => (
-            <div key={item.q} className="border-t border-border/60">
-              <button
-                type="button"
-                onClick={() => setOpen(open === i ? null : i)}
-                aria-expanded={open === i}
-                className="flex w-full items-center justify-between gap-4 py-4 text-left text-base font-bold text-foreground transition hover:text-primary"
-              >
-                {item.q}
-                <span className="shrink-0 text-primary">{open === i ? "−" : "+"}</span>
-              </button>
-              <div
-                className={`overflow-hidden transition-all duration-300 ${
-                  open === i ? "max-h-64 pb-4" : "max-h-0"
-                }`}
-              >
-                <p className="text-base leading-7 text-muted-foreground">{item.a}</p>
-              </div>
-            </div>
-          ))}
-        </div>
       </div>
     </section>
   );
@@ -481,7 +447,7 @@ export default function YandexKitPage() {
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
                 <ButtonLink href={sellerLinks.potential}>Помочь с запуском</ButtonLink>
                 <ButtonLink href="#estimate" variant="outline">
-                  Оценить объём работ
+                  Посчитать стоимость
                 </ButtonLink>
               </div>
               <p className="mt-4 text-sm text-muted-foreground">
@@ -520,7 +486,7 @@ export default function YandexKitPage() {
       <NotEnough />
       <AfterKit />
       <Estimate />
-      <FaqBlock items={faq} />
+      <GroupedFaq items={faq} title="Частые вопросы про Яндекс KIT" tone="plain" />
       <FinalCta />
       <SiteFooter />
     </main>

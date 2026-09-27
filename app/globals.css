@@ -178,6 +178,102 @@ html {
 }
 
 /* ==============================
+   RANGE SLIDER
+   ==============================
+   Собственный стиль вместо accent-color: акцентная заливка красит
+   только ползунок и не даёт управлять дорожкой, а в Firefox
+   accent-color вообще игнорируется для дорожки.
+
+   Правила, на которых построен компонент (NN/G, Baymard, USWDS):
+   - значение показано НАД дорожкой: подписи снизу на телефоне
+     закрывает палец, пока им тянут;
+   - ползунок и дорожка выше 2px и с рамкой, иначе их плохо видно
+     при слабом зрении (WCAG 1.4.11);
+   - фокус виден всегда, а не только по требованию браузера;
+   - min/max не наезжают на дорожку, потому что на узком экране
+     подписи схлопывались бы в нечитаемую кашу.
+*/
+
+.range {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 2.5rem;
+  background: transparent;
+  cursor: pointer;
+  /* Ползунок не должен ловивать фокус мышью — им управляют
+     стрелками, и браузер сам прокручивает страницу. */
+  touch-action: pan-y;
+}
+
+.range::-webkit-slider-runnable-track {
+  height: 0.5rem;
+  border-radius: 9999px;
+  background: var(--muted);
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+.range::-moz-range-track {
+  height: 0.5rem;
+  border-radius: 9999px;
+  background: var(--muted);
+  border: 2px solid transparent;
+}
+
+.range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 1.5rem;
+  width: 1.5rem;
+  margin-top: -0.5rem;
+  border-radius: 9999px;
+  background: var(--primary);
+  border: 3px solid #FFFFFF;
+  box-shadow: 0 2px 8px rgba(118, 2, 41, 0.35);
+  transition: transform 150ms ease, box-shadow 150ms ease;
+}
+
+.range::-moz-range-thumb {
+  height: 1.5rem;
+  width: 1.5rem;
+  border-radius: 9999px;
+  background: var(--primary);
+  border: 3px solid #FFFFFF;
+  box-shadow: 0 2px 8px rgba(118, 2, 41, 0.35);
+}
+
+/* Акцент при касании и наведении — заметное увеличение цели,
+   а не едва заметный сдвиг: цель должна быть ≥44px (WCAG 2.5.5). */
+.range:hover::-webkit-slider-thumb,
+.range:focus-visible::-webkit-slider-thumb {
+  transform: scale(1.15);
+  box-shadow: 0 4px 14px rgba(118, 2, 41, 0.45);
+}
+
+.range:hover::-moz-range-thumb,
+.range:focus-visible::-moz-range-thumb {
+  transform: scale(1.15);
+  box-shadow: 0 4px 14px rgba(118, 2, 41, 0.45);
+}
+
+.range:active::-webkit-slider-thumb {
+  transform: scale(1.25);
+}
+
+/* Фокус. Скруглённая обводка идёт по контуру ползунка, поэтому
+   смещение нужно, чтобы она не обрезалась краем окна. */
+.range:focus-visible {
+  outline: none;
+}
+.range:focus-visible::-webkit-slider-thumb {
+  box-shadow: 0 0 0 4px rgba(118, 2, 41, 0.22);
+}
+.range:focus-visible::-moz-range-thumb {
+  box-shadow: 0 0 0 4px rgba(118, 2, 41, 0.22);
+}
+
+/* ==============================
    SCROLL REVEAL ANIMATION
    ============================== */
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ButtonLink } from "./ui";
 import { sellerLinks } from "@/data/sellers";
 import { TrendingUp, Wallet, Repeat } from "lucide-react";
@@ -89,8 +89,60 @@ function calc(inputs: Inputs, s: (typeof SCENARIOS)[ScenarioKey]) {
   };
 }
 
+/**
+ * Поле ввода числа рядом со слайдером.
+ *
+ * NN/G и USWDS сходятся в одном: слайдер годится там, где точность
+ * не важна. Оборот в 1 800 000 ₽ поставить точно невозможно — палец
+ * на телефоне закрывает дорожку, а шаг 50 000 не даёт попасть в
+ * нужное значение. Поэтому рядом всегда есть поле, куда цифры
+ * можно вписать.
+ *
+ * Поле доступно и с клавиатуры, и со скринридера: label связан с
+ * input через id, а не просто лежит рядом.
+ */
+function NumberField({
+  id,
+  value,
+  onCommit,
+  ariaLabel,
+}: {
+  id: string;
+  value: number;
+  onCommit: (v: number) => void;
+  ariaLabel: string;
+}) {
+  // Текст живёт отдельно от value: пока пользователь печатает,
+  // значение в состоянии ещё старое, и сброс поля на каждом
+  // нажатии клавиши стирал бы ввод на полуслове.
+  const [draft, setDraft] = useState(String(value));
+
+  useEffect(() => {
+    setDraft(String(value));
+  }, [value]);
+
+  return (
+    <input
+      id={id}
+      type="number"
+      inputMode="numeric"
+      value={draft}
+      aria-label={ariaLabel}
+      onChange={(e) => {
+        setDraft(e.target.value);
+        const parsed = Number(e.target.value);
+        if (Number.isFinite(parsed) && parsed > 0) onCommit(parsed);
+      }}
+      onBlur={() => setDraft(String(value))}
+      className="w-24 shrink-0 rounded-xl border border-border bg-white px-3 py-1.5 text-right text-sm font-bold tabular-nums text-foreground outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20 sm:w-28"
+    />
+  );
+}
+
 function Slider({
+  index,
   label,
+  hint,
   value,
   min,
   max,
@@ -98,7 +150,11 @@ function Slider({
   suffix,
   onChange,
 }: {
+  /** Позиция поля. Только для идентификаторов: label и hint не годятся. */
+  index: number;
   label: string;
+  /** Подсказка под полем: нужна и глазу, и скринридеру (USWDS). */
+  hint?: string;
   value: number;
   min: number;
   max: number;
@@ -106,25 +162,70 @@ function Slider({
   suffix: string;
   onChange: (v: number) => void;
 }) {
+  // Идентификаторы — латиницей и на основе индекса, а не из текста
+  // подписи: кириллица в id ломает CSS-селекторы и выглядит
+  // ошибкой в разметке, хотя формально допустима в HTML5.
+  const id = `calc-range-${index}`;
+  const hintId = `${id}-hint`;
+  // Процент заполнения дорожки. Считаем от реального min/max, иначе
+  // при min ≠ 0 шкала показывала бы неверную долю.
+  const pct = max === min ? 0 : ((value - min) / (max - min)) * 100;
+
   return (
-    <label className="block">
-      <div className="flex items-baseline justify-between gap-3">
-        <span className="text-sm font-black text-foreground">{label}</span>
-        <span className="font-black tabular-nums text-primary">
-          {fmt(value)} {suffix}
-        </span>
+    <div>
+      {/* Значение и поле — над дорожкой. Подписи снизу на сенсорном
+          экране закрывает палец (NN/G). */}
+      <div className="flex items-end justify-between gap-3">
+        <div className="min-w-0">
+          {/* label связан с полем ввода, а не со слайдером: подпись
+              «Оборот сейчас» описывает то, что человек вводит.
+              У самого слайдера имя задаётся через aria-label —
+              иначе он остался бы безымянным для скринридера. */}
+          <label
+            htmlFor={id}
+            className="block text-sm font-bold leading-tight text-foreground"
+          >
+            {label}
+          </label>
+          {hint && (
+            <p id={hintId} className="mt-0.5 text-xs leading-snug text-muted-foreground">
+              {hint}
+            </p>
+          )}
+        </div>
+        <NumberField
+          id={id}
+          value={value}
+          onCommit={onChange}
+          ariaLabel={`${label}, числом`}
+        />
       </div>
+
       <input
         type="range"
+        className="range mt-1"
+        style={{
+          // Заполненная часть дорожки. Без неё ползунок висит на
+          // пустой шкале и не показывает, насколько далеко от края
+          // стоит значение — приходится считать шаги глазами.
+          background: `linear-gradient(to right, var(--primary) 0%, var(--primary) ${pct}%, transparent ${pct}%, transparent 100%)`,
+          backgroundSize: "100% 0.5rem",
+          backgroundPosition: "center",
+          backgroundRepeat: "no-repeat",
+        }}
         min={min}
         max={max}
         step={step}
         value={value}
         onChange={(e) => onChange(Number(e.target.value))}
-        className="mt-3 h-2 w-full cursor-pointer appearance-none rounded-full bg-muted accent-[#760229]"
-        aria-label={label}
+        aria-label={`${label}, ползунком`}
+        aria-describedby={hint ? hintId : undefined}
+        aria-valuetext={`${fmt(value)} ${suffix}`.trim()}
       />
-      <div className="mt-1 flex justify-between text-[11px] text-muted-foreground">
+
+      {/* Границы диапазона — мелко и приглушённо: это справочная
+          информация, а не то, за чем пришёл человек. */}
+      <div className="mt-0.5 flex justify-between text-[11px] font-medium tabular-nums text-muted-foreground/70">
         <span>
           {fmt(min)} {suffix}
         </span>
@@ -132,7 +233,7 @@ function Slider({
           {fmt(max)} {suffix}
         </span>
       </div>
-    </label>
+    </div>
   );
 }
 
@@ -157,14 +258,18 @@ export function PotentialCalculator() {
             <Wallet className="h-5 w-5" />
           </div>
           <div>
-            <p className="text-sm font-bold text-foreground">Ваши цифры</p>
-            <p className="text-xs text-muted-foreground">Подставьте реальные значения продавца</p>
+            <p className="text-sm font-bold text-foreground">Цифры вашего магазина</p>
+            <p className="mt-0.5 text-xs leading-snug text-muted-foreground">
+              Подставьте реальные значения магазина — или близкие к ним
+            </p>
           </div>
         </div>
 
         <div className="space-y-6">
           <Slider
+            index={0}
             label="Оборот сейчас"
+            hint="Сколько продаж магазин делает сейчас в месяц"
             value={inputs.turnover}
             min={100000}
             max={10000000}
@@ -173,7 +278,9 @@ export function PotentialCalculator() {
             onChange={(v) => set("turnover", v)}
           />
           <Slider
+            index={1}
             label="Средний чек"
+            hint="Средняя сумма одного заказа"
             value={inputs.avgCheck}
             min={500}
             max={10000}
@@ -182,7 +289,9 @@ export function PotentialCalculator() {
             onChange={(v) => set("avgCheck", v)}
           />
           <Slider
+            index={2}
             label="Маржа"
+            hint="Сколько от цены остаётся после закупки и доставки"
             value={inputs.margin}
             min={10}
             max={80}
@@ -191,7 +300,9 @@ export function PotentialCalculator() {
             onChange={(v) => set("margin", v)}
           />
           <Slider
+            index={3}
             label="Количество SKU"
+            hint="Сколько разных товаров в каталоге"
             value={inputs.sku}
             min={1}
             max={2000}
@@ -200,7 +311,9 @@ export function PotentialCalculator() {
             onChange={(v) => set("sku", v)}
           />
           <Slider
+            index={4}
             label="Доля повторных покупок"
+            hint="Какая часть покупателей возвращается"
             value={inputs.repeatShare}
             min={0}
             max={70}
@@ -252,11 +365,11 @@ export function PotentialCalculator() {
                   <p className="mt-1 font-display text-xl font-bold text-foreground">
                     {fmt(r.ownOrders)}
                   </p>
-                  <p className="mt-0.5 text-[11px] text-muted-foreground">заказов/мес</p>
-                  <p className="mt-2 text-[11px] font-semibold text-primary">
+                  <p className="mt-0.5 text-xs text-muted-foreground">заказов/мес</p>
+                  <p className="mt-1.5 text-sm font-semibold tabular-nums text-primary">
                     {fmt(r.ownRevenue)} ₽ выручка
                   </p>
-                  <p className="mt-2 text-[11px] leading-4 text-muted-foreground">{s.note}</p>
+                  <p className="mt-2 text-xs leading-5 text-muted-foreground">{s.note}</p>
                 </div>
               );
             })}

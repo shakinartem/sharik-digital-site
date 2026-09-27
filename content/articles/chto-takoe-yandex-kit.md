@@ -15,7 +15,7 @@ cta:
   title: Помочь с запуском магазина?
   text: Посмотрим ваш каталог на маркетплейсе и скажем, что можно перенести, а что придётся переделывать.
   href: "/yandex-kit#estimate"
-  label: Оценить объём работ
+  label: Посчитать стоимость
 related: 
   - kak-sozdat-magazin
   - perenos-tovarov

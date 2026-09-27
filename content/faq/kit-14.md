@@ -2,6 +2,7 @@
 id: kit-14
 order: 101
 hub: kit
+group: "Товары и ограничения"
 question: "Можно ли перенести товары с Wildberries или Ozon?"
 ---
 

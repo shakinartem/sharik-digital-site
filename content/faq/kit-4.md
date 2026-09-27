@@ -2,6 +2,7 @@
 id: kit-4
 order: 3
 hub: kit
+group: "Оплата и заказ"
 question: "Чем отличаются Яндекс Пэй и CloudPayments?"
 ---
 

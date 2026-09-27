@@ -2,6 +2,7 @@
 id: kit-8
 order: 7
 hub: kit
+group: "Склад и доставка"
 question: "Как добавить новый склад?"
 ---
 

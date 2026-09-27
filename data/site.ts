@@ -16,12 +16,29 @@ export const site = {
     max: "https://max.ru/join/JmvFHmmsKJnsPUhQnwbF1jkQVvDTblxUjyAn2ZTKVVM",
   },
   links: {
+    /**
+     * Короткие ссылки ведут в клинический сценарий. Они зашиты в
+     * тексты сайта и в рекламные кампании, поэтому их не переименовываем:
+     * смена метки обнулила бы всю статистику переходов.
+     */
     checklist: "https://t.me/sharik_digital_bot?start=checklist",
     audit: "https://t.me/sharik_digital_bot?start=audit",
     consultation: "https://t.me/sharik_digital_bot?start=consultation",
     question: "https://t.me/sharik_digital_bot?start=question",
     cases: "https://t.me/sharik_digital_bot?start=cases",
     caseLink: (caseId: string) => `https://t.me/sharik_digital_bot?start=case_${caseId}`,
+
+    /**
+     * Продавцам маркетплейсов нужен другой сценарий, поэтому у них
+     * префикс kit_. Без него бот открыл бы диагностику про пациентов,
+     * и человек ушёл бы.
+     */
+    kitChecklist: "https://t.me/sharik_digital_bot?start=kit_checklist",
+    kitAudit: "https://t.me/sharik_digital_bot?start=kit_audit",
+    kitConsultation: "https://t.me/sharik_digital_bot?start=kit_consultation",
+    kitQuestion: "https://t.me/sharik_digital_bot?start=kit_question",
+    kitCases: "https://t.me/sharik_digital_bot?start=kit_cases",
+    kitCaseLink: (caseId: string) => `https://t.me/sharik_digital_bot?start=kit_case_${caseId}`,
   },
   phone: "+7 987 357-60-71",
   whatsappUrl: "https://wa.me/79873576071",

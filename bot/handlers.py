@@ -10,19 +10,22 @@ from aiogram.fsm.state import State, StatesGroup
 from aiogram.types import CallbackQuery, Contact, Message, FSInputFile, ReplyKeyboardRemove
 
 from bot.config import Settings
-from bot.flow import extract_case_id, resolve_start_param
+from bot.flow import extract_case_id, resolve_route, resolve_start_param, resolve_track
 from bot.keyboards import (
     ContactCallback,
     DiagnosticCallback,
+    TrackCallback,
     cases_keyboard,
     checklist_keyboard,
     contact_request_keyboard,
     diagnostic_keyboard,
     diagnostic_result_keyboard,
     main_menu_keyboard,
+    track_picker_keyboard,
 )
 from bot.messages import (
-    DIAGNOSTIC_QUESTIONS,
+    CLINIC,
+    KIT,
     build_audit_intro,
     build_case_text,
     build_cases_menu_text,
@@ -35,6 +38,7 @@ from bot.messages import (
     format_lead_message,
 )
 from bot.storage import BotStorage
+from bot.tracks import TRACKS, get_track, normalize_track
 
 
 logger = logging.getLogger(__name__)
@@ -64,36 +68,49 @@ def build_router(storage: BotStorage, settings: Settings) -> Router:
                 start_param=start_param,
             )
 
-        route = resolve_start_param(start_param)
-        if route == "checklist":
-            await send_checklist(message, settings)
+        route = resolve_route(start_param)
+        track = route.track
+
+        if route.action == "checklist":
+            await send_checklist(message, settings, track)
             return
-        if route in {"audit", "consultation"}:
-            await start_diagnostic(message, state, route)
+        if route.action in {"audit", "consultation"}:
+            await start_diagnostic(message, state, track)
             return
-        if route == "question":
-            await start_question(message, state)
+        if route.action == "question":
+            await start_question(message, state, track)
             return
-        if route == "cases":
-            await send_cases(message)
+        if route.action == "cases":
+            await send_cases(message, track)
             return
-        if route == "case":
-            case_id = extract_case_id(start_param)
-            await send_case(message, case_id)
+        if route.action == "case":
+            await send_case(message, route.case_id, track)
+            return
+        if route.action == "track":
+            await send_menu(message, track)
             return
 
-        await send_menu(message)
+        await send_menu(message, track)
+
+    @router.callback_query(TrackCallback.filter())
+    async def track_callback_handler(callback: CallbackQuery) -> None:
+        """Выбор направления при входе без метки."""
+        await callback.answer()
+        track = normalize_track(callback.track)
+        await send_menu(callback.message, track)
 
     @router.message(Command("menu"))
     async def menu_handler(message: Message, state: FSMContext) -> None:
+        track = await current_track(state)
         await state.clear()
-        await send_menu(message)
+        await send_menu(message, track)
 
     @router.message(Command("cancel"))
     async def cancel_handler(message: Message, state: FSMContext) -> None:
+        track = await current_track(state)
         await state.clear()
         await message.answer("Действие отменено. Возвращаю в меню.", reply_markup=None)
-        await send_menu(message)
+        await send_menu(message, track)
 
     @router.callback_query(ContactCallback.filter())
     async def contact_callback_handler(callback: CallbackQuery, state: FSMContext) -> None:
@@ -114,22 +131,26 @@ def build_router(storage: BotStorage, settings: Settings) -> Router:
             return
 
         answers = dict(current.get("answers", {}))
-        question = DIAGNOSTIC_QUESTIONS[step]
+        # Вопросы берём из трека того, кто начал диагностику: у клиники
+        # и продавца наборы разные, а состояние FSM одно на обоих.
+        track = normalize_track(current.get("track"))
+        questions = TRACKS[track].questions
+        question = questions[step]
         answers[question.key] = question.options[callback_data.option]
 
         next_step = step + 1
         await callback.answer()
 
-        if next_step >= len(DIAGNOSTIC_QUESTIONS):
+        if next_step >= len(questions):
             await state.clear()
-            await finish_diagnostic(callback.message, callback.from_user, storage, settings, answers, current)
+            await finish_diagnostic(callback.message, callback.from_user, storage, settings, answers, track)
             return
 
         await state.set_state(FlowStates.diagnostic)
         await state.update_data(step=next_step, answers=answers)
         await callback.message.answer(
-            f"Шаг {next_step + 1} из {len(DIAGNOSTIC_QUESTIONS)}\n\n{DIAGNOSTIC_QUESTIONS[next_step].prompt}",
-            reply_markup=diagnostic_keyboard(next_step),
+            f"Шаг {next_step + 1} из {len(questions)}\n\n{questions[next_step].prompt}",
+            reply_markup=diagnostic_keyboard(next_step, track),
         )
 
     @router.message(FlowStates.question)
@@ -247,44 +268,70 @@ def build_router(storage: BotStorage, settings: Settings) -> Router:
     return router
 
 
-async def send_menu(message: Message) -> None:
-    await message.answer(build_main_menu_text(), reply_markup=main_menu_keyboard())
+async def current_track(state: FSMContext) -> str:
+    """Направление из состояния диалога.
+
+    Нужно /menu и /cancel: они сбрасывают состояние, но человек может
+    быть посреди диагностики продавца. Без этого он возвращался бы в
+    клиническое меню.
+    """
+    data = await state.get_data()
+    return normalize_track(data.get("track"))
 
 
-async def send_checklist(message: Message, settings: Settings) -> None:
-    await message.answer(build_checklist_text(), reply_markup=checklist_keyboard())
-    if settings.checklist_path.exists():
-        await message.answer_document(FSInputFile(settings.checklist_path))
+async def send_menu(message: Message, track: str = CLINIC) -> None:
+    await message.answer(build_main_menu_text(track), reply_markup=main_menu_keyboard(track))
+
+
+async def send_checklist(message: Message, settings: Settings, track: str = CLINIC) -> None:
+    await message.answer(build_checklist_text(track), reply_markup=checklist_keyboard(track))
+    checklist_path = settings.checklist_for(track)
+    if checklist_path.exists():
+        await message.answer_document(FSInputFile(checklist_path))
+        return
+    # Падать здесь нельзя: человек пришёл за материалом, а не за
+    # ошибкой. Отдаём подсказку и ведём на сайт.
+    if track == KIT:
+        await message.answer(
+            "PDF-чек-лист продавца не найден по пути из `CHECKLIST_KIT_FILE` "
+            "(по умолчанию `assets/checklist-kit.pdf`). Он собирается скриптом "
+            "`make_checklist_kit.py`. Пока материалы доступны на сайте: "
+            "/blog/nastrojka-yandex-kit, /blog/kak-podklyuchit-oplatu-v-yandex-kit, "
+            "/blog/kak-podklyuchit-dostavku-v-yandex-kit"
+        )
     else:
         await message.answer(
-            "PDF-чек-лист пока не добавлен. Положите файл по пути, указанному в `CHECKLIST_FILE`, и я начну отправлять его автоматически."
+            f"PDF-чек-лист пока не добавлен. Положите файл по пути, указанному в {BT}CHECKLIST_FILE{BT}, и я начну отправлять его автоматически."
         )
 
 
-async def send_cases(message: Message) -> None:
-    await message.answer(build_cases_menu_text(), reply_markup=cases_keyboard())
+async def send_cases(message: Message, track: str = CLINIC) -> None:
+    await message.answer(build_cases_menu_text(), reply_markup=cases_keyboard(track))
 
 
-async def send_case(message: Message, case_id: str | None) -> None:
+async def send_case(message: Message, case_id: str | None, track: str = CLINIC) -> None:
     if not case_id:
         await message.answer("Не нашёл кейс по этой ссылке.")
         return
-    await message.answer(build_case_text(case_id), reply_markup=cases_keyboard())
+    await message.answer(build_case_text(case_id), reply_markup=cases_keyboard(track))
 
 
-async def start_diagnostic(message: Message, state: FSMContext, route: str) -> None:
+async def start_diagnostic(message: Message, state: FSMContext, track: str) -> None:
+    # Трек кладём в состояние: по нему и вопросы берутся, и заявка
+    # потом собирается с правильными подписями.
     await state.set_state(FlowStates.diagnostic)
-    await state.update_data(step=0, answers={}, source_route=route)
-    await message.answer(build_audit_intro())
+    await state.update_data(step=0, answers={}, source_route=track, track=track)
+    questions = TRACKS[track].questions
+    await message.answer(build_audit_intro(track))
     await message.answer(
-        f"Шаг 1 из {len(DIAGNOSTIC_QUESTIONS)}\n\n{DIAGNOSTIC_QUESTIONS[0].prompt}",
-        reply_markup=diagnostic_keyboard(0),
+        f"Шаг 1 из {len(questions)}\n\n{questions[0].prompt}",
+        reply_markup=diagnostic_keyboard(0, track),
     )
 
 
-async def start_question(message: Message, state: FSMContext) -> None:
+async def start_question(message: Message, state: FSMContext, track: str = CLINIC) -> None:
     await state.set_state(FlowStates.question)
-    await state.update_data(question_kind="free_text")
+    await state.update_data(question_kind="free_text", track=track)
     await message.answer(build_question_intro(), reply_markup=contact_request_keyboard())
 
 
@@ -294,12 +341,13 @@ async def finish_diagnostic(
     storage: BotStorage,
     settings: Settings,
     answers: dict[str, Any],
-    current: dict[str, Any],
+    track: str = CLINIC,
 ) -> None:
     if user is None:
         return
 
     payload = {
+        "track": track,
         "clinic_name": answers.get("clinic_name"),
         "city": answers.get("city"),
         "role": answers.get("role"),
@@ -312,14 +360,18 @@ async def finish_diagnostic(
         "audit_focus": answers.get("priority"),
         "telegram_contact_allowed": False,
         "comment": None,
-        "start_param": current.get("source_route"),
+        "start_param": track,
     }
     storage.save_lead(telegram_id=user.id, payload=payload, kind="diagnostic")
-    await send_admin_lead(storage, settings, user, payload, kind="diagnostic")
-    await message.answer(
-        "Спасибо. Я собрал первичную диагностику и передал её команде.\n\nЕсли захотите, можно продолжить вопросом или открыть кейсы.",
-        reply_markup=diagnostic_result_keyboard(),
+    await send_admin_lead(storage, settings, user, payload, kind="diagnostic", track=track)
+    thanks = (
+        "Спасибо. Я собрал мини-диагностику и передал её команде.\n\n"
+        "Подскажем, что делать первым. Если хотите расчёт точнее — напишите в Telegram."
+        if track == KIT
+        else "Спасибо. Я собрал первичную диагностику и передал её команде.\n\n"
+        "Если захотите, можно продолжить вопросом или открыть кейсы."
     )
+    await message.answer(thanks, reply_markup=diagnostic_result_keyboard(track))
 
 
 async def save_question(message: Message, storage: BotStorage, settings: Settings, text: str) -> None:
@@ -373,9 +425,11 @@ async def send_admin_lead(
     payload: dict[str, Any],
     *,
     kind: str,
+    track: str = CLINIC,
 ) -> None:
     del storage
     bot = settings.bot_username
+    track_cfg = get_track(track)
     text = format_lead_message(
         telegram_id=user.id,
         username=user.username,
@@ -396,6 +450,8 @@ async def send_admin_lead(
         comment=payload.get("comment") or payload.get("question"),
         contact_phone=payload.get("contact_phone"),
         source=f"@{bot} ({kind})",
+        track=track_cfg.key,
+        field_labels={q.key: track_cfg.label(q.key) for q in track_cfg.questions},
     )
 
     if settings.admin_chat_id == 0:

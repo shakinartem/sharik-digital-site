@@ -13,8 +13,17 @@ class Settings:
     admin_chat_id: int
     database_path: Path
     checklist_path: Path
+    # Отдельный PDF для продавцов. Не обязателен: если файла нет,
+    # бот отдаст текстовую подсказку и не упадёт, — но продавцу
+    # без чек-листа сценарий заметно беднее.
+    kit_checklist_path: Path
     site_url: str | None = None
     bot_username: str = "sharik_digital_bot"
+
+    def checklist_for(self, track_key: str) -> Path:
+        from bot.tracks import KIT
+
+        return self.kit_checklist_path if track_key == KIT else self.checklist_path
 
 
 def _resolve_path(raw_path: str | None, default_path: Path, base_dir: Path) -> Path:
@@ -40,12 +49,16 @@ def load_settings() -> Settings:
         raw_database_path = database_url
 
     checklist_raw = os.getenv("CHECKLIST_FILE") or os.getenv("CHECKLIST_FILE_ID")
+    kit_checklist_raw = os.getenv("CHECKLIST_KIT_FILE")
 
     return Settings(
         bot_token=bot_token,
         admin_chat_id=int(admin_chat_raw),
         database_path=_resolve_path(raw_database_path, base_dir / "bot.db", base_dir),
         checklist_path=_resolve_path(checklist_raw, base_dir / "assets" / "checklist.pdf", base_dir),
+        kit_checklist_path=_resolve_path(
+            kit_checklist_raw, base_dir / "assets" / "checklist-kit.pdf", base_dir
+        ),
         site_url=(os.getenv("SITE_URL") or None),
     )
 

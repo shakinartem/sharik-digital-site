@@ -1,9 +1,16 @@
-// Общие ссылки бота для направления продавцов
+// Общие ссылки бота для направления продавцов.
+//
+// Раньше здесь стоял префикс seller_. Бот такого не знал и молча
+// открывал главное меню, поэтому переход с лендинга ничего не давал.
+// Теперь используется kit_ — префикс, который бот действительно
+// разбирает и который отправляет продавца в сценарий Яндекс KIT.
 export const sellerLinks = {
-  potential: "https://t.me/sharik_digital_bot?start=seller_potential",
-  launch: "https://t.me/sharik_digital_bot?start=seller_launch",
-  audit: "https://t.me/sharik_digital_bot?start=seller_audit",
-  question: "https://t.me/sharik_digital_bot?start=seller_question",
+  potential: "https://t.me/sharik_digital_bot?start=kit_audit",
+  launch: "https://t.me/sharik_digital_bot?start=kit_consultation",
+  audit: "https://t.me/sharik_digital_bot?start=kit_audit",
+  question: "https://t.me/sharik_digital_bot?start=kit_question",
+  checklist: "https://t.me/sharik_digital_bot?start=kit_checklist",
+  cases: "https://t.me/sharik_digital_bot?start=kit_cases",
 } as const;
 
 export const trafficChannels = [

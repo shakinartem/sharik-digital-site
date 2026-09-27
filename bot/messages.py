@@ -8,6 +8,12 @@ from typing import Any
 BOT_USERNAME = "sharik_digital_bot"
 BOT_LINK = f"https://t.me/{BOT_USERNAME}"
 
+# Ключи направлений. Объявлены здесь, а не в tracks.py, потому что
+# tracks импортирует этот модуль: наоборот получится циклический
+# импорт. Тексты — единственное место, где треки не нужны.
+CLINIC = "clinic"
+KIT = "kit"
+
 
 @dataclass(frozen=True, slots=True)
 class DiagnosticQuestion:
@@ -121,7 +127,19 @@ def bot_deep_link(start_param: str) -> str:
     return f"{BOT_LINK}?start={start_param}"
 
 
-def build_main_menu_text() -> str:
+def build_main_menu_text(track_key: str = "clinic") -> str:
+    if track_key == KIT:
+        return dedent(
+            """
+            **Что делаем с продавцами маркетплейсов**
+
+            Считаем потенциал собственного канала продаж и, если он нужен,
+            запускаем магазин на Яндекс KIT под ключ.
+
+            Выберите, что полезно прямо сейчас:
+            """
+        ).strip()
+
     return dedent(
         """
         Привет! Я бот ШАРиК-digital.
@@ -137,7 +155,20 @@ def build_main_menu_text() -> str:
     ).strip()
 
 
-def build_checklist_text() -> str:
+def build_checklist_text(track_key: str = "clinic") -> str:
+    if track_key == KIT:
+        return dedent(
+            """
+            **Чек-лист запуска магазина на Яндекс KIT**
+
+            Порядок работ и точки, на которых запуски обычно ломаются.
+            Начните с шага 0: если в ассортименте есть запрещённые
+            категории или мерные товары, продолжать не нужно.
+
+            Файл придёт следующим сообщением — сохраните его.
+            """
+        ).strip()
+
     return dedent(
         """
         Отлично. Сейчас отправлю чек-лист.
@@ -147,7 +178,19 @@ def build_checklist_text() -> str:
     ).strip()
 
 
-def build_audit_intro() -> str:
+def build_audit_intro(track_key: str = "clinic") -> str:
+    if track_key == KIT:
+        return dedent(
+            """
+            **Мини-диагностика продавца**
+
+            Шесть вопросов — две минуты. Покажем, где сейчас теряются
+            деньги на площадке и нужен ли вам собственный канал продаж.
+
+            Отвечайте кнопками, текст вводить не нужно.
+            """
+        ).strip()
+
     return dedent(
         """
         Давайте быстро посмотрим, где клиника может терять пациентов.
@@ -244,26 +287,46 @@ def format_lead_message(
     comment: str | None,
     contact_phone: str | None = None,
     source: str = f"@{BOT_USERNAME}",
+    track: str = CLINIC,
+    field_labels: dict[str, str] | None = None,
 ) -> str:
     def field(label: str, value: Any) -> str:
         formatted = "—" if value in (None, "", []) else str(value)
         return f"{label}: {formatted}"
 
+    # Подписи приходят снаружи, а не берутся из tracks: тексты лежат
+    # ниже треков по графу импортов, и прямой импорт закольцовал бы
+    # модули. Ключи совпадают с key вопросов диагностики.
+    labels = field_labels or {}
+
+    def answer_label(question_key: str, default: str) -> str:
+        return labels.get(question_key, default)
+
     lines = [
         "Новая заявка с сайта / Telegram-бота",
         "",
+        field("Направление", "Клиники" if track == CLINIC else "Продавцы"),
         field("Telegram ID", telegram_id),
         field("Username", f"@{username}" if username else None),
         field("Имя", f"{first_name or ''} {last_name or ''}".strip() or None),
-        field("Клиника", clinic_name),
-        field("Город", city),
-        field("Роль", role),
-        field("Тип клиники", clinic_type),
-        field("Что уже есть", existing_tools),
-        field("Главная проблема", main_problem),
-        field("Куда приходят заявки", lead_channels),
-        field("Скорость ответа", response_speed),
-        field("Приоритет", priority),
+    ]
+
+    # Поля клиники продавцу не нужны: у него нет ни клиники, ни города,
+    # и пустые строки в заявке только мешают разбирать её в чате.
+    if track == CLINIC:
+        lines += [
+            field("Клиника", clinic_name),
+            field("Город", city),
+            field("Роль", role),
+        ]
+
+    lines += [
+        field(answer_label("clinic_type", "Тип клиники"), clinic_type),
+        field(answer_label("existing_tools", "Что уже есть"), existing_tools),
+        field(answer_label("main_problem", "Главная проблема"), main_problem),
+        field(answer_label("lead_channels", "Куда приходят заявки"), lead_channels),
+        field(answer_label("response_speed", "Скорость ответа"), response_speed),
+        field(answer_label("priority", "Приоритет"), priority),
         field("Что хочет разобрать", audit_focus),
         field("Можно написать в Telegram", "Да" if telegram_contact_allowed else "Нет"),
         field("Контакт", contact_phone),
@@ -293,7 +356,7 @@ def format_contact_after_diagnostic_message(
         return f"{label}: {formatted}"
 
     lines = [
-        "🦷 Контакт после пред-аудита",
+        "Контакт после диагностики",
         "",
         field("Telegram ID", telegram_id),
         field("Username", f"@{username}" if username else None),

@@ -1,44 +1,86 @@
-# Telegram bot MVP
+# Telegram bot
 
-Отдельный MVP-бот для проекта `ШАРиК-digital`.
+Бот работает в двух направлениях: **клиники** (пациентопоток по
+методологии 7К) и **продавцы маркетплейсов** (собственный канал
+продаж на Яндекс KIT). Направление выбирается по deep link и
+проходит через всю заявку — от первого экрана до сообщения в
+админский чат.
 
 ## Что умеет
 
-- `/start` с deep links;
+- `/start` с deep links и выбором направления;
 - сохранение Telegram-профиля в SQLite;
-- выдача чек-листа;
-- мини-диагностика / пред-аудит;
-- отправка заявки в `ADMIN_CHAT_ID`;
-- `/menu` и `/cancel`;
-- обработка ссылок `checklist`, `audit`, `consultation`, `question`, `cases`, `case_<caseId>`.
+- выдача чек-листа (свой PDF для каждого направления);
+- мини-диагностика из 6 вопросов — своя для клиник и для продавцов;
+- отправка заявки в `ADMIN_CHAT_ID` с подписями полей под направление;
+- `/menu` и `/cancel`, не сбрасывающие выбранное направление;
+- обработка ссылок из бота, сайта и старых рекламных кампаний.
+
+## Сценарии входа
+
+| start= | Направление | Действие |
+| --- | --- | --- |
+| `checklist` | клиники | чек-лист по пациентопотоку |
+| `audit`, `consultation` | клиники | диагностика клиники |
+| `question` | клиники | свободный вопрос |
+| `cases`, `case_<id>` | клиники | кейсы клиник |
+| `kit_checklist` | продавцы | чек-лист запуска на KIT |
+| `kit_audit`, `kit_consultation` | продавцы | диагностика продавца |
+| `kit_question` | продавцы | свободный вопрос |
+| `kit_cases`, `kit_case_<id>` | продавцы | кейсы продавцов |
+
+Префикс `seller_` тоже понимается: он стоял на лендинге раньше, но
+бот его не знал и молча открывал меню. Поддержка оставлена, чтобы
+старые рекламные ссылки заработали наравне с новыми.
 
 ## Запуск
 
-Работать удобнее из папки `bot/`:
-
 ```powershell
 cd bot
-py -m venv .venv
-.venv\Scripts\activate
-pip install -e .
+py -3 -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -e .
+.\.venv\Scripts\python.exe -m pip install reportlab   # только для сборки PDF
 copy .env.example .env
-python -m bot
+.\.venv\Scripts\python.exe -m bot
+```
+
+Тесты запускаются из корня репозитория — пакет `bot` лежит рядом
+с `sharik-digital-site`:
+
+```powershell
+$env:PYTHONPATH = (Get-Location).Path
+.\bot\.venv\Scripts\python.exe -m pytest bot\tests -q
 ```
 
 ## Env
 
-- `BOT_TOKEN` - токен от BotFather
-- `ADMIN_CHAT_ID` - чат или канал, куда бот отправляет заявки
-- `DATABASE_URL` - путь к SQLite, по умолчанию `sqlite:///./bot.db`
-- `CHECKLIST_FILE` - путь к PDF-чек-листу, по умолчанию `./assets/checklist.pdf`
-- `SITE_URL` - пока не обязателен
-- `BOT_USERNAME` - по умолчанию `sharik_digital_bot`
+- `BOT_TOKEN` — токен от BotFather
+- `ADMIN_CHAT_ID` — чат или канал, куда бот отправляет заявки
+- `DATABASE_URL` — путь к SQLite, по умолчанию `sqlite:///./bot.db`
+- `CHECKLIST_FILE` — PDF для клиник, по умолчанию `./assets/checklist.pdf`
+- `CHECKLIST_KIT_FILE` — PDF для продавцов, по умолчанию `./assets/checklist-kit.pdf`
+- `SITE_URL` — не обязателен
+- `BOT_USERNAME` — по умолчанию `sharik_digital_bot`
+
+## Чек-лист для продавцов
+
+Собирается скриптом из фактических требований официальной справки
+Яндекс KIT, а не из общих советов:
+
+```powershell
+.\.venv\Scripts\python.exe make_checklist_kit.py
+```
+
+Шрифты берутся из `assets/fonts` — это Montserrat и Manrope, те же,
+что на сайте. Поправить текст пунктов нужно в самом скрипте: он
+является источником, PDF пересобирается из него.
 
 ## Что нужно добавить вручную
 
 - `BOT_TOKEN`
 - `ADMIN_CHAT_ID`
-- PDF-чек-лист по пути из `CHECKLIST_FILE`
+- PDF-чек-лист клиник по пути из `CHECKLIST_FILE`
 
-Если файла PDF нет, бот покажет текстовую заглушку и не упадёт.
+Если PDF нет, бот покажет подсказку с путём и ссылками на статьи и
+не упадёт.
 

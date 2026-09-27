@@ -9,7 +9,10 @@ database_id = "aa1d4767-0ed9-4803-9f62-ea7f9bd4a688"
 
 [vars]
 SITE_URL = "https://sharik-digital.ru"
-CHECKLIST_URL = "https://sharik-digital.ru/lead-magnets/checklist-25-points.pdf"
+CHECKLIST_URL = "https://sharik-digital.ru/checklists/clinic.pdf"
+# Чек-лист продавца. Раньше этой переменной не было, и сценарий kit_
+# отдавал бы вместо файла заглушку.
+CHECKLIST_KIT_URL = "https://sharik-digital.ru/checklists/kit.pdf"
 BOT_USERNAME = "sharik_digital_bot"
 
 # Secrets (set via `wrangler secret put`):

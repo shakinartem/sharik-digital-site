@@ -49,6 +49,16 @@ export const kitFaq: FaqItem[] = generatedFaq.filter((i) => i.hub === "kit");
 export const sellersFaq: FaqItem[] = generatedFaq.filter((i) => i.hub === "sellers");
 
 /**
+ * Вопросы для страницы клиник.
+ *
+ * Раньше они лежали массивом прямо в app/clinics/page.tsx, и править
+ * их можно было только правкой кода с последующей сборкой. Теперь это
+ * обычный контент: файлы в content/faq, редактор в админке под
+ * подразделом «Клиникам (/clinics)».
+ */
+export const clinicsFaq: FaqItem[] = generatedFaq.filter((i) => i.hub === "clinics");
+
+/**
  * Известные хабы FAQ.
  *
  * Нужен админке: без списка полей «Страница» и «Подраздел» пришлось
@@ -57,6 +67,7 @@ export const sellersFaq: FaqItem[] = generatedFaq.filter((i) => i.hub === "selle
  */
 export const FAQ_HUBS: { value: string; label: string }[] = [
   { value: "agency", label: "Главная — о студии" },
+  { value: "clinics", label: "Клиникам (/clinics)" },
   { value: "sellers", label: "Продавцам (/sellers)" },
   { value: "kit", label: "Яндекс KIT (/yandex-kit)" },
 ];

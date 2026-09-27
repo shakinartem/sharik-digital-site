@@ -422,7 +422,7 @@ export default function YandexKitPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
       />
-      <SiteHeader ctaLabel="Рассчитать потенциал" ctaHref="#estimate" />
+      <SiteHeader ctaLabel="Забрать чек-лист" ctaHref={sellerLinks.checklist} />
 
       <section className="section-pad pt-8 sm:pt-10">
         <div className="container-wide">
@@ -445,7 +445,12 @@ export default function YandexKitPage() {
                 аналитику, а затем помогаем привлечь покупателей.
               </p>
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-                <ButtonLink href={sellerLinks.potential}>Помочь с запуском</ButtonLink>
+                {/* Обе кнопки ведут в диагностику: эта — сразу в бота,
+                    соседняя — к калькулятору на этой же странице.
+                    Подписи разные намеренно: это разные действия, но
+                    называть их одним и тем же словом нельзя, иначе в
+                    дашборде они сольются. */}
+                <ButtonLink href={sellerLinks.potential}>Рассчитать потенциал</ButtonLink>
                 <ButtonLink href="#estimate" variant="outline">
                   Посчитать стоимость
                 </ButtonLink>

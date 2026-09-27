@@ -10,6 +10,7 @@ import { CasesSection } from "@/components/CasesSection";
 import { FlowScheme } from "@/components/FlowScheme";
 import { SystemDashboard } from "@/components/SystemDashboard";
 import { ReviewsSection } from "@/components/ReviewsSection";
+import { site } from "@/data/site";
 import {
   agencyHero,
   agencyDirections,
@@ -53,11 +54,32 @@ const directionIcons = { sellers: Store, clinics: Stethoscope } as const;
  *  - Блок основателя удалён полностью. Страница стала продуктовой:
  *    на её месте теперь система, кейсы и понятный маршрут.
  */
+/**
+ * Разметка FAQPage для главной.
+ *
+ * Вопросы о студии висели на странице, но схемы не было: расширенные
+ * сниппеты получал только /yandex-kit. Разметка идёт из того же
+ * контента, что и сам блок вопросов, — разойтись они не могут.
+ */
+const faqJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: agencyFaq.map((item) => ({
+    "@type": "Question",
+    name: item.q,
+    acceptedAnswer: { "@type": "Answer", text: item.a },
+  })),
+};
+
 export default function Home() {
   useScrollReveal();
 
   return (
     <main id="top" className="overflow-x-hidden">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+      />
       <SiteHeader />
       <Hero />
       <HowWeWork />
@@ -331,19 +353,22 @@ function FinalCta() {
             Начните с расчёта, а не с покупки
           </h2>
           <p className="mx-auto mt-5 max-w-xl text-base leading-7 text-white/80">
-            Выберите направление — покажем, где именно в вашей воронке теряются деньги, и посчитаем,
-            что можно улучшить в первую очередь.
+            Чек-лист в Telegram — самый быстрый способ понять, где именно в вашей
+            воронке теряются деньги. Без созвонов и без обязательств.
           </p>
+          {/* Кнопки ведут сразу в бот, а не на страницы направлений:
+              дальше всё равно спрашивают, кому нужен чек-лист, и лишний
+              переход только теряет тех, кто уже готов. */}
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <Link href="/sellers" className="btn-primary w-full sm:w-auto">
-              Селлерам
-            </Link>
-            <Link
-              href="/clinics"
+            <a href={site.links.kitChecklist} className="btn-primary w-full sm:w-auto">
+              Чек-лист запуска магазина
+            </a>
+            <a
+              href={site.links.checklist}
               className="inline-flex min-h-12 w-full items-center justify-center rounded-full border border-white/30 px-6 py-3 text-sm font-black text-white transition hover:border-white hover:bg-white/10 sm:w-auto"
             >
-              Клиникам
-            </Link>
+              Чек-лист для клиники
+            </a>
           </div>
         </div>
       </div>

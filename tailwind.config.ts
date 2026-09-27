@@ -14,7 +14,9 @@ const config: Config = {
         surface: "#FFFFFF",
         "surface-alt": "#E7E7E7",
         muted: "#F0F0F0",
-        "muted-foreground": "#6B7280",
+        // Держим в паре с --muted-foreground в app/globals.css: значение
+        // подобрано по контрасту WCAG AA (>= 4.5:1 на светлых фонах).
+        "muted-foreground": "#5F6672",
         border: "rgba(6, 28, 65, 0.08)",
         primary: "#760229",
         "primary-hover": "#5E0120",

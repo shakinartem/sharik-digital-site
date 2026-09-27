@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { cases, type CaseItem } from "@/data/cases";
 import { site } from "@/data/site";
@@ -124,9 +125,17 @@ export function CasesSection({
                 }`}
               >
                 <div className={`h-44 overflow-hidden ${isWide ? "lg:w-2/5 lg:h-auto" : ""}`}>
-                  <img
+                  {/* next/image с unoptimized отдаёт исходник, но задаёт
+                      размеры и loading=lazy. Именно lazy решает проблему:
+                      на главной четыре фото кейсов по 85–98 КБ, и три из
+                      них ниже первого экрана — они забирали bandwidth
+                      раньше, чем догружался главный кадр. */}
+                  <Image
                     src={item.images[0]}
                     alt={item.title}
+                    width={800}
+                    height={600}
+                    sizes="(min-width: 1024px) 40vw, 100vw"
                     className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
                   />
                 </div>
@@ -269,7 +278,15 @@ function CaseModal({ item, onClose }: { item: CaseItem; onClose: () => void }) {
           </div>
           <div className="space-y-4">
             {item.images.map((image, i) => (
-              <img key={image} src={image} alt={`${item.title}, слайд ${i + 1}`} className="w-full rounded-card border border-border max-h-48 object-contain" />
+              <Image
+                key={image}
+                src={image}
+                alt={`${item.title}, слайд ${i + 1}`}
+                width={1200}
+                height={800}
+                sizes="(min-width: 1024px) 60vw, 100vw"
+                className="h-auto w-full rounded-card border border-border max-h-48 object-contain"
+              />
             ))}
           </div>
         </div>

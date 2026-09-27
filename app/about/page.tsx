@@ -3,6 +3,7 @@ import Image from "next/image";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SectionTitle } from "@/components/ui";
+import { ChecklistCta } from "@/components/ChecklistCta";
 import { agencyApproach, agencyStats } from "@/data/agency";
 import { site } from "@/data/site";
 
@@ -96,6 +97,7 @@ export default function AboutPage() {
         </div>
       </section>
 
+      <ChecklistCta />
       <SiteFooter />
     </main>
   );

@@ -7,6 +7,7 @@ import { CasesSection } from "@/components/CasesSection";
 import { PreAuditForm } from "@/components/PreAuditForm";
 import { ButtonLink, SectionTitle, NumberBadge } from "@/components/ui";
 import { JourneyMap } from "@/components/JourneyMap";
+import { clinicsFaq } from "@/data/faq";
 import {
   ChartIcon,
   ArrowIcon,
@@ -44,14 +45,24 @@ function useScrollReveal() {
 
 const contourIcons = [Eye, ShieldIcon, FileText, MessageCircle, PhoneCall, RotateCcw, BarChart3];
 
-const faq = [
-  { q: "Чем вы отличаетесь от digital-агентства?", a: "Digital-агентства продают услуги: сайты, рекламу, SMM. Мы продаём систему. Направление Patient Flow в ШАРиК digital: наша задача — сделать так, чтобы пациент приходил, записывался, лечился, возвращался и приводил друзей." },
-  { q: "Что такое Индекс пациентопотока?", a: "Это метрика, которая оценивает здоровье системы привлечения и удержания пациентов по шкале от 0 до 100. ИПП складывается из 7 параметров — от охвата касаний до прозрачности аналитики. Значение считается по вашим данным, а не сравнивается с отраслевым нормативом." },
-  { q: "Можно ли заказать только сайт или только рекламу?", a: "Мы не рекомендуем заказывать услуги по отдельности. Сайт без контура доверия и конверсии — это красивый буклет, который не приводит пациентов." },
-  { q: "Сколько стоит внедрение системы?", a: "Диагностика — бесплатно. Внедрение одного контура — фиксированная стоимость. Полное внедрение системы 7К — индивидуальный проект." },
-  { q: "Как быстро будет результат?", a: "Первые изменения видны через 2–4 недели. Устойчивый эффект — от 2 до 6 месяцев в зависимости от формата. Точные сроки внутри кейсов — по фактическим внедрениям." },
-  { q: "Вы работаете только со стоматологами?", a: "Да, мы специализируемся исключительно на стоматологических клиниках. Понимаем специфику цикла принятия решения, сезонности и юридических аспектов." },
-];
+/**
+ * Вопросы страницы клиник берутся из контента (content/faq, хаб
+ * `clinics`), а не из массива в коде: раньше их нельзя было изменить
+ * без правки исходников и пересборки. Форма у элементов та же — q и a,
+ * — поэтому блок ниже не поменялся.
+ */
+const faq = clinicsFaq;
+
+/** Разметка FAQPage: даёт расширенные сниппеты в выдаче. */
+const faqJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: faq.map((item) => ({
+    "@type": "Question",
+    name: item.q,
+    acceptedAnswer: { "@type": "Answer", text: item.a },
+  })),
+};
 
 const founderPoints = [
   "Направление Patient Flow внутри ШАРиК digital",
@@ -65,6 +76,12 @@ export default function ClinicsPage() {
 
   return (
     <main id="top" className="overflow-x-hidden">
+      {/* Разметка вопросов для поисковика. Без неё расширенный сниппет
+          получает только /yandex-kit, хотя те же вопросы висят здесь. */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+      />
       <SiteHeader
         ctaLabel="Бесплатный аудит"
         ctaHref="#contact"

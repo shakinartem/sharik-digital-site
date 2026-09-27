@@ -52,7 +52,16 @@ export default {
  */
 function currentTrack(state: UserState | null): TrackKey {
   if (!state) return CLINIC;
-  if (state.kind === "diagnostic" || state.kind === "question") return state.track;
+  // contact_request тоже несёт направление: состояние живёт между
+  // сообщениями, и без track подтверждение уходило бы в клинический
+  // чат даже тем, кто пришёл по KIT-ссылке.
+  if (
+    state.kind === "diagnostic" ||
+    state.kind === "question" ||
+    state.kind === "contact_request"
+  ) {
+    return state.track;
+  }
   return CLINIC;
 }
 
@@ -317,8 +326,11 @@ async function handleCallbackOrContact(env: Env, parsed: ReturnType<typeof parse
     if (cb.action === "cases") return handleCases(env, parsed, cb.track);
     if (cb.action === "question") return handleQuestion(env, parsed, state, cb.track);
     if (cb.action === "contact_request") {
-      await setUserState(env.DB, parsed.userId, { kind: "contact_request" });
-      await sendMessage(env.BOT_TOKEN, chatId, buildContactRequestText(track), contactRequestKeyboard());
+      // Трек берём из кнопки, а не из предыдущего состояния: состояние
+      // перезаписывается, и опираться на него здесь — значит записать
+      // то, что уже могло устареть.
+      await setUserState(env.DB, parsed.userId, { kind: "contact_request", track: cb.track });
+      await sendMessage(env.BOT_TOKEN, chatId, buildContactRequestText(cb.track), contactRequestKeyboard());
       return;
     }
     if (cb.action === "telegram_contact_allowed") {

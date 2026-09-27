@@ -3,6 +3,7 @@ import Link from "next/link";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
+import { ChecklistCta } from "@/components/ChecklistCta";
 import { articles, getReadingTime, CATEGORY_LABELS } from "@/data/articles";
 import { ArrowRight, Clock, Calendar } from "lucide-react";
 
@@ -128,6 +129,7 @@ export default function BlogPage() {
           </div>
         </div>
       </section>
+      <ChecklistCta />
       <SiteFooter />
     </main>
   );

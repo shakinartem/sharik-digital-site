@@ -71,11 +71,26 @@ export default function SellersPage() {
 
   return (
     <main id="top" className="overflow-x-hidden">
-      {/* Кнопка в шапке возвращает наверх страницы, а не ведёт на
-          форму: человек нажал её, потому что хочет разобраться в
-          подходе, а не потому что уже решил оставить заявку.
-          К форме ведут блоки внизу — там, где решение принято. */}
-      <SiteHeader ctaLabel="В начало страницы" ctaHref="#top" solidBg />
+      {/* Кнопка в шапке ведёт в чек-лист бота: это главный шаг воронки,
+          и раньше она просто возвращала наверх страницы. Форму
+          оставили внизу — туда, где решение уже принято. */}
+      <SiteHeader ctaLabel="Забрать чек-лист" ctaHref={sellerLinks.checklist} solidBg />
+      {/* FAQPage-разметка: без неё вопросы по продавцам видны, но
+          поисковик не показывает расширенный сниппет. */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            mainEntity: sellerFaq.map((item) => ({
+              "@type": "Question",
+              name: item.q,
+              acceptedAnswer: { "@type": "Answer", text: item.a },
+            })),
+          }),
+        }}
+      />
       <Hero />
       <HowTo />
       <Anchors />
@@ -723,7 +738,11 @@ function FinalCta() {
 
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <ButtonLink href="/sellers/request" className="w-full sm:w-auto">
-                Рассчитать потенциал
+                {/* Подпись одна на все кнопки формы: и эта, и «Оставить
+                    заявку на расчёт» выше ведут на /sellers/request, и
+                    дашборд обязан видеть их как один клик, а не как два
+                    разных. */}
+                Оставить заявку на расчёт
               </ButtonLink>
               <a
                 href={sellerLinks.question}

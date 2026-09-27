@@ -46,8 +46,24 @@ export const CASE_LIBRARY: Record<string, { title: string; niche: string; result
   },
 };
 
+/**
+ * Кейсы продавцов.
+ *
+ * Собственных проектов в этом направлении пока нет, поэтому список
+ * честно короткий: берём реальный кейс по медицинскому оборудованию,
+ * который на сайте помечен как направление «other». Результаты селлеров,
+ * которых не было, здесь не выдумываются.
+ */
+export const KIT_CASE_LIBRARY: Record<string, { title: string; niche: string; result: string }> = {
+  "arximed-security": {
+    title: "Arximed Security",
+    niche: "MedTech и медицинское оборудование",
+    result: "Ошибки заказа снижены с 3,5% до 0,4% · 0 мошеннических оплат",
+  },
+};
+
 export function buildCaseText(caseId: string) {
-  const c = CASE_LIBRARY[caseId];
+  const c = CASE_LIBRARY[caseId] || KIT_CASE_LIBRARY[caseId];
   if (!c) {
     return [
       "Кейс пока не найден.",
@@ -61,6 +77,6 @@ export function buildCaseText(caseId: string) {
     `Ниша: ${c.niche}`,
     `Результат: ${c.result}`,
     "",
-    "Если хотите, могу сразу показать мини-диагностику по вашей клинике.",
+    "Хотите такой же разбор? Пройдите мини-диагностику — покажем, где сейчас теряются деньги.",
   ].join("\n");
 }

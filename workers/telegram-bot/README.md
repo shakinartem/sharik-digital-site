@@ -1,55 +1,52 @@
 # Cloudflare Telegram Bot — ШАРиК-digital
 
-Этот бот повторяет MVP Python/aiogram бота, но работает как Cloudflare Worker:
-- нет VPS;
-- нет локального polling-процесса;
-- хранилище в D1.
+Боевой бот. Работает как Cloudflare Worker, поэтому не зависит от
+включённого компьютера: Telegram сам отправляет обновления на вебхук.
 
-Python-бот в `bot/` оставлен как backup/reference.
+- хранилище в D1;
+- два направления: клиники и продавцы маркетплейсов;
+- питоновская версия в `bot/` осталась резервной, её логика повторена
+  здесь в TypeScript.
 
-## Окружение
+## Направления
 
-- Cloudflare Workers
-- D1
-- Telegram Bot API через `fetch`
-- TypeScript
+Направление определяется меткой ссылки и живёт в состоянии диалога:
+он переживает перезапуск воркера, иначе человек посреди диагностики
+продавца получил бы клиническое меню.
 
-## Быстрый старт
+| Метка | Куда ведёт |
+| --- | --- |
+| `checklist`, `audit`, `question`, `cases`, `case_<id>` | клиники |
+| `kit_checklist`, `kit_audit`, `kit_question`, `kit_cases`, `kit_case_<id>` | продавцы |
+| `seller_*` | алиас старых ссылок с лендинга |
 
-```bash
-cd workers/telegram-bot
-npm install
-```
+## Переменные окружения
 
-### 1. Создать D1
+| Переменная | Назначение |
+| --- | --- |
+| `BOT_TOKEN` | токен BotFather, secret |
+| `ADMIN_CHAT_ID` | чат для заявок |
+| `WEBHOOK_SECRET` | секрет в пути вебхука, secret |
+| `SITE_URL` | адрес сайта |
+| `BOT_USERNAME` | имя бота для подписи заявки |
+| `CHECKLIST_URL` | PDF для клиник |
+| `CHECKLIST_KIT_URL` | PDF для продавцов |
 
-```bash
-npx wrangler d1 create sharik-digital-bot-db
-npx wrangler d1 migrations apply sharik-digital-bot-db --remote
-```
+Чек-листы лежат на самом сайте и отдаются воркеру по ссылке:
 
-## 2. Заполнить `wrangler.toml`
+- `https://sharik-digital.ru/checklists/clinic.pdf`
+- `https://sharik-digital.ru/checklists/kit.pdf`
 
-Создайте `wrangler.toml` на основе `wrangler.toml.example` и укажите реальный `database_id`.
-
-## 3. Secrets
-
-```bash
-npx wrangler secret put BOT_TOKEN
-npx wrangler secret put ADMIN_CHAT_ID
-npx wrangler secret put WEBHOOK_SECRET
-```
-
-## 4. Деплой
+## Проверки
 
 ```bash
-npm run db:migrate
-npm run deploy
+npm run typecheck
+npm test
 ```
 
-## 5. Webhook
-
-Telegram → Worker:
+Тесты закрывают маршрутизацию: старые ссылки остаются клиническими,
+`kit_*` ведут к продавцам, алиас `seller_*` работает, а кейс чужого
+направления не показывается.
 
 ```bash
 curl -X POST "https://api.telegram.org/bot$BOT_TOKEN/setWebhook" \

@@ -1,7 +1,9 @@
+import { CLINIC, isTrackKey, type TrackKey } from "./tracks";
+
 export type UserState =
-  | { kind: "diagnostic"; step: number; answers: Record<string, string>; source_route?: string }
+  | { kind: "diagnostic"; step: number; answers: Record<string, string>; source_route?: string; track: TrackKey }
   | { kind: "contact_request" }
-  | { kind: "question"; question_kind: string };
+  | { kind: "question"; question_kind: string; track: TrackKey };
 
 type RawState = {
   state?: string;
@@ -42,13 +44,14 @@ export async function setUserState(db: D1Database, telegramId: number, state: Us
 function decodeState(state: string | undefined, data: any): UserState | null {
   if (!state) return null;
   if (state === "diagnostic") {
-    return { kind: "diagnostic", step: Number(data.step || 0), answers: data.answers || {}, source_route: data.source_route };
+    const track: TrackKey = isTrackKey(data.track) ? data.track : CLINIC;
+    return { kind: "diagnostic", step: Number(data.step || 0), answers: data.answers || {}, source_route: data.source_route, track };
   }
   if (state === "contact_request") {
     return { kind: "contact_request" };
   }
   if (state === "question") {
-    return { kind: "question", question_kind: data.question_kind || "free_text" };
+    return { kind: "question", question_kind: data.question_kind || "free_text", track: isTrackKey(data.track) ? data.track : CLINIC };
   }
   return null;
 }
@@ -59,9 +62,11 @@ function encodeState(state: UserState): { state: string; data: string } {
     base.step = state.step;
     base.answers = state.answers;
     base.source_route = state.source_route;
+    base.track = state.track;
   }
   if (state.kind === "question") {
     base.question_kind = state.question_kind;
+    base.track = state.track;
   }
 
   return { state: state.kind, data: JSON.stringify(base) };

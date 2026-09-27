@@ -1,4 +1,20 @@
-export function buildMainMenuText() {
+import { KIT, type TrackKey } from "./tracks";
+
+export function buildMainMenuText(track: TrackKey = "clinic") {
+  if (track === KIT) {
+    return [
+      "Привет! Я бот ШАРиК-digital.",
+      "",
+      "Мы помогаем продавцам маркетплейсов: считаем потенциал собственного канала продаж и, если он нужен, запускаем магазин на Яндекс KIT под ключ.",
+      "",
+      "Здесь можно:",
+      "— оценить потенциал канала;",
+      "— забрать чек-лист запуска;",
+      "— посмотреть кейсы;",
+      "— оставить заявку на разбор.",
+    ].join("\n");
+  }
+
   return [
     "Привет! Я бот ШАРиК-digital.",
     "",
@@ -12,7 +28,17 @@ export function buildMainMenuText() {
   ].join("\n");
 }
 
-export function buildChecklistText() {
+export function buildChecklistText(track: TrackKey = "clinic") {
+  if (track === KIT) {
+    return [
+      "Забирайте чек-лист:",
+      "",
+      "«Чек-лист запуска магазина на Яндекс KIT»",
+      "",
+      "Порядок работ и точки, на которых запуски обычно ломаются. Начните с шага 0: если в ассортименте есть запрещённые категории или мерные товары, продолжать не нужно.",
+    ].join("\n");
+  }
+
   return [
     "Забирайте чек-лист:",
     "",
@@ -22,7 +48,15 @@ export function buildChecklistText() {
   ].join("\n");
 }
 
-export function buildAuditIntroText() {
+export function buildAuditIntroText(track: TrackKey = "clinic") {
+  if (track === KIT) {
+    return [
+      "Давайте быстро посмотрим, где продавец сейчас теряет деньги.",
+      "",
+      "Шесть вопросов, пара минут. Покажем, завязаны ли вы на площадку и нужен ли вам собственный канал продаж.",
+    ].join("\n");
+  }
+
   return [
     "Давайте быстро посмотрим, где клиника может терять пациентов.",
     "",

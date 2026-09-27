@@ -113,7 +113,11 @@ async function buildTree(env: Env, paths: string[]) {
     { headers },
   );
   if (!refResponse.ok) {
-    throw new Error(`Не удалось прочитать ветку ${branch}: HTTP ${refResponse.status}`);
+    throw new Error(
+      `Не удалось прочитать ветку ${branch}: HTTP ${refResponse.status}.` +
+        " Проверьте GITHUB_TOKEN: fine-grained токен должен иметь доступ " +
+        "к репозиторию и права Contents: Read and write.",
+    );
   }
   const ref = (await refResponse.json()) as { object: { sha: string } };
   const headSha = ref.object.sha;
@@ -292,6 +296,14 @@ export const onRequest = async (context: { request: Request; env: Env }) => {
     }
 
     const commit = (await commitResponse.json()) as { sha: string; html_url?: string };
+
+    // Снимок контента в KV устарел: после коммита он содержал бы старые
+    // тексты ещё пять минут, и правка выглядела бы как «не сохранилось».
+    if (env.CONTENT) {
+      await env.CONTENT.delete(`content:snapshot:${env.GITHUB_BRANCH || "main"}`).catch(
+        () => null,
+      );
+    }
 
     // Сборку запускает GitHub Actions: workflow .github/workflows/deploy.yml
     // реагирует на изменение content/ и делает pages deploy.

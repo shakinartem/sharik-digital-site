@@ -12,6 +12,10 @@
  * content/articles — публикация подтверждается отдельным шагом.
  */
 
+// Разбор архива репозитория лежит рядом: используется только здесь,
+// а в другие endpoint его тянуть незачем.
+import { readFilesFromTarGz } from "../../lib/tar";
+
 /** Минимальное описание интерфейса KV без внешних зависимостей. */
 interface KVNamespace {
   get(key: string, type?: "text"): Promise<string | null>;
@@ -91,74 +95,102 @@ const SECTION_DIR: Record<string, string> = {
   faq: "content/faq",
 };
 
+type RepoItem = { slug: string; section: string; markdown: string };
+
+/**
+ * Сколько живёт распакованный снимок контента.
+ *
+ * Пять минут — компромисс: архив репозитория весит несколько мегабайт,
+ * и тянуть его при каждом открытии админки расточительно, а держать
+ * дольше нельзя, иначе после публикации правки не видно.
+ */
+const SNAPSHOT_TTL = 300;
+
+function snapshotKey(branch: string) {
+  return `content:snapshot:${branch}`;
+}
+
+/** Раздел по пути файла: content/faq/kit-1.md -> faq. */
+function sectionOf(path: string): string {
+  for (const section of Object.keys(SECTION_DIR)) {
+    if (path.startsWith(SECTION_DIR[section] + "/") && path.endsWith(".md")) return section;
+  }
+  return "";
+}
+
 /**
  * Читает контент, который уже лежит в репозитории.
  *
- * Зачем: KV — только черновик. Реальные 11 статей и 9 кейсов лежат в
- * git, и без этого админка показывала «Статьи (0)» — то есть утверждала
- * обратное. Пользователь должен видеть существующий контент и править
- * его, а не начинать с нуля.
+ * Зачем: KV — только черновик. Реальные 15 статей, 9 кейсов и 29
+ * вопросов лежат в git, и без этого админка показывала «Отзывы (0)» —
+ * то есть утверждала обратное.
+ *
+ * Источник — архив codeload.github.com, а не api.github.com. С API всё
+ * было плохо сразу по двум причинам: он требует токена, а токен в
+ * проекте Pages не даёт доступа (403), и без токена лимит в 60 запросов
+ * в час считается на IP — у адресов Cloudflare он общий и исчерпается
+ * чужими запросами. Архив этому лимиту не подчиняется, отдаётся без
+ * токена, а распаковать его в Worker умеет DecompressionStream.
+ *
+ * Публикация токена по-прежнему требует: она идёт через API записи и
+ * падает с понятной ошибкой, если токен не выпущен.
  */
-async function readFromRepo(env: Env): Promise<Record<string, { slug: string; section: string; markdown: string }>> {
-  const out: Record<string, { slug: string; section: string; markdown: string }> = {};
+async function readFromRepo(env: Env): Promise<Record<string, RepoItem>> {
   const repoName = env.GITHUB_REPO;
-  const token = env.GITHUB_TOKEN;
-  // Раньше здесь был тихий return {}: админка показывала «Отзывы (0)»
-  // и человек делал вывод, что отзывов нет. Отсутствие токена — это
-  // поломка доступа, и о ней нужно сказать прямо.
-  if (!repoName || !token) {
-    throw new Error("GITHUB_TOKEN или GITHUB_REPO не заданы в проекте Pages");
-  }
+  if (!repoName) throw new Error("GITHUB_REPO не задан в проекте Pages");
 
   const [owner, name] = repoName.split("/");
   if (!owner || !name) throw new Error(`GITHUB_REPO задан неверно: ${repoName}`);
+
   const branch = env.GITHUB_BRANCH || "main";
-  const headers = {
-    Authorization: `Bearer ${token}`,
-    Accept: "application/vnd.github+json",
-  };
+  const kv = env.CONTENT;
+  if (!kv) throw new Error("CONTENT не настроен: нет хранилища для снимка контента");
 
-  for (const [section, dir] of Object.entries(SECTION_DIR)) {
-    const listUrl = `https://api.github.com/repos/${owner}/${name}/contents/${dir}?ref=${encodeURIComponent(branch)}`;
-    const listResponse = await fetch(listUrl, { headers });
-    // Отсутствующая папка (например, content/reviews, пока не
-    // созданных отзывов) — это не ошибка, а пустой раздел.
-    if (!listResponse.ok) {
-      if (listResponse.status === 404) continue;
-      throw new Error(`GitHub не отдал список ${dir}: HTTP ${listResponse.status}`);
+  const key = snapshotKey(branch);
+
+  const cached = await kv.get(key, "text").catch(() => null);
+  if (cached) {
+    try {
+      return JSON.parse(cached) as Record<string, RepoItem>;
+    } catch {
+      // Испорченный снимок не должен ломать админку: читаем заново.
     }
+  }
 
-    const entries = (await listResponse.json().catch(() => [])) as {
-      name: string;
-      type: string;
-      path: string;
-    }[];
+  const url =
+    `https://codeload.github.com/${owner}/${name}/tar.gz/refs/heads/` +
+    `${encodeURIComponent(branch)}`;
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(
+      `GitHub не отдал архив репозитория: HTTP ${response.status}. ` +
+        "Проверьте GITHUB_REPO и GITHUB_BRANCH в проекте Pages.",
+    );
+  }
 
-    for (const entry of entries) {
-      if (entry.type !== "file" || !entry.name.endsWith(".md")) continue;
-      const fileResponse = await fetch(
-        `https://api.github.com/repos/${owner}/${name}/contents/${entry.path}?ref=${encodeURIComponent(branch)}`,
-        { headers },
-      );
-      if (!fileResponse.ok) {
-        throw new Error(`Не удалось прочитать ${entry.path}: HTTP ${fileResponse.status}`);
-      }
-      const file = (await fileResponse.json().catch(() => null)) as {
-        content?: string;
-      } | null;
-      if (!file?.content) continue;
+  const out: Record<string, RepoItem> = {};
+  const decoder = new TextDecoder();
 
-      const binary = atob(file.content.replace(/\n/g, ""));
-      const bytes = Uint8Array.from(binary, (c) => c.charCodeAt(0));
-      const markdown = new TextDecoder().decode(bytes);
-      const slug = entry.name.replace(/\.md$/, "");
-      out[`${section}:${slug}`] = { slug, section, markdown };
-    }
+  await readFilesFromTarGz(
+    response,
+    "",
+    (path) => Boolean(sectionOf(path)),
+    (path, data) => {
+      const section = sectionOf(path);
+      if (!section) return;
+      const slug = path.slice(path.lastIndexOf("/") + 1).replace(/\.md$/, "");
+      out[`${section}:${slug}`] = { slug, section, markdown: decoder.decode(data) };
+    },
+  );
+
+  // Снимок кладём, только если что-то нашли: пустой архив в кэше
+  // замаскировал бы настоящую ошибку до следующей попытки.
+  if (Object.keys(out).length) {
+    await kv.put(key, JSON.stringify(out), { expirationTtl: SNAPSHOT_TTL }).catch(() => null);
   }
 
   return out;
 }
-
 async function handleList(env: Env, includeBodies: boolean) {
   const kv = env.CONTENT;
   if (!kv) return json({ error: "CONTENT не настроен" }, 500);
@@ -244,7 +276,21 @@ async function handleList(env: Env, includeBodies: boolean) {
     return String(a.slug).localeCompare(String(b.slug));
   });
 
-  return json({ articles: merged, total: merged.length, repo: repoInfo });
+  /**
+   * Публичный запрос без пароля (meta=1) отдаёт только метаданные.
+   *
+   * Раньше includeBodies игнорировался, и любой мог получить полный
+   * текст всех статей, кейсов и вопросов по ссылке без пароля. Для
+   * списка метаданных текста не нужно: заголовок, раздел, статус.
+   */
+  const payload = includeBodies
+    ? merged
+    : merged.map((item) => {
+        const { markdown: _markdown, ...rest } = item as Record<string, unknown>;
+        return rest;
+      });
+
+  return json({ articles: payload, total: merged.length, repo: repoInfo });
 }
 
 export const onRequest = async (context: { request: Request; env: Env }) => {

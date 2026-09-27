@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import { ButtonLink } from "./ui";
 import { sellerLinks } from "@/data/sellers";
 import { TrendingUp, Wallet, Repeat } from "lucide-react";
@@ -170,6 +170,10 @@ function Slider({
   // Процент заполнения дорожки. Считаем от реального min/max, иначе
   // при min ≠ 0 шкала показывала бы неверную долю.
   const pct = max === min ? 0 : ((value - min) / (max - min)) * 100;
+  // Доля уходит в CSS-переменную на самом input: красить заливку нужно
+  // на ::-webkit-slider-runnable-track, а не фоном на input — фон input
+  // лежит под дорожкой и выглядывает из-под неё прямоугольником.
+  const trackStyle = { "--range-pct": `${pct}%` } as CSSProperties;
 
   return (
     <div>
@@ -204,15 +208,7 @@ function Slider({
       <input
         type="range"
         className="range mt-1"
-        style={{
-          // Заполненная часть дорожки. Без неё ползунок висит на
-          // пустой шкале и не показывает, насколько далеко от края
-          // стоит значение — приходится считать шаги глазами.
-          background: `linear-gradient(to right, var(--primary) 0%, var(--primary) ${pct}%, transparent ${pct}%, transparent 100%)`,
-          backgroundSize: "100% 0.5rem",
-          backgroundPosition: "center",
-          backgroundRepeat: "no-repeat",
-        }}
+        style={trackStyle}
         min={min}
         max={max}
         step={step}

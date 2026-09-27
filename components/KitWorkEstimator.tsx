@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import { ButtonLink } from "./ui";
 import { sellerLinks } from "@/data/sellers";
 import { Package, Check } from "lucide-react";
@@ -149,6 +149,12 @@ export function KitWorkEstimator() {
 
   const result = useMemo(() => estimate(inputs), [inputs]);
 
+  // Заполненная часть дорожки: показывает долю шкалы без необходимости
+  // считать шаги глазами. Значение передаётся в CSS-переменную — сам
+  // градиент описан в globals.css и рисуется на дорожке.
+  const skusPct = ((inputs.skus - 10) / (5000 - 10)) * 100;
+  const trackStyle = { "--range-pct": `${skusPct}%` } as CSSProperties;
+
   return (
     <div className="grid gap-6 lg:grid-cols-[1fr_0.85fr] lg:gap-8">
       <div className="card-base reveal p-6 sm:p-8">
@@ -202,18 +208,7 @@ export function KitWorkEstimator() {
           <input
             type="range"
             className="range mt-1"
-            style={{
-              // Заполненная часть дорожки: показывает долю шкалы без
-              // необходимости считать шаги глазами.
-              background: `linear-gradient(to right, var(--primary) 0%, var(--primary) ${
-                ((inputs.skus - 10) / (5000 - 10)) * 100
-              }%, transparent ${
-                ((inputs.skus - 10) / (5000 - 10)) * 100
-              }%, transparent 100%)`,
-              backgroundSize: "100% 0.5rem",
-              backgroundPosition: "center",
-              backgroundRepeat: "no-repeat",
-            }}
+            style={trackStyle}
             min={10}
             max={5000}
             step={10}

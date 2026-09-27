@@ -484,19 +484,22 @@ function Products() {
           />
         </div>
 
-        {/* Три карточки в две колонки: третья занимает вторую строку
-            и по умолчанию прижималась бы влево, оставляя дыру справа.
-            last:col-start-2 ставит её по центру относительно двух
-            верхних — ряд из трёх читается как лестница, а не как
-            таблица с дырой. На мобильном (одна колонка) правило
-            не действует, и карточки идут друг за другом. */}
-        <div className="grid gap-5 sm:grid-cols-2 [&>*:last-child]:sm:col-start-2">
+        {/* Три карточки: 01 и 02 стоят рядом, 03 — отдельной строкой
+            по центру, ровно между ними.
+            Сетка из четырёх колонок вместо двух: карточки верхнего
+            ряда занимают по две (колонки 1–2 и 3–4), а третья —
+            колонки 2–3. Так она центрируется без calc() и сохраняет
+            ширину верхних карточек. На мобильном (одна колонка)
+            правила не действуют, карточки идут друг за другом. */}
+        <div className="grid gap-5 sm:grid-cols-4">
           {sellerProducts.map((p, i) => {
             const isDark = p.tone === "dark";
             return (
               <article
                 key={p.id}
-                className={`reveal flex flex-col rounded-[1.75rem] border p-6 sm:p-7 ${toneClass[p.tone]}`}
+                className={`reveal flex flex-col rounded-[1.75rem] border p-6 sm:col-span-2 sm:p-7${
+                  i === 2 ? " sm:col-start-2" : ""
+                } ${toneClass[p.tone]}`}
                 style={{ transitionDelay: `${(i % 2) * 120}ms` }}
               >
                 <div className="flex flex-wrap items-center gap-2">

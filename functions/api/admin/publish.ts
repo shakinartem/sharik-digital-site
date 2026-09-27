@@ -70,22 +70,73 @@ const CONTENT_PATHS = ["content/articles", "content/cases", "content/reviews", "
 /** Идентификатор материала: латиница в нижнем регистре, цифры, дефисы. */
 const SLUG_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
+/**
+ * Запись в дереве git.
+ *
+ * `sha: null` означает удаление, `content` — новый файл. Оба варианта
+ * нельзя смешивать: GitHub возьмёт содержимое, если оно передано, и
+ * удалит файл только при явном null.
+ */
+interface TreeEntry {
+  path: string;
+  mode: string;
+  type: "blob";
+  sha?: string | null;
+  content?: string;
+}
+
 
 /**
  * Собирает дерево файлов для коммита из KV.
  *
  * Источник — именно KV, а не репозиторий: правки из админки ещё
  * не закоммичены, и если читать content/ из GitHub, на прод уехал бы
- * старый текст. Все файлы разделов кладутся в дерево целиком — так
- * публикация не зависит от того, что уже было в репозитории.
+ * старый текст.
  *
- * Удалённые в админке материалы не удаляются из репозитория: в дереве
- * просто не будет их путей, а очистка делается вручную через git.
+ * Дерево строится ПОВЕРХ текущего (base_tree), а не с нуля. Раньше
+ * в запрос уходил только список файлов контента, и такой коммит
+ * содержал бы ровно их — то есть всё остальное (код, компоненты,
+ * конфигурация) исчезло бы из репозитория. Файлы, удалённые в
+ * админке, не пропускаются молча, а помечаются `sha: null`: в дереве
+ * на базе отсутствие записи означало бы «оставить как есть», и
+ * материал возвращался бы в список после следующей загрузки.
  */
 async function buildTree(env: Env, paths: string[]) {
   if (!env.CONTENT) throw new Error("CONTENT не настроен");
+  const { owner, name } = repo(env);
+  const branch = env.GITHUB_BRANCH || "main";
+  const headers = githubHeaders(env);
+
+  // 1. Текущий HEAD и его дерево — точка отсчёта для нового.
+  const refResponse = await fetch(
+    `https://api.github.com/repos/${owner}/${name}/git/ref/heads/${encodeURIComponent(branch)}`,
+    { headers },
+  );
+  if (!refResponse.ok) {
+    throw new Error(`Не удалось прочитать ветку ${branch}: HTTP ${refResponse.status}`);
+  }
+  const ref = (await refResponse.json()) as { object: { sha: string } };
+  const headSha = ref.object.sha;
+
+  const treeResponse = await fetch(
+    `https://api.github.com/repos/${owner}/${name}/git/trees/${headSha}?recursive=1`,
+    { headers },
+  );
+  if (!treeResponse.ok) {
+    throw new Error(`Не удалось прочитать дерево репозитория: HTTP ${treeResponse.status}`);
+  }
+  const tree = (await treeResponse.json()) as {
+    sha: string;
+    truncated?: boolean;
+    tree: { path: string; mode: string; type: string; sha: string }[];
+  };
+  if (tree.truncated) {
+    throw new Error("GitHub отдал неполное дерево репозитория — публикация остановлена");
+  }
+
+  // 2. Опубликованные записи из KV: путь файла -> содержимое.
   const { keys } = await env.CONTENT.list({ prefix: "content:item:" });
-  const tree: { path: string; mode: string; type: string; content?: string }[] = [];
+  const wanted: Record<string, string> = {};
 
   for (const key of keys) {
     const raw = await env.CONTENT.get(key.name);
@@ -104,15 +155,56 @@ async function buildTree(env: Env, paths: string[]) {
     if (!paths.includes(`content/${section}`)) continue;
     if (!SLUG_RE.test(record.slug)) continue;
 
-    tree.push({
-      path: `content/${section}/${record.slug}.md`,
-      mode: "100644",
-      type: "blob",
-      content: toBase64(record.markdown),
-    });
+    wanted[`content/${section}/${record.slug}.md`] = record.markdown;
   }
 
-  return tree;
+  // 3. Новое дерево: чужие файлы сохраняем как есть, наши перезаписываем,
+  //    пропавшие из KV удаляем.
+  const entries: TreeEntry[] = [];
+  const handled: Record<string, boolean> = {};
+  let removed = 0;
+
+  for (const node of tree.tree) {
+    // Каталоги пропускаем: GitHub создаёт их сам по путям файлов.
+    if (node.type !== "blob") continue;
+
+    const dir = node.path.slice(0, node.path.lastIndexOf("/"));
+    const isContent = CONTENT_PATHS.indexOf(dir) !== -1;
+    const publishesDir = paths.indexOf(dir) !== -1;
+
+    if (!isContent || !publishesDir) {
+      // Режим сохраняет executable-бит и любые другие файлы.
+      entries.push({ path: node.path, mode: node.mode, type: "blob", sha: node.sha });
+      continue;
+    }
+
+    handled[node.path] = true;
+    if (wanted[node.path] !== undefined) {
+      entries.push({
+        path: node.path,
+        mode: "100644",
+        type: "blob",
+        content: toBase64(wanted[node.path]),
+      });
+    } else {
+      entries.push({ path: node.path, mode: "100644", type: "blob", sha: null });
+      removed++;
+    }
+  }
+
+  // Новые файлы, которых в репозитории ещё нет.
+  for (const path of Object.keys(wanted)) {
+    if (handled[path]) continue;
+    entries.push({ path, mode: "100644", type: "blob", content: toBase64(wanted[path]) });
+  }
+
+  return {
+    entries,
+    baseTree: tree.sha,
+    headSha,
+    files: Object.keys(wanted).length,
+    removed,
+  };
 }
 
 export const onRequest = async (context: { request: Request; env: Env }) => {
@@ -148,12 +240,38 @@ export const onRequest = async (context: { request: Request; env: Env }) => {
   if (!paths.length) return json({ error: "Не выбрано ни одного раздела" }, 400);
 
   try {
-    const tree = await buildTree(env, paths);
-    if (!tree.length) return json({ error: "Нет опубликованного контента в выбранных разделах" }, 400);
+    const { entries, baseTree, headSha, files, removed } = await buildTree(env, paths);
+    // Пустой раздел publish пропускать нельзя: если в KV ничего не
+    // осталось, а в репозитории файл есть, публикация как раз и
+    // должна его удалить. Отказ делаем только когда нечего ни
+    // записать, ни удалить — тогда запрос действительно пустой.
+    if (!files && !removed) {
+      return json({ error: "Нет опубликованного контента в выбранных разделах" }, 400);
+    }
 
     const { owner, name } = repo(env);
-    const branch = env.GITHUB_BRANCH || "main";
 
+    // Шаг 1: новое дерево. Коммит ссылается на готовый sha, поэтому
+    // содержимое файлов передать в него напрямую нельзя — сначала
+    // создаём дерево, затем коммит на его основе.
+    const treeResponse = await fetch(
+      `https://api.github.com/repos/${owner}/${name}/git/trees`,
+      {
+        method: "POST",
+        headers: { ...githubHeaders(env), "Content-Type": "application/json" },
+        body: JSON.stringify({ base_tree: baseTree, tree: entries }),
+      },
+    );
+
+    if (!treeResponse.ok) {
+      const body = await treeResponse.text().catch(() => "");
+      return json({ error: `GitHub отклонил дерево: ${body.slice(0, 300)}` }, 502);
+    }
+
+    const newTree = (await treeResponse.json()) as { sha: string };
+
+    // Шаг 2: коммит. parents обязателен — без него ветка осталась бы
+    // без изменений, и новое дерево просто висело бы в репозитории.
     const commitResponse = await fetch(
       `https://api.github.com/repos/${owner}/${name}/git/commits`,
       {
@@ -161,9 +279,9 @@ export const onRequest = async (context: { request: Request; env: Env }) => {
         headers: { ...githubHeaders(env), "Content-Type": "application/json" },
         body: JSON.stringify({
           message: payload.message || "Контент: публикация из админки",
-          branch,
+          tree: newTree.sha,
+          parents: [headSha],
           committer: { name: "ШАРиК CMS", email: "cms@sharik-digital.ru" },
-          tree,
         }),
       },
     );
@@ -183,7 +301,8 @@ export const onRequest = async (context: { request: Request; env: Env }) => {
       ok: true,
       commit: commit.sha,
       commitUrl: commit.html_url,
-      files: tree.length,
+      files,
+      removed,
       message:
         "Изменения отправлены в репозиторий. Сборка запустится автоматически, " +
         "через 1–2 минуты обновление будет на сайте.",

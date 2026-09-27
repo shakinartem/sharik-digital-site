@@ -103,10 +103,15 @@ async function readFromRepo(env: Env): Promise<Record<string, { slug: string; se
   const out: Record<string, { slug: string; section: string; markdown: string }> = {};
   const repoName = env.GITHUB_REPO;
   const token = env.GITHUB_TOKEN;
-  if (!repoName || !token) return out;
+  // Раньше здесь был тихий return {}: админка показывала «Отзывы (0)»
+  // и человек делал вывод, что отзывов нет. Отсутствие токена — это
+  // поломка доступа, и о ней нужно сказать прямо.
+  if (!repoName || !token) {
+    throw new Error("GITHUB_TOKEN или GITHUB_REPO не заданы в проекте Pages");
+  }
 
   const [owner, name] = repoName.split("/");
-  if (!owner || !name) return out;
+  if (!owner || !name) throw new Error(`GITHUB_REPO задан неверно: ${repoName}`);
   const branch = env.GITHUB_BRANCH || "main";
   const headers = {
     Authorization: `Bearer ${token}`,
@@ -115,8 +120,13 @@ async function readFromRepo(env: Env): Promise<Record<string, { slug: string; se
 
   for (const [section, dir] of Object.entries(SECTION_DIR)) {
     const listUrl = `https://api.github.com/repos/${owner}/${name}/contents/${dir}?ref=${encodeURIComponent(branch)}`;
-    const listResponse = await fetch(listUrl, { headers }).catch(() => null);
-    if (!listResponse || !listResponse.ok) continue;
+    const listResponse = await fetch(listUrl, { headers });
+    // Отсутствующая папка (например, content/reviews, пока не
+    // созданных отзывов) — это не ошибка, а пустой раздел.
+    if (!listResponse.ok) {
+      if (listResponse.status === 404) continue;
+      throw new Error(`GitHub не отдал список ${dir}: HTTP ${listResponse.status}`);
+    }
 
     const entries = (await listResponse.json().catch(() => [])) as {
       name: string;
@@ -129,8 +139,10 @@ async function readFromRepo(env: Env): Promise<Record<string, { slug: string; se
       const fileResponse = await fetch(
         `https://api.github.com/repos/${owner}/${name}/contents/${entry.path}?ref=${encodeURIComponent(branch)}`,
         { headers },
-      ).catch(() => null);
-      if (!fileResponse || !fileResponse.ok) continue;
+      );
+      if (!fileResponse.ok) {
+        throw new Error(`Не удалось прочитать ${entry.path}: HTTP ${fileResponse.status}`);
+      }
       const file = (await fileResponse.json().catch(() => null)) as {
         content?: string;
       } | null;
@@ -188,7 +200,14 @@ async function handleList(env: Env, includeBodies: boolean) {
 
   // Соединяем с содержимым репозитория: черновик имеет приоритет,
   // иначе на его месте стоял бы старый текст из git.
-  const repo = await readFromRepo(env);
+  let repo: Record<string, { slug: string; section: string; markdown: string }> = {};
+  let repoInfo: { ok: boolean; error?: string; count: number } = { ok: true, count: 0 };
+  try {
+    repo = await readFromRepo(env);
+    repoInfo = { ok: true, count: Object.keys(repo).length };
+  } catch (error) {
+    repoInfo = { ok: false, error: (error as Error).message, count: 0 };
+  }
   const merged: Record<string, unknown>[] = [];
   const seen = new Set<string>();
 
@@ -225,7 +244,7 @@ async function handleList(env: Env, includeBodies: boolean) {
     return String(a.slug).localeCompare(String(b.slug));
   });
 
-  return json({ articles: merged, total: merged.length });
+  return json({ articles: merged, total: merged.length, repo: repoInfo });
 }
 
 export const onRequest = async (context: { request: Request; env: Env }) => {

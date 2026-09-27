@@ -1,8 +1,10 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import SimpleEditor, { type SimpleItem } from "@/components/admin/SimpleEditor";
 import Dashboard from "@/components/admin/Dashboard";
+import { ImageUpload } from "@/components/admin/ImageUpload";
+import { groupItems, itemSubtitle, siteUrl } from "@/lib/adminPages";
 
 type Category = "yandex-kit" | "patients" | "economy";
 
@@ -160,6 +162,37 @@ export default function AdminPage() {
   const [status, setStatus] = useState<{ kind: "ok" | "error"; text: string } | null>(null);
   const [busy, setBusy] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
+  /** Выбранная страница в фильтре списка статей. */
+  const [articleFilter, setArticleFilter] = useState("all");
+  /** Ошибка чтения контента из репозитория: показывается баннером. */
+  const [repoError, setRepoError] = useState<string | null>(null);
+  /** Позиция курсора в тексте статьи на момент выбора файла. */
+  const caretRef = useRef(0);
+  const bodyRef = useRef<HTMLTextAreaElement>(null);
+  const [imageAlt, setImageAlt] = useState("");
+  const [imageCaption, setImageCaption] = useState("");
+  const [lastImage, setLastImage] = useState("");
+
+  /**
+   * Вставка загруженного фото в текст статьи.
+   *
+   * Формат строки — ровно тот, который читает генератор:
+   * `![описание](путь)` отдельной строкой, подпись — следующей строкой
+   * с `caption:`. Ручной вставкой такой строки пользуются единицы, а
+   * здесь фото вставляется само и сразу в правильном месте.
+   */
+  function insertImage(url: string, caret: number) {
+    const alt = imageAlt.trim() || "Фото";
+    const caption = imageCaption.trim();
+    const block = `![${alt}](${url})\n${caption ? `caption: ${caption}\n` : ""}`;
+    const text = form.body;
+    const at = Math.max(0, Math.min(caret, text.length));
+    // Хвост перед вставкой подрезается, иначе картинка может попасть
+    // в середину строки и не распознаться как отдельный блок.
+    const head = text.slice(0, at).replace(/\s+$/, "");
+    set("body", `${head}\n\n${block}\n${text.slice(at)}`);
+    setStatus({ kind: "ok", text: "Фото добавлено в текст статьи." });
+  }
 
   const set = <K extends keyof typeof EMPTY>(key: K, value: (typeof EMPTY)[K]) =>
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -188,7 +221,16 @@ export default function AdminPage() {
       if (!response.ok) throw new Error("Не удалось загрузить статьи");
       const data = (await response.json()) as {
         articles: (Article & { section?: string })[];
+        repo?: { ok: boolean; error?: string; count?: number };
       };
+      // Молчаливый пустой список опаснее пустого списка с причиной:
+      // без баннера «Отзывы (0)» выглядит как «отзывов нет», хотя
+      // сервер не смог прочитать репозиторий.
+      setRepoError(
+        data.repo && data.repo.ok === false
+          ? data.repo.error || "Не удалось прочитать контент из репозитория"
+          : null,
+      );
       // Раздел приходит из API: без него не понять, статья это,
       // кейс или отзыв — все три лежат в одном списке.
       setArticles(data.articles.filter((a) => !a.section || a.section === "article"));
@@ -366,6 +408,23 @@ export default function AdminPage() {
 
   const field = "w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm";
   const label = "mb-1 block text-sm font-medium text-neutral-700";
+  const chip = "rounded-full border border-neutral-300 px-2.5 py-1 text-xs font-medium text-neutral-600 hover:bg-neutral-100";
+  const chipActive = "rounded-full bg-neutral-900 px-2.5 py-1 text-xs font-medium text-white";
+
+  /**
+   * Статьи, разложенные по страницам.
+   *
+   * Категория статьи — это и есть страница, на которой она живёт:
+   * «Яндекс KIT» идёт в хаб /blog/yandex-kit, «Пациентопоток» — в
+   * блог о клиниках, «Экономика канала» — к материалам про
+   * продавцов. Группировка и фильтр берутся из одного списка, поэтому
+   * счётчики рядом с чипами всегда совпадают с тем, что показано.
+   */
+  const articleGroups = groupItems("article", articles);
+  const visibleArticleGroups =
+    articleFilter === "all"
+      ? articleGroups
+      : articleGroups.filter((group) => group.key === articleFilter);
 
 
   return (
@@ -388,6 +447,17 @@ export default function AdminPage() {
       </header>
 
       <div>
+        {/* Баннер ошибки чтения репозитория. Без него список может
+            показать ноль статей или отзывов, хотя на сайте они есть:
+            список молчал бы об ошибке, и человек решил бы, что
+            контента нет. */}
+        {repoError && (
+          <p className="mb-4 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+            Контент из репозитория не загрузился: {repoError}. Показаны только записи,
+            сохранённые в админке. Проверьте секрет GITHUB_TOKEN в проекте Pages.
+          </p>
+        )}
+
         <div className="mb-6 flex flex-wrap gap-2 border-b border-neutral-200">
           {(
             [
@@ -421,30 +491,73 @@ export default function AdminPage() {
           <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-neutral-500">
             Статьи ({articles.length})
           </h2>
-          <ul className="space-y-1">
-            {articles.map((article) => (
-              <li key={article.slug}>
-                <button
-                  onClick={() => openArticle(articles, article.slug)}
-                  className={`w-full rounded-lg px-3 py-2 text-left text-sm ${
-                    current === article.slug ? "bg-neutral-900 text-white" : "hover:bg-neutral-100"
-                  }`}
-                >
-                  <span className="block truncate font-medium">
-                    {article.title || article.slug}
-                  </span>
-                  <span
-                    className={`text-xs ${
-                      current === article.slug ? "text-neutral-300" : "text-neutral-500"
-                    }`}
-                  >
-                    {article.slug}
-                    {article.draft && " · черновик"}
-                  </span>
-                </button>
-              </li>
+
+          {/* Фильтр по страницам: категория статьи и есть страница,
+              на которой она живёт (Яндекс KIT, пациентопоток,
+              экономика канала). */}
+          <div className="mb-3 flex flex-wrap gap-1.5">
+            <button
+              type="button"
+              onClick={() => setArticleFilter("all")}
+              className={
+                articleFilter === "all" ? chipActive : chip
+              }
+            >
+              Все ({articles.length})
+            </button>
+            {articleGroups.map((group) => (
+              <button
+                key={group.key}
+                type="button"
+                onClick={() => setArticleFilter(group.key)}
+                className={articleFilter === group.key ? chipActive : chip}
+              >
+                {group.label} ({group.items.length})
+              </button>
             ))}
-          </ul>
+          </div>
+
+          {visibleArticleGroups.length === 0 && (
+            <p className="text-sm text-neutral-500">В этой группе пока пусто.</p>
+          )}
+
+          {visibleArticleGroups.map((group) => (
+            <div key={group.key} className="mb-4">
+              {visibleArticleGroups.length > 1 && (
+                <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-neutral-500">
+                  {group.label}
+                </p>
+              )}
+              <ul className="space-y-1">
+                {group.items.map((article) => (
+                  <li key={article.slug}>
+                    <button
+                      onClick={() => openArticle(articles, article.slug)}
+                      className={`w-full rounded-lg px-3 py-2 text-left text-sm ${
+                        current === article.slug
+                          ? "bg-neutral-900 text-white"
+                          : "hover:bg-neutral-100"
+                      }`}
+                    >
+                      <span className="block truncate font-medium">
+                        {article.title || article.slug}
+                      </span>
+                      <span
+                        className={`text-xs ${
+                          current === article.slug
+                            ? "text-neutral-300"
+                            : "text-neutral-500"
+                        }`}
+                      >
+                        {itemSubtitle("article", article.markdown)}
+                        {article.draft ? " · черновик" : ""}
+                      </span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
         </aside>
 
         <section className="space-y-5">
@@ -632,8 +745,60 @@ export default function AdminPage() {
                 ))}
               </dl>
             )}
+            {/* Фото внутри статьи. Строка ![описание](путь) —
+                единственный формат, который читает генератор, и
+                вставлять его вручную неудобно: путь появляется только
+                после загрузки файла. */}
+            <div className="rounded-xl border border-neutral-200 p-4">
+              <p className="text-sm font-semibold text-neutral-800">Фото в тексте статьи</p>
+              <p className="mb-3 text-xs text-neutral-500">
+                Поставьте курсор в текст там, где должна быть картинка, и загрузите файл —
+                строка вставится сама. Файл уходит в репозиторий и появляется на сайте
+                после публикации.
+              </p>
+              <div className="mb-3 grid gap-3 sm:grid-cols-2">
+                <div>
+                  <label className={label} htmlFor="img-alt">
+                    Описание фото — для alt
+                  </label>
+                  <input
+                    id="img-alt"
+                    className={field}
+                    value={imageAlt}
+                    onChange={(e) => setImageAlt(e.target.value)}
+                    placeholder="Карточка товара в кабинете"
+                  />
+                </div>
+                <div>
+                  <label className={label} htmlFor="img-cap">
+                    Подпись под фото — необязательно
+                  </label>
+                  <input
+                    id="img-cap"
+                    className={field}
+                    value={imageCaption}
+                    onChange={(e) => setImageCaption(e.target.value)}
+                    placeholder="Так товар выглядит у клиента"
+                  />
+                </div>
+              </div>
+              <ImageUpload
+                token={token}
+                id="article-image"
+                label="Загрузить фото в статью"
+                value={lastImage}
+                onChange={setLastImage}
+                onBeforeUpload={() => {
+                  caretRef.current = bodyRef.current?.selectionStart ?? form.body.length;
+                }}
+                onUploaded={(url) => insertImage(url, caretRef.current)}
+                hint="JPG, PNG, WebP, GIF или SVG до 5 МБ."
+              />
+            </div>
+
             <textarea
               id="body"
+              ref={bodyRef}
               rows={24}
               className={`${field} font-mono leading-relaxed`}
               value={form.body}
@@ -679,6 +844,20 @@ export default function AdminPage() {
               >
                 Удалить
               </button>
+            )}
+            {current && (
+              <a
+                href={siteUrl(
+                  "article",
+                  current,
+                  articles.filter((a) => a.slug === current)[0]?.markdown || "",
+                )}
+                target="_blank"
+                rel="noreferrer"
+                className="text-sm text-neutral-600 underline"
+              >
+                Смотреть на сайте
+              </a>
             )}
             <span className="text-xs text-neutral-500">
               Сайт обновится через 1–2 минуты после сохранения

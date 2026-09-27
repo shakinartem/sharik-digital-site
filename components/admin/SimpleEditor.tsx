@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { ImageUpload } from "@/components/admin/ImageUpload";
+import { ImageListField } from "@/components/admin/ImageListField";
+import { groupItems, itemSubtitle, siteUrl } from "@/lib/adminPages";
 import { FAQ_HUBS } from "@/data/faq";
 // Импорт из scripts/, а не из @/lib: генератор контента — единственное
 // место, где формат frontmatter FAQ определён. Копия алгоритма в
@@ -41,6 +43,8 @@ type CaseForm = {
   results: string;
   conclusion: string;
   tags: string;
+  /** Фотографии кейса — по строке на путь. */
+  images: string;
 };
 
 type ReviewForm = {
@@ -67,6 +71,7 @@ const EMPTY_CASE: CaseForm = {
   results: "",
   conclusion: "",
   tags: "",
+  images: "",
 };
 
 const EMPTY_REVIEW: ReviewForm = {
@@ -110,7 +115,10 @@ function caseToMarkdown(f: CaseForm): string {
     `whatWasDone:${toList(f.whatWasDone)}`,
     `results:${toList(f.results)}`,
     `conclusion: ${f.conclusion}`,
-    `images: []`,
+    // Раньше здесь стояло пустое `images: []`: картинки кейса были
+    // недоступны из админки, хотя на сайте они рендерятся — первое
+    // фото становится обложкой карточки.
+    `images:${toList(f.images)}`,
     `tags:${toList(f.tags)}`,
     `contourClosed: ${f.city.trim()}`,
   );
@@ -173,6 +181,7 @@ function caseFromMarkdown(markdown: string): CaseForm {
     results: readList(markdown, "results"),
     conclusion: readValue(markdown, "conclusion"),
     tags: readList(markdown, "tags"),
+    images: readList(markdown, "images"),
   };
 }
 
@@ -292,9 +301,17 @@ export default function SimpleEditor({
   const [faqForm, setFaqForm] = useState<FaqForm>(EMPTY_FAQ);
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
+  /**
+   * Выбранная страница в фильтре списка: "all" — показываем всё,
+   * иначе только содержимое выбранной страницы. По умолчанию список
+   * открыт целиком: сначала видно весь объём, а не одну вкладку.
+   */
+  const [pageFilter, setPageFilter] = useState("all");
 
   const field = "w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm";
   const label = "mb-1 block text-sm font-medium text-neutral-700";
+  const chip = "rounded-full border border-neutral-300 px-2.5 py-1 text-xs font-medium text-neutral-600 hover:bg-neutral-100";
+  const chipActive = "rounded-full bg-neutral-900 px-2.5 py-1 text-xs font-medium text-white";
 
   /**
    * Подразделы, которые уже заняты на выбранной странице.
@@ -318,6 +335,17 @@ export default function SimpleEditor({
 
   const sectionTitle = isCase ? "Кейсы" : isFaq ? "Вопросы FAQ" : "Отзывы";
   const newItemLabel = isCase ? "Новый кейс" : isFaq ? "Новый вопрос" : "Новый отзыв";
+
+  /**
+   * Список, разложенный по страницам.
+   *
+   * И фильтр, и заголовки групп считает lib/adminPages из того же
+   * frontmatter, что читает генератор, поэтому цифры рядом с
+   * названиями страниц всегда совпадают с тем, что показано ниже.
+   */
+  const groups = groupItems(kind, items);
+  const visibleGroups =
+    pageFilter === "all" ? groups : groups.filter((group) => group.key === pageFilter);
 
   const setCase = (key: keyof CaseForm, value: string) =>
     setCaseForm((prev) => ({ ...prev, [key]: value }));
@@ -402,6 +430,47 @@ export default function SimpleEditor({
 
 
 
+  /**
+   * Удаление материала.
+   *
+   * Запись стирается из KV сразу, а файл в репозитории удаляется при
+   * публикации: /api/admin/publish пересобирает дерево content/ и для
+   * исчезнувших файлов ставит sha: null. Поэтому в подтверждении и
+   * в статусе прямо сказано, что сайт обновится после публикации —
+   * иначе выглядело бы, что удаление не сработало.
+   */
+  async function remove() {
+    const id = current;
+    if (!id) return;
+    const title =
+      (isCase ? caseForm.title : isFaq ? faqForm.question : reviewForm.author) || id;
+    if (!confirm(`Удалить «${title}»? С сайта он исчезнет после публикации.`)) return;
+    setBusy(true);
+    try {
+      const response = await fetch(
+        "/api/admin/articles?slug=" + encodeURIComponent(id) + "&section=" + kind,
+        { method: "DELETE", headers: { Authorization: "Bearer " + token } },
+      );
+      const data = (await response.json().catch(() => ({}))) as { error?: string };
+      if (!response.ok) throw new Error(data.error || "Не удалось удалить");
+
+      const listResponse = await fetch("/api/admin/articles", {
+        headers: { Authorization: "Bearer " + token },
+      });
+      const listData = (await listResponse.json()) as { articles: SimpleItem[] };
+      onSaved(listData.articles.filter((a) => a.section === kind));
+      setCurrent(null);
+      setStatus("Удалено. Нажмите «Опубликовать на сайте», чтобы материал исчез с сайта.");
+    } catch (error) {
+      onError((error as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  /** Открытый материал целиком: нужен для ссылки «смотреть на сайте». */
+  const currentItem = current ? items.filter((i) => i.slug === current)[0] : undefined;
+
   return (
     <div className="grid gap-6 lg:grid-cols-[240px_1fr]">
       <aside>
@@ -414,62 +483,67 @@ export default function SimpleEditor({
         <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-neutral-500">
           {sectionTitle} ({items.length})
         </h2>
-        {isFaq ? (
-          <div className="space-y-4">
-            {FAQ_HUBS.map((hub) => {
-              const group = items.filter((i) => hubOf(i.markdown) === hub.value);
-              if (!group.length) return null;
-              return (
-                <div key={hub.value}>
-                  <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-neutral-500">
-                    {hub.label} ({group.length})
-                  </p>
-                  <ul className="space-y-1">
-                    {group.map((item) => (
-                      <li key={item.slug}>
-                        <button
-                          onClick={() => open(item.slug)}
-                          className={
-                            "w-full rounded-lg px-3 py-2 text-left text-sm " +
-                            (current === item.slug
-                              ? "bg-neutral-900 text-white"
-                              : "hover:bg-neutral-100")
-                          }
-                        >
-                          <span className="block truncate font-medium">
-                            {item.title || item.slug}
-                          </span>
-                          <span className="block truncate text-xs opacity-70">
-                            {groupOf(item.markdown) || "Без подраздела"}
-                          </span>
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              );
-            })}
-          </div>
-        ) : (
-          <ul className="space-y-1">
-            {items.map((item) => (
-              <li key={item.slug}>
-                <button
-                  onClick={() => open(item.slug)}
-                  className={
-                    "w-full rounded-lg px-3 py-2 text-left text-sm " +
-                    (current === item.slug
-                      ? "bg-neutral-900 text-white"
-                      : "hover:bg-neutral-100")
-                  }
-                >
-                  <span className="block truncate font-medium">{item.title || item.slug}</span>
-                  <span className="block truncate text-xs opacity-70">{item.slug}</span>
-                </button>
-              </li>
-            ))}
-          </ul>
+
+        {/* Фильтр по страницам. Число рядом с названием — сколько
+            материала лежит на этой странице: так сразу видно, что,
+            например, вопросов по продавцам больше остальных. */}
+        <div className="mb-3 flex flex-wrap gap-1.5">
+          <button
+            type="button"
+            onClick={() => setPageFilter("all")}
+            className={pageFilter === "all" ? chipActive : chip}
+          >
+            Все ({items.length})
+          </button>
+          {groups.map((group) => (
+            <button
+              key={group.key}
+              type="button"
+              onClick={() => setPageFilter(group.key)}
+              className={pageFilter === group.key ? chipActive : chip}
+            >
+              {group.label} ({group.items.length})
+            </button>
+          ))}
+        </div>
+
+        {visibleGroups.length === 0 && (
+          <p className="text-sm text-neutral-500">Здесь пока пусто.</p>
         )}
+
+        {visibleGroups.map((group) => (
+          <div key={group.key} className="mb-4">
+            {/* Заголовок группы нужен только когда видно несколько
+                страниц: при фильтре он лишь повторял бы имя чипа. */}
+            {visibleGroups.length > 1 && (
+              <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-neutral-500">
+                {group.label}
+              </p>
+            )}
+            <ul className="space-y-1">
+              {group.items.map((item) => (
+                <li key={item.slug}>
+                  <button
+                    onClick={() => open(item.slug)}
+                    className={
+                      "w-full rounded-lg px-3 py-2 text-left text-sm " +
+                      (current === item.slug
+                        ? "bg-neutral-900 text-white"
+                        : "hover:bg-neutral-100")
+                    }
+                  >
+                    <span className="block truncate font-medium">
+                      {item.title || item.slug}
+                    </span>
+                    <span className="block truncate text-xs opacity-70">
+                      {itemSubtitle(kind, item.markdown)}
+                    </span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
       </aside>
 
       <section className="space-y-4">
@@ -616,6 +690,22 @@ export default function SimpleEditor({
                 className={field + " font-mono"}
                 value={caseForm.tags}
                 onChange={(e) => setCase("tags", e.target.value)}
+              />
+            </div>
+
+            {/* Фотографии кейса. Раньше поле в форме было, а в
+                markdown писалось пустое `images: []` — картинки
+                нельзя было ни добавить, ни поменять местами. */}
+            <div className="rounded-xl border border-neutral-200 p-4">
+              <ImageListField
+                token={token}
+                label="Фотографии кейса"
+                value={caseForm.images
+                  .split("\n")
+                  .map((s) => s.trim())
+                  .filter(Boolean)}
+                onChange={(images) => setCase("images", images.join("\n"))}
+                hint="Первое фото становится обложкой карточки на сайте. Остальные идут галереей в подробном разборе кейса."
               />
             </div>
 
@@ -853,6 +943,25 @@ export default function SimpleEditor({
           >
             Опубликовать на сайте
           </button>
+          {current && (
+            <a
+              href={siteUrl(kind, current, currentItem?.markdown || "")}
+              target="_blank"
+              rel="noreferrer"
+              className="text-sm text-neutral-600 underline"
+            >
+              Смотреть на сайте
+            </a>
+          )}
+          {current && (
+            <button
+              onClick={remove}
+              disabled={busy}
+              className="rounded-lg px-5 py-2 font-medium text-red-600 disabled:opacity-50"
+            >
+              Удалить
+            </button>
+          )}
           <span className="text-xs text-neutral-500">Пересборка 1–2 минуты</span>
         </div>
       </section>

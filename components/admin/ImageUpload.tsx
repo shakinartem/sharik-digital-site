@@ -17,13 +17,34 @@ export function ImageUpload({
   label,
   value,
   onChange,
+  onUploaded,
+  onBeforeUpload,
   hint,
+  id,
 }: {
   token: string;
   label: string;
   value: string;
   onChange: (url: string) => void;
+  /**
+   * Вызывается после успешной загрузки, кроме onChange.
+   *
+   * Нужен там, где фото становится частью текста, а не значением
+   * поля: в статье картинка вставляется в тело документа строкой
+   * ![описание](путь), и подставить её в input нельзя.
+   */
+  onUploaded?: (url: string) => void;
+  /**
+   * Вызывается в момент выбора файла, до отправки.
+   *
+   * Пока файл загружается, пользователь может переключиться на другое
+   * поле. Если запоминать позицию курсора после загрузки, картинка
+   * вставится не туда, куда её ждали, поэтому позиция снимается здесь.
+   */
+  onBeforeUpload?: () => void;
   hint?: string;
+  /** Явный id: подпись привязывается к полю через htmlFor. */
+  id?: string;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
@@ -31,6 +52,9 @@ export function ImageUpload({
 
   const field = "w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm";
   const labelClass = "mb-1 block text-sm font-medium text-neutral-700";
+  // Без явного id подпись указывала бы на отсутствующий элемент, и
+  // клик по ней не открывал бы выбор файла.
+  const fieldId = id || "upload-" + label;
 
   async function upload(file: File) {
     setBusy(true);
@@ -46,6 +70,7 @@ export function ImageUpload({
       const data = (await response.json()) as { error?: string; url?: string };
       if (!response.ok || !data.url) throw new Error(data.error || "Не удалось загрузить");
       onChange(data.url);
+      onUploaded?.(data.url);
     } catch (uploadError) {
       setError((uploadError as Error).message);
     } finally {
@@ -55,7 +80,7 @@ export function ImageUpload({
 
   return (
     <div>
-      <label className={labelClass} htmlFor={"upload-" + label}>
+      <label className={labelClass} htmlFor={fieldId}>
         {label}
       </label>
 
@@ -74,13 +99,16 @@ export function ImageUpload({
         <div className="min-w-0 flex-1 space-y-2">
           <input
             ref={inputRef}
-            id={"upload-" + label}
+            id={fieldId}
             type="file"
             accept="image/jpeg,image/png,image/webp,image/gif,image/svg+xml"
             className="block w-full text-xs text-neutral-600 file:mr-3 file:rounded-lg file:border-0 file:bg-neutral-900 file:px-3 file:py-2 file:text-xs file:font-medium file:text-white"
             onChange={(e) => {
               const file = e.target.files?.[0];
-              if (file) upload(file);
+              if (file) {
+                onBeforeUpload?.();
+                upload(file);
+              }
             }}
             disabled={busy}
           />

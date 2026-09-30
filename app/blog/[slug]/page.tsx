@@ -37,6 +37,16 @@ export function generateMetadata({ params }: { params: { slug: string } }) {
       type: "article",
       publishedTime: article.date,
       modifiedTime: article.updatedAt ?? article.date,
+      // Картинка нужна для расширенного сниппета: без неё Яндекс и
+      // мессенджеры показывают пустое превью. Берём общий og-default,
+      // у статьи нет собственной обложки в статическом экспорте.
+      images: ["/og-default.png"],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: article.seoTitle,
+      description: article.description,
+      images: ["/og-default.png"],
     },
   };
 }

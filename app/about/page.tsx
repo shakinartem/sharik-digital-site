@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import { SiteHeader } from "@/components/SiteHeader";
@@ -7,10 +8,19 @@ import { ChecklistCta } from "@/components/ChecklistCta";
 import { agencyApproach, agencyStats } from "@/data/agency";
 import { site } from "@/data/site";
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "О нас",
   description:
     "ШАРиК digital — digital-компания с двумя специализированными направлениями: продавцам маркетплейсов и клиникам. Основатель — Шакин Артём.",
+  // Свой canonical обязателен: без него страница наследует адрес главной
+  // и Яндекс считает её дублем.
+  alternates: { canonical: "/about" },
+  openGraph: {
+    title: "О нас — ШАРиК digital",
+    description:
+      "Два специализированных направления: продавцам маркетплейсов и клиникам. Основатель — Шакин Артём.",
+    url: "/about",
+  },
 };
 
 export default function AboutPage() {

@@ -1,3 +1,7 @@
+# -*- robots.txt для sharik-digital.ru -*-
+# Главный адрес и карта сайта — с https. Дублировать адрес по http
+# нельзя: Яндекс считает их разными версиями и теряет сигналы.
+
 User-agent: *
 Allow: /
 
@@ -6,5 +10,15 @@ Allow: /
 # правила robots не читает.
 Disallow: /admin
 Disallow: /sellers/request
+
+# Служебные адреса платформы: формы, загрузка файлов, статистика.
+# В индексе им нечего показывать, а краулинг только тратит лимит.
+Disallow: /api/
+
+# Отсекаем utm-метки и технические параметры: без Clean-param робот
+# обошёл бы каждую метку рекламы как отдельную копию страницы.
+Clean-param: utm_source&utm_medium&utm_campaign&utm_term&utm_content&yclid&gclid&fbclid
+
+Host: https://sharik-digital.ru
 
 Sitemap: https://sharik-digital.ru/sitemap.xml

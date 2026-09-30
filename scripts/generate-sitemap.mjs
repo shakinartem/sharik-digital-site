@@ -16,6 +16,15 @@ const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const SITE = "https://sharik-digital.ru";
 const TODAY = new Date().toISOString().slice(0, 10);
 
+/**
+ * Главная в карте пишется без завершающего слеша — ровно так, как её
+ * отдаёт <link rel="canonical"> в разметке. Расхождение в один символ
+ * не выглядит страшным, но Яндекс сверяет адреса буквально: при разнице
+ * он считает, что в карте указана другая страница, и помечает её как
+ * «исключена». Каноническая форма одна: https://sharik-digital.ru
+ */
+const HOMEPAGE = SITE;
+
 /** Статические страницы: путь, приоритет, частота обновления. */
 const STATIC = [
   ["/", "1.0", "weekly"],
@@ -38,7 +47,7 @@ const articles = files.map((f) =>
 
 const urls = STATIC.map(
   ([path, priority, freq]) =>
-    `  <url>\n    <loc>${SITE}${path}</loc>\n    <lastmod>${TODAY}</lastmod>\n    <changefreq>${freq}</changefreq>\n    <priority>${priority}</priority>\n  </url>`,
+    `  <url>\n    <loc>${path === "/" ? HOMEPAGE : `${SITE}${path}`}</loc>\n    <lastmod>${TODAY}</lastmod>\n    <changefreq>${freq}</changefreq>\n    <priority>${priority}</priority>\n  </url>`,
 );
 
 for (const article of articles) {

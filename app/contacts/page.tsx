@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { Send, MessageCircle, Phone } from "lucide-react";
 import { SiteHeader } from "@/components/SiteHeader";
@@ -5,10 +6,19 @@ import { SiteFooter } from "@/components/SiteFooter";
 import { SectionTitle } from "@/components/ui";
 import { site } from "@/data/site";
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "Контакты",
   description:
     "Связаться с ШАРиК digital: Telegram, телефон, консультация по маркетингу для клиник и продавцов маркетплейсов.",
+  // Свой canonical обязателен: без него страница наследует адрес главной
+  // и Яндекс считает её дублем.
+  alternates: { canonical: "/contacts" },
+  openGraph: {
+    title: "Контакты — ШАРиК digital",
+    description:
+      "Telegram-бот, быстрый вопрос и телефон: свяжитесь с ШАРиК digital по маркетингу для клиник и продавцов маркетплейсов.",
+    url: "/contacts",
+  },
 };
 
 const CHANNELS = [

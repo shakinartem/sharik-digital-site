@@ -46,8 +46,29 @@ export const metadata: Metadata = {
     template: "%s — ШАРиК digital",
   },
   description:
-    "Строим digital-системы, которые превращают трафик в продажи. Два направления: собственный канал продаж для селлеров и система пациентопотока для клиник по методологии 7К.",
-  alternates: { canonical: "/" },
+    "Строим digital-системы, которые превращают трафик в продажи. Два направления: собственный канал продаж для селлеров и система пациентопотока для клиник.",
+  /**
+   * Канонический адрес главной.
+   *
+   * ВАЖНО: alternates наследуются всеми вложенными страницами, поэтому
+   * каждая страница обязана переопределить его своим. Страница без своего
+   * canonical объявит себя дублем главной и выпадет из индекса.
+   *
+   * Форма адреса: Next.js срезает завершающий слеш, и в разметку попадает
+   * https://sharik-digital.ru — ровно так же записан <loc> главной
+   * в scripts/generate-sitemap.mjs. Если поменять одно, нужно поменять
+   * и второе: Яндекс сверяет строки буквально.
+   */
+  alternates: { canonical: "https://sharik-digital.ru/" },
+  /**
+   * Подтверждение прав в Яндекс.Вебмастере. Код берётся из переменной
+   * окружения, чтобы при переподтверждении не приходилось править код:
+   * задать NEXT_PUBLIC_YANDEX_VERIFICATION в настройках сборки Cloudflare
+   * Pages. Пустое значение Next.js не выводит в разметку вовсе.
+   */
+  verification: process.env.NEXT_PUBLIC_YANDEX_VERIFICATION
+    ? { yandex: process.env.NEXT_PUBLIC_YANDEX_VERIFICATION }
+    : undefined,
   openGraph: {
     type: "website",
     locale: "ru_RU",
@@ -73,10 +94,71 @@ export const metadata: Metadata = {
   },
 };
 
+/**
+ * Разметка организации и сайта.
+ *
+ * Зачем: Яндекс показывает в расширенных сниппетах название компании,
+ * логотип и контакты. Без Organization-разметки блок «Об организации»
+ * в выдаче остаётся пустым, даже если данные есть в футере.
+ *
+ * Данные берутся из data/site.ts — тот же источник, что и у видимого
+ * футера, поэтому разметка не может разойтись с текстом на странице.
+ */
+const organizationJsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": "https://sharik-digital.ru/#organization",
+      name: site.name,
+      url: "https://sharik-digital.ru/",
+      logo: {
+        "@type": "ImageObject",
+        url: "https://sharik-digital.ru/brand/icon-512.png",
+      },
+      image: "https://sharik-digital.ru/og-default.png",
+      description:
+        "Строим digital-системы, которые превращают трафик в продажи: собственный канал продаж для селлеров и система пациентопотока для клиник.",
+      founder: {
+        "@type": "Person",
+        name: site.directorName,
+        jobTitle: site.directorRole,
+      },
+      contactPoint: [
+        {
+          "@type": "ContactPoint",
+          telephone: site.phone,
+          contactType: "sales",
+          areaServed: "RU",
+          availableLanguage: "Russian",
+        },
+      ],
+      sameAs: [
+        site.socials.telegram,
+        site.socials.vk,
+        site.socials.dzen,
+        site.botUrl,
+      ],
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://sharik-digital.ru/#website",
+      url: "https://sharik-digital.ru/",
+      name: site.name,
+      inLanguage: "ru-RU",
+      publisher: { "@id": "https://sharik-digital.ru/#organization" },
+    },
+  ],
+};
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ru" className={`${montserrat.variable} ${manrope.variable}`}>
       <body>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
+        />
         {children}
         <AnalyticsBootstrap />
         <MetricaCounter id={site.metricaId} />

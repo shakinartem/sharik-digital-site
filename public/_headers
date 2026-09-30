@@ -39,3 +39,18 @@
   X-Content-Type-Options: nosniff
   X-Frame-Options: SAMEORIGIN
   Permissions-Policy: geolocation=(), microphone=(), camera=()
+
+# Служебные страницы. Закрываем не только в robots.txt, но и заголовком:
+# правила robots читают не все краулеры, а X-Robots-Tag обязателен
+# для всех и работает даже при прямом заходе по ссылке.
+/admin
+  X-Robots-Tag: noindex, nofollow
+/sellers/request
+  X-Robots-Tag: noindex, follow
+
+# robots.txt и sitemap.xml меняются на каждой публикации статьи,
+# поэтому их нельзя отдавать из долгого кэша.
+/robots.txt
+  Cache-Control: public, max-age=0, must-revalidate
+/sitemap.xml
+  Cache-Control: public, max-age=0, must-revalidate

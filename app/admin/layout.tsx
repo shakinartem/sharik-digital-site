@@ -5,8 +5,9 @@ import type { Metadata } from "next";
  * а доступ защищён паролем в /api/admin/articles.
  */
 export const metadata: Metadata = {
-  title: "Редактор статей — ШАРиК digital",
+  title: "Редактор статей",
   robots: { index: false, follow: false },
+  alternates: { canonical: "/admin" },
 };
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {

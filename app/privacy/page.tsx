@@ -1,11 +1,15 @@
+import type { Metadata } from "next";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { site } from "@/data/site";
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "Политика конфиденциальности",
   description:
     "Как ШАРиК digital обрабатывает данные: файлы cookie, Яндекс.Метрика и вебвизор, аналитика посещений, заявки через формы и Telegram-бот. Как отозвать согласие.",
+  // Свой canonical обязателен: без него страница наследует адрес главной
+  // и Яндекс считает её дублем.
+  alternates: { canonical: "/privacy" },
 };
 
 /** Таблица файлов и хранилищ: без неё согласие на cookie не является информированным. */

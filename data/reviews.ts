@@ -29,6 +29,11 @@ export type ReviewItem = {
    * пустой кружок смотрелся бы как недоделка.
    */
   photo?: string;
+  /**
+   * Кейс, к которому относится отзыв. Связь двусторонняя: у кейса
+   * в этом случае проставлен reviewId с тем же значением.
+   */
+  caseId?: string;
 };
 
 export const reviews: ReviewItem[] = generatedReviews;
@@ -37,4 +42,14 @@ export const reviews: ReviewItem[] = generatedReviews;
 export function getReviews(niche?: string): ReviewItem[] {
   if (!niche) return reviews;
   return reviews.filter((r) => r.niche === niche);
+}
+
+/** Отзыв по id. */
+export function getReview(id: string): ReviewItem | undefined {
+  return reviews.find((r) => r.id === id);
+}
+
+/** Отзыв конкретного кейса, если он заведён. */
+export function getReviewForCase(caseId: string): ReviewItem | undefined {
+  return reviews.find((r) => r.caseId === caseId);
 }

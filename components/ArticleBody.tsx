@@ -1,3 +1,6 @@
+import { ReviewAvatar } from "@/components/ReviewCard";
+import { getReview } from "@/data/reviews";
+
 import { InlineText } from "@/components/InlineText";
 import { type Block, slugifyHeading } from "@/data/articles";
 import { Info, AlertTriangle, Lightbulb, ExternalLink } from "lucide-react";
@@ -161,6 +164,32 @@ function renderBlock(block: Block, key: number) {
     }
     case "table":
       return renderTable(block);
+    case "review": {
+      // Отзыв мог быть удалён из контента, а в статье осталась ссылка
+      // на него. Молча пропускаем блок: пустой рамки с заголовком
+      // «Отзыв клиента» читалась бы как ошибка вёрстки.
+      const review = getReview(block.reviewId);
+      if (!review) return null;
+      return (
+        <figure
+          key={key}
+          className="my-8 rounded-[1.75rem] border border-primary/20 bg-primary-soft p-6"
+        >
+          <blockquote className="text-base leading-7 text-foreground">
+            «{review.text}»
+          </blockquote>
+          <figcaption className="mt-5 flex items-center gap-3 border-t border-primary/10 pt-4">
+            <ReviewAvatar review={review} />
+            <div className="min-w-0">
+              <p className="text-sm font-bold text-foreground">{review.author}</p>
+              {review.role && (
+                <p className="mt-0.5 text-xs text-muted-foreground">{review.role}</p>
+              )}
+            </div>
+          </figcaption>
+        </figure>
+      );
+    }
     default:
       return null;
   }

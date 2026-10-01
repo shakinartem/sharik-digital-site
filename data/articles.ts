@@ -29,6 +29,13 @@ export type Block =
   | { t: "table"; head: string[]; rows: string[][] }
   /** Картинка. alt обязателен: без него изображение недоступно. */
   | { t: "image"; src: string; alt: string; caption?: string }
+  /**
+   * Отзыв клиента внутри статьи. В markdown пишется строкой
+   * :::review id=dental-pro — цитата становится частью текста и встаёт
+   * именно туда, где автор хотел её показать.
+   */
+  | { t: "review"; reviewId: string }
+
 
 export type Article = {
   slug: string;
@@ -36,13 +43,29 @@ export type Article = {
   description: string;
   /** Для заголовка <title>: конкретный интент, без бренда — он добавится шаблоном. */
   seoTitle: string;
-  category: "yandex-kit" | "patients" | "economy";
+  category: "yandex-kit" | "patients" | "economy" | "cases";
   tags: string[];
   date: string;
   updatedAt?: string;
   /** Ссылка на первоисточник, если материал опирается на документацию. */
   sourceUrl?: string;
   sourceLabel?: string;
+  /**
+   * Обложка статьи. Используется как og:image — без неё все материалы
+   * в ленте выглядят одинаково. Заводится скриптом
+   * scripts/gen-article-covers.mjs вместе с появлением статьи.
+   */
+  image?: string;
+  /** Подпись к обложке. Обязательна вместе с image: без alt картинка недоступна. */
+  imageAlt?: string;
+  /**
+   * Кейс, по которому написана статья. Задаётся у статей категории
+   * cases: на странице кейса они собираются автоматически, а в самой
+   * статье показывается плашка со ссылкой на исходный кейс.
+   */
+  caseId?: string;
+  /** Отзыв, встроенный в текст статьи. */
+  reviewId?: string;
   /** Коммерческий CTA под статьёй. Разный для разных интентов. */
   cta: { title: string; text: string; href: string; label: string };
   related: string[];
@@ -53,6 +76,7 @@ export const CATEGORY_LABELS: Record<Article["category"], string> = {
   "yandex-kit": "Яндекс KIT",
   patients: "Пациентопоток",
   economy: "Экономика канала",
+  cases: "Кейсы",
 };
 
 export function getArticle(slug: string): Article | undefined {

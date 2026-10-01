@@ -7,6 +7,7 @@ import { CookieSettingsButton } from "./CookieConsent";
 
 const PAGES = [
   { label: "Кейсы", href: "/cases" },
+  { label: "Отзывы", href: "/reviews" },
   { label: "Запуск магазина на Яндекс KIT", href: "/yandex-kit" },
   { label: "О компании", href: "/about" },
   { label: "Статьи", href: "/blog" },

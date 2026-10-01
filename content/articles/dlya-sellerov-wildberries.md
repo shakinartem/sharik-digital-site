@@ -2,6 +2,8 @@
 slug: dlya-sellerov-wildberries
 title: "Яндекс KIT для продавцов Wildberries и Ozon: когда это нужно"
 description: Разбираем по шагам, что даёт собственный магазин продавцу маркетплейса, в каких случаях он окупается, а когда лучше остаться на площадке и просто докупать трафик.
+image: /blog/dlya-sellerov-wildberries.webp
+imageAlt: "Разбираем по шагам, что даёт собственный магазин продавцу маркетплейса, в каких случаях он окупается, а ког…"
 seoTitle: "Яндекс KIT для продавцов Wildberries и Ozon: когда нужен свой магазин"
 category: yandex-kit
 tags: 

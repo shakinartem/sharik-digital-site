@@ -26,6 +26,8 @@ export const site = {
     consultation: "https://t.me/sharik_digital_bot?start=consultation",
     question: "https://t.me/sharik_digital_bot?start=question",
     cases: "https://t.me/sharik_digital_bot?start=cases",
+    /** Отзывы клиентов: та же логика, что у кейсов. */
+    reviews: "https://t.me/sharik_digital_bot?start=reviews",
     caseLink: (caseId: string) => `https://t.me/sharik_digital_bot?start=case_${caseId}`,
 
     /**

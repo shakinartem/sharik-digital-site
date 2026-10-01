@@ -2,6 +2,8 @@
 slug: kak-podklyuchit-oplatu-v-yandex-kit
 title: Как подключить оплату в Яндекс KIT: Яндекс Пэй, CloudPayments и оплата при получении
 description: Разбираем оплату в Яндекс KIT: какие способы оплаты видит покупатель, чем Яндекс Пэй отличается от CloudPayments, как работает оплата при получении и когда нужна минимальная сумма заказа.
+image: /blog/kak-podklyuchit-oplatu-v-yandex-kit.webp
+imageAlt: "Разбираем оплату в Яндекс KIT: какие способы оплаты видит покупатель, чем Яндекс Пэй отличается от CloudPay…"
 seoTitle: Как подключить оплату в Яндекс KIT: способы и нюансы
 category: yandex-kit
 tags:

@@ -10,8 +10,9 @@ import {
   buildContactSavedText,
   buildAuditFinishedText,
 } from "./texts";
-import { mainMenuKeyboard, checklistKeyboard, diagnosticResultKeyboard, contactRequestKeyboard, diagnosticKeyboard } from "./keyboards";
+import { mainMenuKeyboard, checklistKeyboard, diagnosticResultKeyboard, contactRequestKeyboard, diagnosticKeyboard, reviewsKeyboard, reviewNicheKeyboard, reviewKeyboard } from "./keyboards";
 import { buildCaseText, CASE_LIBRARY, KIT_CASE_LIBRARY } from "./cases";
+import { REVIEWS, buildReviewText, buildReviewsMenuText, reviewsForNiche, reviewNiches } from "./reviews";
 import { CLINIC, KIT, getTrack, questionsFor, resolveAction, resolveTrack, extractCaseId, isTrackKey, type TrackKey } from "./tracks";
 
 type Env = {
@@ -119,6 +120,10 @@ async function handleWebhook(request: Request, env: Env): Promise<Response> {
     await handleCases(env, parsed, track);
     return Response.json({ ok: true });
   }
+  if (parsed.command === "/reviews") {
+    await handleReviews(env, parsed, track);
+    return Response.json({ ok: true });
+  }
   if (parsed.command === "/question") {
     await handleQuestion(env, parsed, state, track);
     return Response.json({ ok: true });
@@ -170,6 +175,22 @@ async function handleStart(env: Env, parsed: ReturnType<typeof parseUpdate>, sta
   if (action === "cases") {
     await handleCases(env, parsed, track);
     return;
+  }
+  if (action === "reviews") {
+    await handleReviews(env, parsed, track);
+    return;
+  }
+  if (action === "review_niches") {
+    await handleReviewNiches(env, parsed, track);
+    return;
+  }
+  if (action === "review" && startParam) {
+    // Deep-ссылка вида review_dental-pro открывает конкретный отзыв.
+    const id = startParam.replace(/^reviews?_/, "").trim().toLowerCase();
+    if (id && id in REVIEWS) {
+      await handleReview(env, parsed, track, id);
+      return;
+    }
   }
   if (action === "case") {
     const caseId = extractCaseId(startParam);
@@ -281,6 +302,57 @@ async function handleCases(env: Env, parsed: ReturnType<typeof parseUpdate>, tra
   await sendMessage(env.BOT_TOKEN, chatId, buildCasesMenuText(track), { inline_keyboard: buttons });
 }
 
+/**
+ * Список отзывов. Ниша приходит из callback_data; пустая строка —
+ * показать все. Клавиатура строится из тех отзывов, которые реально
+ * есть: пустой фильтр не показываем, иначе человек попадёт в
+ * «ничего не найдено» по собственному клику.
+ */
+async function handleReviews(
+  env: Env,
+  parsed: ReturnType<typeof parseUpdate>,
+  track: TrackKey,
+  niche?: string,
+) {
+  const chatId = parsed.chatId as number;
+  const entries = reviewsForNiche(niche);
+  await sendMessage(env.BOT_TOKEN, chatId, buildReviewsMenuText(niche), reviewsKeyboard(entries, track));
+}
+
+/** Кнопки ниш — только те, по которым отзывы есть. */
+async function handleReviewNiches(env: Env, parsed: ReturnType<typeof parseUpdate>, track: TrackKey) {
+  const chatId = parsed.chatId as number;
+  const niches = reviewNiches();
+  await sendMessage(
+    env.BOT_TOKEN,
+    chatId,
+    "Выберите нишу — покажу только те отзывы, которые к ней относятся.",
+    reviewNicheKeyboard(niches, track),
+  );
+}
+
+/**
+ * Один отзыв целиком.
+ *
+ * Текст приходит несколькими сообщениями: длинную цитату в одном
+ * сообщении Telegram обрезает по превью, и человек её не прочитает.
+ * Клавиатура вешается только на последнее сообщение, иначе кнопки
+ * прикреплялись бы к первой части.
+ */
+async function handleReview(
+  env: Env,
+  parsed: ReturnType<typeof parseUpdate>,
+  track: TrackKey,
+  reviewId: string,
+) {
+  const chatId = parsed.chatId as number;
+  const parts = buildReviewText(reviewId);
+  for (const [i, part] of parts.entries()) {
+    const last = i === parts.length - 1;
+    await sendMessage(env.BOT_TOKEN, chatId, part, last ? reviewKeyboard(track) : undefined);
+  }
+}
+
 async function handleQuestion(env: Env, parsed: ReturnType<typeof parseUpdate>, state: UserState | null, track: TrackKey) {
   const chatId = parsed.chatId as number;
   await setUserState(env.DB, parsed.userId, { kind: "question", question_kind: "free_text", track });
@@ -292,10 +364,27 @@ async function handleQuestion(env: Env, parsed: ReturnType<typeof parseUpdate>, 
  * Хвост с треком необязателен: кнопки, отправленные до перехода на два
  * направления, приходят без него и остаются клиническими.
  */
-function parseCallback(data: string): { action: string; track: TrackKey; caseId?: string } {
+function parseCallback(data: string): { action: string; track: TrackKey; caseId?: string; niche?: string } {
   const parts = data.split(":");
   if (parts[0] === "case") {
     return { action: "case", caseId: parts[1], track: isTrackKey(parts[2]) ? parts[2] : CLINIC };
+  }
+  // Конкретный отзыв: rev:<id>:<track>.
+  if (parts[0] === "rev") {
+    return { action: "review", caseId: parts[1], track: isTrackKey(parts[2]) ? parts[2] : CLINIC };
+  }
+  // Фильтр по нише: revniche:<ниша>:<track>. Ниша приходит
+  // url-encoded — decode делаем на разборе, иначе «Стоматология»
+  // превратится в «%D0%A1%D1%82%D0%BE...» и фильтр ничего не найдёт.
+  if (parts[0] === "revniche") {
+    let niche = parts.slice(1, -1).join(":") || "";
+    try {
+      niche = decodeURIComponent(niche);
+    } catch {
+      // Битая кодировка не должна ронять бота: покажем список всех.
+      niche = "";
+    }
+    return { action: "review_niche", niche, track: isTrackKey(parts[parts.length - 1]) ? parts[parts.length - 1] : CLINIC };
   }
   if (parts[0] === "diag") {
     return { action: "diag", track: isTrackKey(parts[3]) ? parts[3] : CLINIC };
@@ -324,6 +413,12 @@ async function handleCallbackOrContact(env: Env, parsed: ReturnType<typeof parse
       return handleAudit(env, parsed, null, cb.track);
     }
     if (cb.action === "cases") return handleCases(env, parsed, cb.track);
+    if (cb.action === "review") {
+      // Неизвестный id не должен показывать пустоту: уводим в список.
+      if (cb.caseId && cb.caseId in REVIEWS) return handleReview(env, parsed, cb.track, cb.caseId);
+      return handleReviews(env, parsed, cb.track);
+    }
+    if (cb.action === "review_niche") return handleReviews(env, parsed, cb.track, cb.niche);
     if (cb.action === "question") return handleQuestion(env, parsed, state, cb.track);
     if (cb.action === "contact_request") {
       // Трек берём из кнопки, а не из предыдущего состояния: состояние

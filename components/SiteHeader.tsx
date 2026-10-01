@@ -22,6 +22,7 @@ type NavItem = { label: string; href: string };
  */
 const NAV: NavItem[] = [
   { label: "Кейсы", href: "/cases" },
+  { label: "Отзывы", href: "/reviews" },
   { label: "Полезное", href: "/blog" },
   { label: "О компании", href: "/about" },
   { label: "Контакты", href: "/contacts" },

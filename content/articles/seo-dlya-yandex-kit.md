@@ -2,6 +2,8 @@
 slug: seo-dlya-yandex-kit
 title: "SEO для магазина на Яндекс KIT: какие настройки доступны"
 description: "Все SEO-настройки Яндекс KIT по разделам справки: описания, редиректы, robots.txt, ключевые слова, sitemap и разметка. Что настроить до запуска, а что — после."
+image: /blog/seo-dlya-yandex-kit.webp
+imageAlt: "Все SEO-настройки Яндекс KIT по разделам справки: описания, редиректы, robots.txt, ключевые слова, sitemap…"
 seoTitle: "SEO для магазина на Яндекс KIT: настройки, robots.txt, sitemap"
 category: yandex-kit
 tags: 

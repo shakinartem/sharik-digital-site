@@ -17,7 +17,7 @@
  *   | a | b |     — таблица
  */
 
-const CATEGORIES = new Set(["yandex-kit", "patients", "economy"]);
+const CATEGORIES = new Set(["yandex-kit", "patients", "economy", "cases"]);
 
 /** Значение в YAML-совместимом виде: кавычки только когда реально нужны. */
 function yamlValue(value) {
@@ -178,6 +178,15 @@ export function parseArticle(raw, fallbackSlug = "") {
     const line = lines[i].trim();
     if (!line) continue;
 
+    // Отзыв внутри текста: :::review id=dental-pro
+    // Разбирается раньше :::note, иначе строка попала бы под общую
+    // ветку выноски и потеряла id.
+    const reviewRef = line.match(/^:::review\s+id=(\S+)$/);
+    if (reviewRef) {
+      blocks.push({ t: "review", reviewId: reviewRef[1] });
+      continue;
+    }
+
     // Выноска :::note kind=tip title="..."
     const note = line.match(/^:::(note|warn|tip)\s+title="([^"]*)"$/);
     if (note) {
@@ -220,11 +229,15 @@ export function parseArticle(raw, fallbackSlug = "") {
           .replace(/^\||\|$/g, "")
           .split("|")
           .map((c) => c.trim());
+      // Строка-разделитель markdown (| --- | --- |) — не данные.
+      // Проверяем её явно: простой i++ пропускал следующую строку,
+      // а разделитель тут же попадал в первую строку таблицы.
+      const isDivider = (row) => /^\|?\s*:?-{2,}:?\s*(\|\s*:?-{2,}:?\s*)*\|?$/.test(row.trim());
       const head = cells(line);
-      i++; // строка-разделитель
+      i++;
       const rows = [];
       while (i < lines.length && lines[i].trim().startsWith("|")) {
-        rows.push(cells(lines[i].trim()));
+        if (!isDivider(lines[i])) rows.push(cells(lines[i].trim()));
         i++;
       }
       blocks.push({ t: "table", head, rows });
@@ -258,6 +271,8 @@ export function parseArticle(raw, fallbackSlug = "") {
     // Абзац: склеиваем мягкие переносы до пустой строки или нового блока
     // Границы блоков. Картинка (![...) обязательно в списке: иначе
   // предыдущий абзац склеился бы с ней в один абзац из двух строк.
+  // :::review — тоже: без него строка :::review id=... приклеилась бы
+  // к абзацу над ней и разметка потерялась бы.
   const boundary = /^(#{2,3}\s|- |\d+\.\s|\||:::|!\[[^\]]*\]\([^)\s]+\)$)/;
     const paragraph = [line];
     while (
@@ -282,6 +297,14 @@ export function parseArticle(raw, fallbackSlug = "") {
     ...(meta.updatedAt ? { updatedAt: meta.updatedAt } : {}),
     ...(meta.sourceUrl ? { sourceUrl: meta.sourceUrl } : {}),
     ...(meta.sourceLabel ? { sourceLabel: meta.sourceLabel } : {}),
+    // Обложка статьи: og:image и подпись к ней. alt обязателен —
+    // без него изображение недоступно для скринридеров и поиска.
+    ...(meta.image ? { image: meta.image } : {}),
+    ...(meta.imageAlt ? { imageAlt: meta.imageAlt } : {}),
+    // Статья по кейсу: на какой кейс опирается и какой отзыв в неё
+    // встроен. Оба поля опциональны — обычная статья их не несёт.
+    ...(meta.caseId ? { caseId: meta.caseId } : {}),
+    ...(meta.reviewId ? { reviewId: meta.reviewId } : {}),
     cta: meta.cta || { title: "", text: "", href: "/", label: "" },
     related: meta.related || [],
     blocks,
@@ -318,6 +341,7 @@ export function serializeCase(item) {
   lines.push(`images: ${toInlineList(item.images)}`);
   lines.push(`tags: ${toInlineList(item.tags)}`);
   if (item.contourClosed) lines.push(`contourClosed: ${yamlValue(item.contourClosed)}`);
+  if (item.reviewId) lines.push(`reviewId: ${yamlValue(item.reviewId)}`);
   lines.push("---", "");
   return lines.join("\n");
 }
@@ -339,6 +363,7 @@ export function parseCase(raw, fallbackId = "") {
     images: meta.images || [],
     tags: meta.tags || [],
     ...(meta.contourClosed ? { contourClosed: meta.contourClosed } : {}),
+    ...(meta.reviewId ? { reviewId: meta.reviewId } : {}),
     direction: CASE_DIRECTIONS.has(meta.direction) ? meta.direction : "clinic",
   };
 }
@@ -355,6 +380,7 @@ export function serializeReview(item) {
   ];
   if (item.niche) lines.push(`niche: ${yamlValue(item.niche)}`);
   if (item.photo) lines.push(`photo: ${yamlValue(item.photo)}`);
+  if (item.caseId) lines.push(`caseId: ${yamlValue(item.caseId)}`);
   lines.push("---", "");
   return lines.join("\n");
 }
@@ -370,6 +396,7 @@ export function parseReview(raw, fallbackId = "") {
     result: meta.result || "",
     ...(meta.niche ? { niche: meta.niche } : {}),
     ...(meta.photo ? { photo: meta.photo } : {}),
+    ...(meta.caseId ? { caseId: meta.caseId } : {}),
   };
 }
 

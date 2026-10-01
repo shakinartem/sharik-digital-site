@@ -32,6 +32,7 @@ const STATIC = [
   ["/clinics", "0.9", "weekly"],
   ["/yandex-kit", "0.9", "weekly"],
   ["/cases", "0.8", "weekly"],
+  ["/reviews", "0.8", "weekly"],
   ["/blog", "0.8", "weekly"],
   ["/blog/yandex-kit", "0.8", "monthly"],
   ["/about", "0.5", "monthly"],

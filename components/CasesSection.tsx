@@ -3,9 +3,11 @@
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { cases, type CaseItem } from "@/data/cases";
+import { cases, getCaseArticles, type CaseItem } from "@/data/cases";
+import { getReview } from "@/data/reviews";
 import { site } from "@/data/site";
 import { SectionTitle, ButtonLink } from "./ui";
+import { ReviewAvatar } from "./ReviewCard";
 import { ArrowUpRight, ArrowRight } from "lucide-react";
 
 /**
@@ -193,6 +195,12 @@ export function CasesSection({
 
 function CaseModal({ item, onClose }: { item: CaseItem; onClose: () => void }) {
   const closeButtonRef = useRef<HTMLButtonElement>(null);
+  // Отзыв по этому кейсу. Связь хранится в reviewId, а не угадывается
+  // по совпадению id — иначе переименование файла тихо сломало бы блок.
+  const review = item.reviewId ? getReview(item.reviewId) : undefined;
+  // Статьи, написанные по этому кейсу: дают читателю глубину, если
+  // захочет узнать, как именно делали.
+  const caseArticles = getCaseArticles(item.id);
 
   useEffect(() => {
     closeButtonRef.current?.focus();
@@ -271,6 +279,44 @@ function CaseModal({ item, onClose }: { item: CaseItem; onClose: () => void }) {
                 <h4 className="font-black text-foreground">Вывод</h4>
                 <p className="mt-3 leading-7 text-muted-foreground">{item.conclusion}</p>
               </div>
+
+              {/* Отзыв клиента по этому кейсу. Показываем, только если
+                  он заведён (reviewId), иначе блок был бы пустой рамкой. */}
+              {review && (
+                <div className="rounded-2xl bg-primary-soft p-5">
+                  <h4 className="font-black text-foreground">Отзыв клиента</h4>
+                  <p className="mt-3 text-sm leading-6 text-foreground">«{review.text}»</p>
+                  <div className="mt-4 flex items-center gap-3 border-t border-primary/10 pt-4">
+                    <ReviewAvatar review={review} />
+                    <div className="min-w-0">
+                      <p className="text-sm font-bold text-foreground">{review.author}</p>
+                      {review.role && (
+                        <p className="mt-0.5 text-xs text-muted-foreground">{review.role}</p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {caseArticles.length > 0 && (
+                <div>
+                  <h4 className="font-black text-foreground">Разбор проекта</h4>
+                  <ul className="mt-3 space-y-2">
+                    {caseArticles.map((a) => (
+                      <li key={a.slug}>
+                        <Link
+                          href={`/blog/${a.slug}`}
+                          className="flex items-center justify-between gap-3 rounded-2xl border border-border bg-white p-4 text-sm font-bold text-foreground transition hover:border-primary/40"
+                        >
+                          {a.title}
+                          <ArrowUpRight className="h-4 w-4 shrink-0 text-primary" />
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
               <div>
                 <ButtonLink href={site.links.caseLink(item.id)}>Хочу похожий результат</ButtonLink>
               </div>

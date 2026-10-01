@@ -41,6 +41,7 @@ export const generatedCases: CaseItem[] = [
       "Автоматизация"
     ],
     "contourClosed": "Контроль",
+    "reviewId": "arximed-security",
     "direction": "other"
   },
   {
@@ -76,6 +77,7 @@ export const generatedCases: CaseItem[] = [
       "Отзывы"
     ],
     "contourClosed": "Контакт + Доверие",
+    "reviewId": "biomed",
     "direction": "clinic"
   },
   {
@@ -111,6 +113,7 @@ export const generatedCases: CaseItem[] = [
       "Конверсия"
     ],
     "contourClosed": "Доверие + Выбор",
+    "reviewId": "dental-pro",
     "direction": "clinic"
   },
   {
@@ -145,6 +148,7 @@ export const generatedCases: CaseItem[] = [
       "Дзен"
     ],
     "contourClosed": "Контакт + Доверие",
+    "reviewId": "divina-podology",
     "direction": "clinic"
   },
   {
@@ -180,6 +184,7 @@ export const generatedCases: CaseItem[] = [
       "Лиды"
     ],
     "contourClosed": "Доверие",
+    "reviewId": "eurodent",
     "direction": "clinic"
   },
   {
@@ -215,6 +220,7 @@ export const generatedCases: CaseItem[] = [
       "Визуал"
     ],
     "contourClosed": "Доверие + Выбор + Коммуникация",
+    "reviewId": "ibradent",
     "direction": "clinic"
   },
   {
@@ -251,6 +257,7 @@ export const generatedCases: CaseItem[] = [
       "Заявки"
     ],
     "contourClosed": "Контакт",
+    "reviewId": "interdent",
     "direction": "clinic"
   },
   {
@@ -285,6 +292,7 @@ export const generatedCases: CaseItem[] = [
       "CPL"
     ],
     "contourClosed": "Доверие + Выбор",
+    "reviewId": "kerala",
     "direction": "clinic"
   },
   {
@@ -319,6 +327,7 @@ export const generatedCases: CaseItem[] = [
       "Конверсия"
     ],
     "contourClosed": "Действие",
+    "reviewId": "po-pyatam",
     "direction": "clinic"
   },
 ];

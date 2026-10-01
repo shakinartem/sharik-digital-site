@@ -141,11 +141,14 @@ const TRACKED: Record<string, TrackKey> = {
   consultation: CLINIC,
   question: CLINIC,
   cases: CLINIC,
+  // Отзывы клиентов: deep-ссылка с сайта ведёт прямо в список.
+  reviews: CLINIC,
   kit_checklist: KIT,
   kit_audit: KIT,
   kit_consultation: KIT,
   kit_question: KIT,
   kit_cases: KIT,
+  kit_reviews: KIT,
 };
 
 /** Старые ссылки с лендинга: префикс seller_ бот раньше не знал. */

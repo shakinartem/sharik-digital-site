@@ -5,8 +5,9 @@ import { SiteFooter } from "@/components/SiteFooter";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { ArticleBody, SourceNote } from "@/components/ArticleBody";
 import { ButtonLink } from "@/components/ui";
+import { getCase } from "@/data/cases";
 import { articles, getArticle, getRelated, getHeadings, getReadingTime, CATEGORY_LABELS } from "@/data/articles";
-import { ArrowRight, Clock, Calendar } from "lucide-react";
+import { ArrowRight, Briefcase, Clock, Calendar } from "lucide-react";
 
 /**
  * Один маршрут на все статьи.
@@ -26,6 +27,10 @@ export function generateStaticParams() {
 export function generateMetadata({ params }: { params: { slug: string } }) {
   const article = getArticle(params.slug);
   if (!article) return {};
+  // Своя обложка статьи вместо общего og-default: в ленте материалы
+  // должны различаться, иначе сниппеты выглядят одинаково.
+  const ogImage = article.image ?? "/og-default.png";
+  const ogAlt = article.imageAlt ?? article.title;
   return {
     title: article.seoTitle,
     description: article.description,
@@ -37,16 +42,13 @@ export function generateMetadata({ params }: { params: { slug: string } }) {
       type: "article",
       publishedTime: article.date,
       modifiedTime: article.updatedAt ?? article.date,
-      // Картинка нужна для расширенного сниппета: без неё Яндекс и
-      // мессенджеры показывают пустое превью. Берём общий og-default,
-      // у статьи нет собственной обложки в статическом экспорте.
-      images: ["/og-default.png"],
+      images: [{ url: ogImage, alt: ogAlt, width: 1200, height: 630 }],
     },
     twitter: {
       card: "summary_large_image",
       title: article.seoTitle,
       description: article.description,
-      images: ["/og-default.png"],
+      images: [{ url: ogImage, alt: ogAlt }],
     },
   };
 }
@@ -67,6 +69,9 @@ export default function ArticlePage({ params }: { params: { slug: string } }) {
   const headings = getHeadings(article);
   const readingTime = getReadingTime(article);
   const isHub = article.category === "yandex-kit";
+  // Кейс, по которому написана статья. Может отсутствовать, если статья
+  // обычная или кейс удалили из контента.
+  const caseItem = article.caseId ? getCase(article.caseId) : undefined;
 
   const articleJsonLd = {
     "@context": "https://schema.org",
@@ -79,6 +84,19 @@ export default function ArticlePage({ params }: { params: { slug: string } }) {
     publisher: { "@type": "Organization", name: "ШАРиК digital" },
     mainEntityOfPage: `https://sharik-digital.ru/blog/${article.slug}`,
     keywords: article.tags.join(", "),
+    // Обложка в разметке: поиск берёт изображение из схемы,
+    // а og:image учитывает не везде.
+    ...(article.image
+      ? {
+          image: {
+            "@type": "ImageObject",
+            url: `https://sharik-digital.ru${article.image}`,
+            width: 1200,
+            height: 630,
+            caption: article.imageAlt ?? article.title,
+          },
+        }
+      : {}),
   };
 
   return (
@@ -143,7 +161,48 @@ export default function ArticlePage({ params }: { params: { slug: string } }) {
                 ))}
               </div>
 
+              {/* Обложка материала. Та же картинка уходит в og:image,
+                  поэтому alt обязателен: без него изображение
+                  недоступно и для скринридера, и для поиска. */}
+              {article.image && (
+                <figure className="mt-8">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={article.image}
+                    alt={article.imageAlt ?? article.title}
+                    width={1200}
+                    height={630}
+                    className="w-full rounded-card border border-border"
+                  />
+                </figure>
+              )}
+
               <hr className="my-10 border-border" />
+
+              {/* Статья по кейсу: показываем, из какого проекта она
+                  выросла. Ссылка ведёт на /cases — отдельной страницы
+                  кейса пока нет, а сам кейс открывается в модалке. */}
+              {caseItem && (
+                <Link
+                  href="/cases"
+                  className="mb-8 flex flex-wrap items-center justify-between gap-3 rounded-[1.75rem] border border-border bg-muted p-5 transition hover:border-primary/40"
+                >
+                  <span className="flex items-center gap-3">
+                    <Briefcase className="h-5 w-5 shrink-0 text-primary" />
+                    <span>
+                      <span className="block text-xs font-bold uppercase tracking-wide text-muted-foreground">
+                        Материал по кейсу
+                      </span>
+                      <span className="block font-display text-base font-bold text-foreground">
+                        {caseItem.title}
+                      </span>
+                    </span>
+                  </span>
+                  <span className="text-sm font-semibold text-primary">
+                    {caseItem.mainResult}
+                  </span>
+                </Link>
+              )}
 
               <ArticleBody blocks={article.blocks} />
 

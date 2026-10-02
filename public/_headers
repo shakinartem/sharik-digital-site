@@ -1,0 +1,62 @@
+# Кэширование статики Cloudflare Pages
+/_next/static/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/fonts/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/brand/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/cases/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/reviews/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/blog/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/*.svg
+  Cache-Control: public, max-age=31536000, immutable
+
+/*.webp
+  Cache-Control: public, max-age=31536000, immutable
+
+/*.woff2
+  Cache-Control: public, max-age=31536000, immutable
+
+/*.png
+  Cache-Control: public, max-age=31536000, immutable
+
+# HTML не кэшируем на CDN, чтобы обновления сайта были мгновенными
+/
+  Cache-Control: public, max-age=0, must-revalidate
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+
+/*.html
+  Cache-Control: public, max-age=0, must-revalidate
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+
+# Безопасность
+/*
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: SAMEORIGIN
+  Permissions-Policy: geolocation=(), microphone=(), camera=()
+
+# Служебные страницы. Закрываем не только в robots.txt, но и заголовком:
+# правила robots читают не все краулеры, а X-Robots-Tag обязателен
+# для всех и работает даже при прямом заходе по ссылке.
+/admin
+  X-Robots-Tag: noindex, nofollow
+/sellers/request
+  X-Robots-Tag: noindex, follow
+
+# robots.txt и sitemap.xml меняются на каждой публикации статьи,
+# поэтому их нельзя отдавать из долгого кэша.
+/robots.txt
+  Cache-Control: public, max-age=0, must-revalidate
+/sitemap.xml
+  Cache-Control: public, max-age=0, must-revalidate

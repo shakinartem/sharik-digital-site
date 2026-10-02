@@ -1,0 +1,55 @@
+/**
+ * Отзывы клиентов.
+ *
+ * Короткие цитаты с результатом. Раньше отзывов как отдельной сущности
+ * на сайте не было — слово встречалось только в текстах про Яндекс
+ * Маркет. Теперь это редактируемый блок: файл content/reviews/*.md,
+ * а данные собирает scripts/generate-content.mjs.
+ *
+ * Правило содержания: только реальные формулировки клиентов. Если
+ * отзыва от конкретного человека нет — строку не добавляем, а оставляем
+ * пустое место, а не сочиняем.
+ */
+import { generatedReviews } from "./reviews.generated";
+
+export type ReviewItem = {
+  id: string;
+  /** Имя автора. Если клиент просил не называть — «Клиника, Салават». */
+  author: string;
+  /** Роль или город: «Главный врач, Салават». */
+  role: string;
+  /** Цитата целиком. */
+  text: string;
+  /** Короткий результат, который клиент связывает с работой. */
+  result: string;
+  niche?: string;
+  /**
+   * Аватар: путь к изображению в /public. Показывается круглым.
+   * Если фото нет, вместо картинки рисуются инициалы автора —
+   * пустой кружок смотрелся бы как недоделка.
+   */
+  photo?: string;
+  /**
+   * Кейс, к которому относится отзыв. Связь двусторонняя: у кейса
+   * в этом случае проставлен reviewId с тем же значением.
+   */
+  caseId?: string;
+};
+
+export const reviews: ReviewItem[] = generatedReviews;
+
+/** Отзывы для конкретной ниши. Пустая ниша — все отзывы. */
+export function getReviews(niche?: string): ReviewItem[] {
+  if (!niche) return reviews;
+  return reviews.filter((r) => r.niche === niche);
+}
+
+/** Отзыв по id. */
+export function getReview(id: string): ReviewItem | undefined {
+  return reviews.find((r) => r.id === id);
+}
+
+/** Отзыв конкретного кейса, если он заведён. */
+export function getReviewForCase(caseId: string): ReviewItem | undefined {
+  return reviews.find((r) => r.caseId === caseId);
+}

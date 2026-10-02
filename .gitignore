@@ -5,3 +5,28 @@ out
 .env
 .DS_Store
 .vercel
+
+# Артефакты локальной сборки и отладки
+output/
+.playwright-mcp/
+.playwright-cli/
+.wrangler/
+*.log
+
+# Кэш инкрементальной сборки TypeScript
+*.tsbuildinfo
+
+# Python-бот: окружение, кэши и артефакты сборки не попадают в git
+bot/.venv/
+__pycache__/
+.pytest_cache/
+*.egg-info/
+.pytest-cache-files-*/
+
+# База бота содержит Telegram-профили посетителей и заявки.
+# Это персональные данные, в репозитории им не место: хранится локально
+# и на сервере, а копия заводится бэкапом.
+bot/bot.db
+bot/bot.db-journal
+bot/bot.db-wal
+bot/bot.db-shm

@@ -1,242 +1,266 @@
-import { Header } from "@/components/Header";
+"use client";
+
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { ArrowRight, Plus, Minus, Store, Stethoscope } from "lucide-react";
+import { SiteHeader } from "@/components/SiteHeader";
+import { SiteFooter } from "@/components/SiteFooter";
+import { SectionTitle } from "@/components/ui";
 import { CasesSection } from "@/components/CasesSection";
-import { ContactForm } from "@/components/ContactForm";
-import { ButtonLink, NumberBadge, SectionTitle } from "@/components/ui";
-import { packages, services, site } from "@/data/site";
+import { FlowScheme } from "@/components/FlowScheme";
+import { SystemDashboard } from "@/components/SystemDashboard";
+import { ReviewsSection } from "@/components/ReviewsSection";
+import { site } from "@/data/site";
+import {
+  agencyHero,
+  agencyDirections,
+  agencyPersonas,
+  agencyStages,
+  agencyApproach,
+  agencyFlows,
+  agencyStats,
+  agencyWhy,
+  agencyFaq,
+} from "@/data/agency";
 
-const keyMetrics = [
-  ["+450 лидов", "Максимум в кейсах при правильной воронке и контенте."],
-  ["9 кейсов", "Стоматология, медицина и смежные ниши."],
-  ["1 digital-система", "Сайт, карты, соцсети, CRM и бот должны работать вместе."],
-] as const;
+function useScrollReveal() {
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) entry.target.classList.add("show");
+        });
+      },
+      { threshold: 0.08 },
+    );
+    document.querySelectorAll(".reveal").forEach((el) => observer.observe(el));
+    return () => observer.disconnect();
+  }, []);
+}
 
-const lossChain = [
-  ["Увидел клинику", "Пациент нашёл вас в картах, рекламе, соцсетях или по рекомендации."],
-  ["Начал проверять", "Он смотрит отзывы, фото, врачей, сайт, цены и общее впечатление."],
-  ["Сравнил варианты", "Если у конкурента понятнее упаковка и маршрут до записи — пациент уйдёт туда."],
-  ["Не получил ответа", "Если ответили поздно или без понятного сценария, интерес остывает."],
-] as const;
+const directionIcons = { sellers: Store, clinics: Stethoscope } as const;
 
-const faq = [
-  ["Вы работаете только со стоматологиями?", "Основной фокус — стоматологии и медицинские проекты."],
-  ["Можно начать с одной услуги?", "Да. Но лучший результат даёт связка из нескольких точек."],
-  ["Зачем нужен Telegram-бот?", "Он выдаёт чек-лист, собирает ответы и помогает довести владельца клиники до разбора."],
-] as const;
+/**
+ * Главная перестроена так, чтобы за 5 секунд читалось, кто мы, за 10 —
+ * для кого работаем, за 20 — что именно предлагаем, за 30 — куда нажать.
+ *
+ * Второй этап переработки, что изменилось:
+ *  - Hero стал двухколоночным: слева обещание, справа схема digital-системы.
+ *    Раньше это был текстовый блок с плашкой.
+ *  - Карточки направления переформулированы на языке задачи: «Я селлер —
+ *    хочу свой интернет-магазин» вместо «Селлерам — собственный канал».
+ *    Владелец бизнеса узнаёт себя, а не читает название услуги.
+ *  - Добавлена секция «Как это работает»: пять стадий с вопросом к каждой.
+ *  - Блок основателя удалён полностью. Страница стала продуктовой:
+ *    на её месте теперь система, кейсы и понятный маршрут.
+ */
+/**
+ * Разметка FAQPage для главной.
+ *
+ * Вопросы о студии висели на странице, но схемы не было: расширенные
+ * сниппеты получал только /yandex-kit. Разметка идёт из того же
+ * контента, что и сам блок вопросов, — разойтись они не могут.
+ */
+const faqJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: agencyFaq.map((item) => ({
+    "@type": "Question",
+    name: item.q,
+    acceptedAnswer: { "@type": "Answer", text: item.a },
+  })),
+};
 
 export default function Home() {
+  useScrollReveal();
+
   return (
-    <main id="top">
-      <Header />
+    <main id="top" className="overflow-x-hidden">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+      />
+      <SiteHeader />
       <Hero />
-      <ValueBand />
-      <WhyUs />
-      <CasesSection />
-      <Director />
-      <Process />
-      <Services />
-      <ServicesCta />
-      <Packages />
-      <Contact />
+      <HowWeWork />
+      <TwoSystems />
+      <CasesSection limit={4} showAllLink />
+      <ReviewsSection />
+      <WhySharik />
       <FAQ />
-      <Footer />
+      <FinalCta />
+      <SiteFooter />
     </main>
   );
 }
 
 function Hero() {
   return (
-    <section id="hero" className="relative min-h-[calc(100svh-96px)] overflow-hidden pb-12 pt-8">
-      <div className="hero-wash pointer-events-none absolute inset-0" />
-      <div className="pointer-events-none absolute bottom-10 right-8 hidden opacity-[0.07] lg:block">
-        <img src="/brand/favicon.svg" alt="" className="h-[32rem] w-[32rem]" />
-      </div>
-      <div className="container-pad relative grid min-h-[calc(100svh-180px)] gap-10 lg:grid-cols-[0.95fr_1.05fr] lg:items-center">
-        <div className="max-w-3xl">
-          <p className="mb-5 text-sm font-bold uppercase tracking-[0.24em] text-[color:var(--red)]">Маркетинг для стоматологий</p>
-          <h1 className="brand-title text-4xl font-semibold leading-[0.95] tracking-tight text-[color:var(--ink)] sm:text-6xl lg:text-7xl">
-            ШАРиК Digital строит систему, которая <span className="text-[color:var(--red)]">приводит пациентов</span>
-          </h1>
-          <p className="mt-6 max-w-xl text-lg leading-8 text-[color:var(--muted)]">
-            Сайт, карты, репутация, контент, CRM и аналитика работают как один маршрут: от первого касания до записи в клинику.
-          </p>
-          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-            <ButtonLink href="#contact">Оставить заявку на консультацию</ButtonLink>
-            <ButtonLink href="#services" variant="ghost">Посмотреть решения</ButtonLink>
-          </div>
-        </div>
-
-        <div className="relative min-h-[470px] lg:min-h-[560px]">
-          <div className="absolute left-1/2 top-10 hidden h-px w-[72%] -translate-x-1/2 border-t-2 border-dotted border-[color:var(--red)]/70 lg:block" />
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-5 lg:absolute lg:inset-x-0 lg:top-0 lg:grid-cols-5">
-            {["Увидел клинику", "Изучил услуги", "Поверил отзывам", "Оставил заявку", "Записался"].map((item) => (
-              <DiagramNode key={item} label={item} />
-            ))}
-          </div>
-
-          <div className="absolute left-1/2 top-[42%] hidden -translate-x-1/2 lg:block">
-            <img src="/brand/favicon.svg" alt="" className="h-28 w-28" />
-          </div>
-
-          <div className="mt-8 grid gap-4 sm:grid-cols-3 lg:absolute lg:bottom-4 lg:left-0 lg:right-0">
-            {keyMetrics.map(([title, text]) => (
-              <div key={title} className="border-l-2 border-dotted border-[color:var(--red)]/75 bg-white/70 px-5 py-4 backdrop-blur">
-                <div className="text-lg font-bold text-[color:var(--red)]">{title}</div>
-                <p className="mt-2 text-sm leading-6 text-[color:var(--muted)]">{text}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function DiagramNode({ label }: { label: string }) {
-  return (
-    <div className="grid justify-items-center gap-3 text-center">
-      <div className="flex h-14 w-14 items-center justify-center rounded-full border border-white bg-white text-sm font-bold text-[color:var(--red)] shadow-[var(--node-shadow)]">
-        <span className="h-3 w-3 rounded-full bg-[color:var(--red)]" />
-      </div>
-      <p className="max-w-[7.5rem] text-sm font-semibold leading-5 text-[color:var(--ink)]">{label}</p>
-    </div>
-  );
-}
-
-function ValueBand() {
-  return (
-    <section className="px-0 py-6">
-      <div className="container-pad">
-        <div className="section-divider mb-6" />
-        <div className="grid gap-4 md:grid-cols-3">
-          {[
-            "Повышаем доверие до обращения",
-            "Упрощаем путь до записи",
-            "Усиливаем видимость и аналитику",
-          ].map((item) => (
-            <div key={item} className="flex items-center gap-4 rounded-[20px] border border-white/80 bg-white/90 p-5">
-              <NumberBadge>✓</NumberBadge>
-              <p className="font-semibold text-[color:var(--ink)]">{item}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function WhyUs() {
-  return (
-    <section id="why-us" className="section-pad">
-      <div className="container-pad">
-        <SectionTitle kicker="Почему мы" title="Смотрим на путь пациента целиком" text="Не отдельная реклама, не просто сайт и не изолированные соцсети. Система должна доводить человека до заявки." />
-        <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-4">
-          {lossChain.map(([title, text], i) => (
-            <div key={title} className="rounded-[20px] border border-white/80 bg-white/90 p-6">
-              <div className="text-3xl font-black text-[color:var(--red)]">0{i + 1}</div>
-              <h3 className="mt-4 text-xl font-semibold text-[color:var(--ink)]">{title}</h3>
-              <p className="mt-3 text-sm leading-6 text-[color:var(--muted)]">{text}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function Director() {
-  return (
-    <section className="section-pad bg-white/65">
-      <div className="container-pad grid gap-8 lg:grid-cols-[0.85fr_1.15fr] lg:items-center">
-        <div className="rounded-[28px] border border-white/80 bg-white/90 p-8 text-center">
-          <div className="brand-glass mx-auto flex h-44 w-44 items-center justify-center rounded-full text-5xl font-black text-[color:var(--ink)]">
-            А
-          </div>
-          <p className="mt-5 text-sm text-[color:var(--muted)]">Фото директора здесь</p>
-        </div>
-        <div>
-          <div className="pill mb-5">Директор</div>
-          <h2 className="brand-title text-4xl font-semibold tracking-tight text-[color:var(--ink)] sm:text-5xl">{site.directorName}</h2>
-          <p className="mt-3 text-sm font-semibold uppercase tracking-[0.2em] text-[color:var(--red)]">{site.directorRole}</p>
-          <p className="mt-5 max-w-2xl text-lg leading-8 text-[color:var(--muted)]">{site.directorSummary}</p>
-          <div className="mt-7 flex flex-col gap-3 sm:flex-row">
-            <ButtonLink href="#contact">Оставить заявку на консультацию</ButtonLink>
-            <ButtonLink href={site.botUrl} variant="ghost">Написать в Telegram</ButtonLink>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function Process() {
-  const steps = ["Диагностика", "Карта роста", "Запуск", "Оптимизация"] as const;
-  return (
-    <section id="process" className="section-pad">
-      <div className="container-pad">
-        <SectionTitle kicker="Процесс" title="Четыре шага до результата" text="Сначала находим точки потерь, потом усиливаем путь пациента и закрепляем систему." />
-        <div className="grid gap-5 md:grid-cols-4">
-          {steps.map((step, i) => (
-            <div key={step} className="rounded-[20px] border border-white/80 bg-white/90 p-6">
-              <NumberBadge>{i + 1}</NumberBadge>
-              <h3 className="mt-5 text-xl font-semibold text-[color:var(--ink)]">{step}</h3>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function Services() {
-  return (
-    <section id="services" className="section-pad bg-white/65">
-      <div className="container-pad">
-        <SectionTitle kicker="Услуги" title="Что подключаем для роста" text="Только то, что помогает привести пациента к записи и не потерять его по дороге." />
-        <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-          {services.map(([title, text]) => (
-            <div key={title} className="rounded-[20px] border border-white/80 bg-white/90 p-6">
-              <h3 className="text-xl font-semibold text-[color:var(--ink)]">{title}</h3>
-              <p className="mt-3 text-sm leading-7 text-[color:var(--muted)]">{text}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function ServicesCta() {
-  return (
-    <section className="bg-white/65 pb-16">
-      <div className="container-pad">
-        <div className="section-divider mb-6" />
-        <div className="flex flex-col gap-5 rounded-[24px] border border-white/80 bg-white/90 p-6 md:flex-row md:items-center md:justify-between md:p-8">
+    <section className="relative overflow-hidden pb-16 pt-10 sm:pb-20 sm:pt-14 lg:pb-24 lg:pt-16">
+      <div
+        className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full opacity-20 blur-3xl"
+        style={{ background: "var(--primary)" }}
+        aria-hidden="true"
+      />
+      <div className="container-wide">
+        <div className="grid items-center gap-10 lg:grid-cols-[1.05fr_0.95fr] lg:gap-14">
+          {/* Без `reveal`: этот блок — LCP-элемент главной. Пока
+              IntersectionObserver не отработает после гидрации,
+              `.reveal` держит opacity: 0, и на медленном телефоне
+              заголовок появлялся на 3.9 с вместо 2.8 с. Первый экран
+              и так не нуждается в анимации появления. */}
           <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[color:var(--red)]">Следующий шаг</p>
-            <p className="mt-2 max-w-2xl text-2xl font-semibold leading-tight text-[color:var(--ink)]">
-              Разберём, какие элементы digital-системы дадут быстрый эффект именно вашей клинике.
+            <div className="inline-flex items-center gap-2 rounded-full border border-border bg-white px-4 py-2 text-xs font-bold text-foreground">
+              <span className="h-1.5 w-1.5 rounded-full bg-primary" aria-hidden="true" />
+              {agencyHero.name}
+            </div>
+            <h1
+              className="mt-6 font-display font-bold leading-[0.95] tracking-[-0.02em] text-foreground"
+              style={{ fontSize: "clamp(2rem, 5.6cqi, 4rem)" }}
+            >
+              Строим digital-системы,
+              <br />
+              которые <span className="text-primary">превращают трафик</span> в продажи
+            </h1>
+            <p className="mt-6 max-w-xl text-base leading-7 text-muted-foreground sm:text-lg">
+              Для селлеров — собственный канал продаж на базе Яндекс KIT.
+              <br />
+              Для клиник — система управления пациентопотоком.
+            </p>
+            <p className="mt-4 max-w-xl text-sm leading-6 text-muted-foreground">
+              Сначала считаем, где теряются деньги. Потом собираем систему вокруг
+              конкретного результата.
             </p>
           </div>
-          <ButtonLink href="#contact">Оставить заявку на консультацию</ButtonLink>
+
+          <div>
+            <SystemDashboard />
+          </div>
+        </div>
+
+        {/* Выбор направления — на языке задачи, а не услуги. Человек должен
+            узнать себя: «я селлер, хочу магазин» или «я клиника, хочу записи». */}
+        <div className="mt-14 grid gap-4 sm:grid-cols-2">
+          {agencyPersonas.map((p, i) => {
+            const Icon = directionIcons[p.id];
+            return (
+              <Link
+                key={p.id}
+                href={p.href}
+                className="group reveal flex flex-col rounded-[1.75rem] border border-border bg-white p-6 transition duration-200 hover:-translate-y-1 hover:border-primary/30 hover:shadow-xl hover:shadow-black/5 sm:p-7"
+                style={{ transitionDelay: `${i * 120}ms` }}
+              >
+                <div className="flex items-center gap-3">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary-soft text-primary">
+                    <Icon className="h-5 w-5" />
+                  </div>
+                  <span className="rounded-full bg-muted px-3 py-1 text-xs font-bold text-muted-foreground">
+                    {p.eyebrow}
+                  </span>
+                </div>
+                <h2 className="mt-5 font-display text-xl font-bold leading-tight text-foreground sm:text-2xl">
+                  {p.want}
+                </h2>
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">{p.stack}</p>
+                <ul className="mt-4 space-y-1.5">
+                  {p.points.map((point) => (
+                    <li key={point} className="flex items-start gap-2 text-xs text-muted-foreground">
+                      <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-primary" />
+                      {point}
+                    </li>
+                  ))}
+                </ul>
+                <span className="mt-6 inline-flex items-center gap-2 font-display text-sm font-bold text-primary">
+                  {p.cta}
+                  <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" />
+                </span>
+              </Link>
+            );
+          })}
         </div>
       </div>
     </section>
   );
 }
 
-function Packages() {
+/**
+ * «От задачи до результата» — пять стадий. Прежний блок «Не начинаем с
+ * набора услуг» объяснял принцип словами; этот показывает его как
+ * маршрут, по которому проходит каждый проект.
+ */
+function HowWeWork() {
   return (
-    <section id="solutions" className="section-pad">
-      <div className="container-pad">
-        <SectionTitle kicker="Решения" title="Несколько форматов работы" />
-        <div className="grid gap-5 lg:grid-cols-4">
-          {packages.map(([title, text, items]) => (
-            <div key={title} className="rounded-[20px] border border-white/80 bg-white/90 p-6">
-              <h3 className="text-xl font-semibold text-[color:var(--ink)]">{title}</h3>
-              <p className="mt-3 text-sm leading-6 text-[color:var(--muted)]">{text}</p>
-              <ul className="mt-5 space-y-2 text-sm text-[color:var(--muted)]">
-                {items.map((item) => <li key={item}>• {item}</li>)}
-              </ul>
+    <section id="how" className="section-pad bg-muted">
+      <div className="container-wide">
+        <div className="reveal">
+          <SectionTitle
+            kicker="Как это работает"
+            title="От задачи до результата"
+            text="Пять стадий одинаковых для обоих направлений. Каждая заканчивается результатом, который можно проверить."
+          />
+        </div>
+
+        <ol className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+          {agencyStages.map((stage, i) => (
+            <li
+              key={stage.step}
+              className="card-base card-lift reveal flex flex-col p-5"
+              style={{ transitionDelay: `${(i % 3) * 90}ms` }}
+            >
+              <span className="font-display text-2xl font-bold leading-none text-primary">
+                {stage.step}
+              </span>
+              <h3 className="mt-3 font-display text-base font-bold text-foreground">
+                {stage.title}
+              </h3>
+              <p className="mt-1 text-xs font-bold text-primary">{stage.question}</p>
+              <p className="mt-2.5 text-sm leading-6 text-muted-foreground">{stage.detail}</p>
+            </li>
+          ))}
+        </ol>
+
+        {/* Принцип остался, но теперь он следствие, а не лозунг. */}
+        <div className="reveal mt-8 rounded-[1.75rem] border border-border bg-white p-6 sm:p-7">
+          <p className="text-sm leading-6 text-foreground">
+            <span className="font-bold">Большинство агентств начинают с инструмента:</span>{" "}
+            сайт, реклама, SMM, SEO. Мы начинаем с точки потери — и только потом
+            решаем, какие инструменты нужны. Если инструмент не закрывает найденную
+            потерю, мы его не предлагаем.
+          </p>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function TwoSystems() {
+  return (
+    <section id="system" className="section-pad">
+      <div className="container-wide">
+        <div className="reveal">
+          <SectionTitle
+            kicker="Система"
+            title="Две задачи. Две системы."
+            text="Инструменты живут внутри системы, а не продаются по отдельности. Яндекс KIT — инфраструктура магазина, 7К — методология работы с пациентопотоком."
+          />
+        </div>
+
+        <div className="grid gap-5 lg:grid-cols-2">
+          {agencyFlows.map((flow, i) => (
+            <div
+              key={flow.id}
+              className="card-base card-lift reveal p-6 sm:p-8"
+              style={{ transitionDelay: `${i * 120}ms` }}
+            >
+              <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                <span className="pill-sm bg-primary-soft text-primary">{flow.label}</span>
+                <h3 className="font-display text-xl font-bold text-foreground">{flow.title}</h3>
+              </div>
+              <FlowScheme steps={flow.steps} />
+              <Link href={flow.href} className="cta-link mt-6 text-sm">
+                Подробнее о направлении
+                <ArrowRight className="h-4 w-4" />
+              </Link>
             </div>
           ))}
         </div>
@@ -245,34 +269,76 @@ function Packages() {
   );
 }
 
-function Contact() {
+
+function WhySharik() {
   return (
-    <section id="contact" className="section-pad bg-white/65">
-      <div className="container-pad grid gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
-        <div>
-          <div className="pill mb-5">Контакты</div>
-          <h2 className="brand-title text-4xl font-semibold tracking-tight text-[color:var(--ink)] sm:text-5xl">Хотите понять, где клиника теряет пациентов?</h2>
-          <p className="mt-5 max-w-xl text-lg leading-8 text-[color:var(--muted)]">
-            Оставьте заявку на консультацию — покажем точки роста, приоритеты и следующий шаг без расплывчатых обещаний.
-          </p>
+    <section id="why" className="section-pad bg-muted">
+      <div className="container-wide">
+        <div className="reveal">
+          <SectionTitle
+            kicker="Почему ШАРиК"
+            title="Сначала считаем. Потом запускаем. Затем масштабируем то, что работает."
+          />
         </div>
-        <ContactForm />
+
+        <div className="grid gap-4 sm:grid-cols-2">
+          {agencyWhy.map((item, i) => (
+            <div
+              key={item.title}
+              className="card-base card-lift reveal p-6"
+              style={{ transitionDelay: `${(i % 2) * 100}ms` }}
+            >
+              <h3 className="font-display text-lg font-bold text-foreground">{item.title}</h3>
+              <p className="mt-2.5 text-sm leading-6 text-muted-foreground">{item.detail}</p>
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-8 grid gap-4 sm:grid-cols-3 reveal reveal-delay-2">
+          {agencyStats.map((m) => (
+            <div key={m.label} className="rounded-[1.45rem] bg-primary p-6 text-white">
+              <div className="font-display text-3xl font-bold leading-none">{m.value}</div>
+              <p className="mt-2 text-sm leading-5 text-white/85">{m.label}</p>
+            </div>
+          ))}
+        </div>
       </div>
     </section>
   );
 }
 
 function FAQ() {
+  const [openIndex, setOpenIndex] = useState<number | null>(null);
+
   return (
-    <section className="section-pad">
-      <div className="container-pad">
-        <SectionTitle kicker="FAQ" title="Частые вопросы" />
-        <div className="mx-auto max-w-4xl space-y-4">
-          {faq.map(([q, a]) => (
-            <details key={q} className="rounded-[20px] border border-white/80 bg-white/90 p-6">
-              <summary className="cursor-pointer text-lg font-semibold text-[color:var(--ink)]">{q}</summary>
-              <p className="mt-4 leading-7 text-[color:var(--muted)]">{a}</p>
-            </details>
+    <section id="faq" className="section-pad bg-muted">
+      <div className="container-wide">
+        <div className="reveal">
+          <SectionTitle kicker="FAQ" title="Частые вопросы" />
+        </div>
+        <div className="mx-auto mt-10 max-w-3xl">
+          {agencyFaq.map((item, i) => (
+            <div
+              key={i}
+              className={`border-t border-border/60 transition-all duration-300 ${openIndex === i ? "bg-primary/5" : ""}`}
+            >
+              <button
+                type="button"
+                onClick={() => setOpenIndex(openIndex === i ? null : i)}
+                className="flex w-full items-center justify-between py-4 text-left text-base font-black text-foreground transition hover:text-primary"
+                aria-expanded={openIndex === i}
+              >
+                {item.q}
+                <span className="ml-4 shrink-0 text-primary">
+                  {openIndex === i ? <Minus className="h-5 w-5" /> : <Plus className="h-5 w-5" />}
+                </span>
+              </button>
+              <div
+                className={`overflow-hidden transition-all duration-300 ${openIndex === i ? "max-h-96 pb-4" : "max-h-0"}`}
+              >
+                <p className="text-base leading-7 text-muted-foreground">{item.a}</p>
+              </div>
+            </div>
           ))}
         </div>
       </div>
@@ -280,23 +346,37 @@ function FAQ() {
   );
 }
 
-function Footer() {
+function FinalCta() {
   return (
-    <footer className="border-t border-[color:var(--line)] bg-white/75 py-10">
-      <div className="container-pad flex flex-col justify-between gap-6 md:flex-row md:items-center">
-        <div>
-          <img src="/brand/logo-footer.svg" alt="ШАРиК-digital" className="h-10 w-auto" />
-          <p className="mt-3 max-w-md text-sm text-[color:var(--muted)]">Digital-система для стоматологий и медицинских проектов.</p>
-        </div>
-        <div className="flex flex-col items-start gap-3 text-sm text-[color:var(--muted)] md:items-end">
-          <ButtonLink href="#contact" className="px-5 py-3 text-sm">Оставить заявку на консультацию</ButtonLink>
-          <div className="md:text-right">
-            <p>{site.botUsername}</p>
-            <p>{site.phone}</p>
-            <a href="/privacy" className="mt-2 inline-flex text-[color:var(--red)]">Политика конфиденциальности</a>
+    <section className="section-pad" style={{ background: "var(--premium)" }}>
+      <div className="container-wide">
+        <div className="reveal mx-auto max-w-3xl text-center">
+          <h2
+            className="font-display font-bold leading-[0.95] tracking-[-0.02em] text-white"
+            style={{ fontSize: "clamp(1.7rem, 5cqi, 3rem)" }}
+          >
+            Начните с расчёта, а не с покупки
+          </h2>
+          <p className="mx-auto mt-5 max-w-xl text-base leading-7 text-white/80">
+            Чек-лист в Telegram — самый быстрый способ понять, где именно в вашей
+            воронке теряются деньги. Без созвонов и без обязательств.
+          </p>
+          {/* Кнопки ведут сразу в бот, а не на страницы направлений:
+              дальше всё равно спрашивают, кому нужен чек-лист, и лишний
+              переход только теряет тех, кто уже готов. */}
+          <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+            <a href={site.links.kitChecklist} className="btn-primary w-full sm:w-auto">
+              Чек-лист запуска магазина
+            </a>
+            <a
+              href={site.links.checklist}
+              className="inline-flex min-h-12 w-full items-center justify-center rounded-full border border-white/30 px-6 py-3 text-sm font-black text-white transition hover:border-white hover:bg-white/10 sm:w-auto"
+            >
+              Чек-лист для клиники
+            </a>
           </div>
         </div>
       </div>
-    </footer>
+    </section>
   );
 }

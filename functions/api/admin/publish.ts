@@ -14,6 +14,10 @@
  *   4. через 1–2 минуты изменение видно всем.
  */
 
+// Обращения к GitHub — через общий клиент: он показывает настоящую
+// причину отказа, а не угадывает её по коду ответа.
+import { githubFetch, githubReadJson } from "../../lib/github";
+
 interface Env {
   CONTENT?: KVNamespace;
   ADMIN_PASSWORD?: string;
@@ -42,11 +46,6 @@ function repo(env: Env) {
   if (!owner || !name) throw new Error("GITHUB_REPO не задан (формат owner/repo)");
   return { owner, name };
 }
-
-const githubHeaders = (env: Env) => ({
-  Authorization: `Bearer ${env.GITHUB_TOKEN}`,
-  Accept: "application/vnd.github+json",
-});
 
 /** Строка -> base64. GitHub требует base64, а не urlencoded. */
 function toBase64(text: string): string {
@@ -105,35 +104,26 @@ async function buildTree(env: Env, paths: string[]) {
   if (!env.CONTENT) throw new Error("CONTENT не настроен");
   const { owner, name } = repo(env);
   const branch = env.GITHUB_BRANCH || "main";
-  const headers = githubHeaders(env);
-
   // 1. Текущий HEAD и его дерево — точка отсчёта для нового.
-  const refResponse = await fetch(
+  //
+  //    Чтение идёт через githubReadJson: репозиторий публичный, поэтому
+  //    HEAD и дерево доступны и без токена. Раньше здесь стоял прямой
+  //    fetch с обязательным Authorization, и из-за этого битый или
+  //    лимитированный токен ронял публикацию ДО записи — хотя чтение
+  //    он и не выполняет. Теперь чтение не зависит от токена, и если
+  //    токен действительно не работает, правдивый отказ придёт на
+  //    записи, где он и нужен.
+  const ref = await githubReadJson<{ object: { sha: string } }>(
+    env,
     `https://api.github.com/repos/${owner}/${name}/git/ref/heads/${encodeURIComponent(branch)}`,
-    { headers },
   );
-  if (!refResponse.ok) {
-    throw new Error(
-      `Не удалось прочитать ветку ${branch}: HTTP ${refResponse.status}.` +
-        " Проверьте GITHUB_TOKEN: fine-grained токен должен иметь доступ " +
-        "к репозиторию и права Contents: Read and write.",
-    );
-  }
-  const ref = (await refResponse.json()) as { object: { sha: string } };
   const headSha = ref.object.sha;
 
-  const treeResponse = await fetch(
-    `https://api.github.com/repos/${owner}/${name}/git/trees/${headSha}?recursive=1`,
-    { headers },
-  );
-  if (!treeResponse.ok) {
-    throw new Error(`Не удалось прочитать дерево репозитория: HTTP ${treeResponse.status}`);
-  }
-  const tree = (await treeResponse.json()) as {
+  const tree = await githubReadJson<{
     sha: string;
     truncated?: boolean;
     tree: { path: string; mode: string; type: string; sha: string }[];
-  };
+  }>(env, `https://api.github.com/repos/${owner}/${name}/git/trees/${headSha}?recursive=1`);
   if (tree.truncated) {
     throw new Error("GitHub отдал неполное дерево репозитория — публикация остановлена");
   }
@@ -258,42 +248,35 @@ export const onRequest = async (context: { request: Request; env: Env }) => {
     // Шаг 1: новое дерево. Коммит ссылается на готовый sha, поэтому
     // содержимое файлов передать в него напрямую нельзя — сначала
     // создаём дерево, затем коммит на его основе.
-    const treeResponse = await fetch(
+    //
+    // Запись, в отличие от чтения, токена требует по существу: без
+    // прав на запись в репозиторий коммит невозможен в принципе.
+    const treeResponse = await githubFetch(
+      env,
       `https://api.github.com/repos/${owner}/${name}/git/trees`,
       {
         method: "POST",
-        headers: { ...githubHeaders(env), "Content-Type": "application/json" },
-        body: JSON.stringify({ base_tree: baseTree, tree: entries }),
+        body: { base_tree: baseTree, tree: entries },
       },
     );
-
-    if (!treeResponse.ok) {
-      const body = await treeResponse.text().catch(() => "");
-      return json({ error: `GitHub отклонил дерево: ${body.slice(0, 300)}` }, 502);
-    }
 
     const newTree = (await treeResponse.json()) as { sha: string };
 
     // Шаг 2: коммит. parents обязателен — без него ветка осталась бы
     // без изменений, и новое дерево просто висело бы в репозитории.
-    const commitResponse = await fetch(
+    const commitResponse = await githubFetch(
+      env,
       `https://api.github.com/repos/${owner}/${name}/git/commits`,
       {
         method: "POST",
-        headers: { ...githubHeaders(env), "Content-Type": "application/json" },
-        body: JSON.stringify({
+        body: {
           message: payload.message || "Контент: публикация из админки",
           tree: newTree.sha,
           parents: [headSha],
           committer: { name: "ШАРиК CMS", email: "cms@sharik-digital.ru" },
-        }),
+        },
       },
     );
-
-    if (!commitResponse.ok) {
-      const body = await commitResponse.text().catch(() => "");
-      return json({ error: `GitHub отклонил коммит: ${body.slice(0, 300)}` }, 502);
-    }
 
     const commit = (await commitResponse.json()) as { sha: string; html_url?: string };
 

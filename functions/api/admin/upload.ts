@@ -10,6 +10,10 @@
  * Ограничения жёсткие: без них в репозиторий попадёт что угодно.
  */
 
+// Ошибки GitHub разбирает общий клиент: он отдаёт настоящую причину
+// отказа вместо обрезка невнятного тела ответа.
+import { githubFetch } from "../../lib/github";
+
 interface Env {
   ADMIN_PASSWORD?: string;
   GITHUB_TOKEN?: string;
@@ -94,30 +98,30 @@ export const onRequest = async (context: { request: Request; env: Env }) => {
   const fileName = safeName(mime);
   const body = await file.arrayBuffer();
 
-  // Contents API принимает содержимое файла — для картинок это base64.
-  const response = await fetch(
-    `https://api.github.com/repos/${owner}/${name}/contents/public/media/${fileName}`,
-    {
-      method: "PUT",
-      headers: {
-        Authorization: `Bearer ${env.GITHUB_TOKEN}`,
-        Accept: "application/vnd.github+json",
-        "Content-Type": "application/json",
+  try {
+    // Contents API принимает содержимое файла — для картинок это base64.
+    //
+    // Отказ не проглатывается: githubFetch уже превратил его в текст с
+    // настоящей причиной (недействительный токен, нет прав, лимит), и
+    // терять её здесь значило бы вернуть в админку обрезок тела ответа
+    // вместо объяснения. Ловим только чтобы отдать 502 с этим текстом:
+    // необработанная ошибка уехала бы в 500 без тела, и редактор увидел
+    // бы пустое сообщение.
+    await githubFetch(
+      env,
+      `https://api.github.com/repos/${owner}/${name}/contents/public/media/${fileName}`,
+      {
+        method: "PUT",
+        body: {
+          message: `Медиатека: ${fileName}`,
+          branch,
+          committer: { name: "ШАРиК CMS", email: "cms@sharik-digital.ru" },
+          content: toBase64(body),
+        },
       },
-      body: JSON.stringify({
-        message: `Медиатека: ${fileName}`,
-        branch,
-        committer: { name: "ШАРиК CMS", email: "cms@sharik-digital.ru" },
-        content: toBase64(body),
-      }),
-    },
-  ).catch(() => null);
-
-  if (!response || !response.ok) {
-    const detail = response
-      ? (await response.text().catch(() => "")).slice(0, 200)
-      : "нет связи с GitHub";
-    return json({ error: `Не удалось загрузить: ${detail}` }, 502);
+    );
+  } catch (error) {
+    return json({ error: (error as Error).message }, 502);
   }
 
   return json({

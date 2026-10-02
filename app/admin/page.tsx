@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import SimpleEditor, { type SimpleItem } from "@/components/admin/SimpleEditor";
 import Dashboard from "@/components/admin/Dashboard";
+import EnvCheck from "@/components/admin/EnvCheck";
 import { ImageUpload } from "@/components/admin/ImageUpload";
 import { groupItems, itemSubtitle, siteUrl } from "@/lib/adminPages";
 
@@ -454,9 +455,14 @@ export default function AdminPage() {
         {repoError && (
           <p className="mb-4 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900">
             Контент из репозитория не загрузился: {repoError}. Показаны только записи,
-            сохранённые в админке. Проверьте секрет GITHUB_TOKEN в проекте Pages.
+            сохранённые в админке. Проверьте состояние токена кнопкой «Проверить окружение».
           </p>
         )}
+
+        {/* Проверка окружения стоит над вкладками, а не внутри одной из
+            них: отказ публикации случается на любой вкладке, где есть
+            кнопка «Опубликовать». */}
+        <EnvCheck token={token} />
 
         <div className="mb-6 flex flex-wrap gap-2 border-b border-neutral-200">
           {(

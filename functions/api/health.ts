@@ -9,6 +9,10 @@
  * виден всем подряд.
  */
 
+// Проверка токена реальным запросом, а не только фактом наличия:
+// секрета в окружении недостаточно, чтобы понять, рабочий он или нет.
+import { githubFetch, type GithubError } from "../lib/github";
+
 interface Env {
   CONTENT?: unknown;
   ANALYTICS?: unknown;
@@ -18,6 +22,41 @@ interface Env {
   GITHUB_BRANCH?: string;
   BOT_TOKEN?: string;
   ADMIN_CHAT_ID?: string;
+}
+
+/**
+ * Что Git думает о нашем токене.
+ *
+ * Запрос только на чтение и только к самому репозиторию: он ничего не
+ * меняет, но отличает «секрет задан» от «секрет работает» — а именно
+ * это и нельзя увидеть в булевом флаге. Права на запись не проверяются:
+ * такой запрос потребовал бы создать настоящий коммит.
+ */
+async function checkToken(env: Env): Promise<Record<string, unknown>> {
+  const [owner, name] = String(env.GITHUB_REPO || "").split("/");
+  if (!env.GITHUB_TOKEN) return { checked: false, reason: "GITHUB_TOKEN не задан" };
+  if (!owner || !name) return { checked: false, reason: "GITHUB_REPO не задан или неверного вида" };
+
+  try {
+    const response = await githubFetch(env, `https://api.github.com/repos/${owner}/${name}`);
+    const scopes = response.headers.get("x-oauth-scopes") || "";
+    const remaining = response.headers.get("x-ratelimit-remaining");
+    return {
+      checked: true,
+      ok: true,
+      // У fine-grained токенов поле пустое — так и должно быть.
+      scopes: scopes ? scopes.split(",").map((s) => s.trim()).filter(Boolean) : "fine-grained",
+      rateLimitRemaining: remaining === null ? null : Number(remaining),
+    };
+  } catch (error) {
+    const status = (error as GithubError).status;
+    return {
+      checked: true,
+      ok: false,
+      status,
+      reason: (error as Error).message,
+    };
+  }
 }
 
 export const onRequest = async (context: { request: Request; env: Env }) => {
@@ -49,5 +88,8 @@ export const onRequest = async (context: { request: Request; env: Env }) => {
       GITHUB_REPO: env.GITHUB_REPO || null,
       GITHUB_BRANCH: env.GITHUB_BRANCH || null,
     },
+    // Токен проверен запросом к репозиторию: одного факта «секрет задан»
+    // мало, ведь именно его недостаток и вызывал отказ публикации.
+    github: await checkToken(env),
   });
 };
